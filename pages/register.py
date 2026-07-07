@@ -9,7 +9,10 @@ from utils.sheets import (
     register_participant,
     get_participant
 )
-from utils.auth import login_participant
+from utils.auth import (
+    login_participant, login_after_registration,
+    has_password_set, first_time_set_password, hash_password,
+)
 from config import PROGRAM_NAME
 
 
@@ -435,12 +438,26 @@ def show():
                         ["Student", "Graduate / Job seeker", "Career pivoter"]
                     )
 
+                col5, col6 = st.columns(2)
+                with col5:
+                    new_password = st.text_input("Create Password", type="password")
+                with col6:
+                    confirm_password = st.text_input("Confirm Password", type="password")
+
                 payment_code = st.text_input("Payment Code", placeholder="Enter your program code")
                 submitted = st.form_submit_button("Create My Account →", use_container_width=True)
 
             if submitted:
-                if not all([full_name, email, phone, payment_code]):
+                if not all([full_name, email, phone, payment_code, new_password, confirm_password]):
                     st.error("Please fill in all fields.")
+                    return
+
+                if len(new_password) < 6:
+                    st.error("Password should be at least 6 characters.")
+                    return
+
+                if new_password != confirm_password:
+                    st.error("Passwords don't match.")
                     return
 
                 if get_participant(email.strip().lower()):
@@ -463,45 +480,128 @@ def show():
                         "cohort_type":   cohort_type,
                         "payment_code":  payment_code.strip(),
                         "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "password_hash": hash_password(new_password),
                     })
 
                 st.success(
                     f"Welcome, {full_name.split()[0]}! "
                     f"Your {PROGRAM_NAME} account is ready."
                 )
-                login_participant(email.strip().lower())
+                login_after_registration(email.strip().lower())
                 st.rerun()
 
         # ── LOGIN TAB ──
         with tab_login:
-            st.markdown("""
-            <p style="color:#8BA0B8;font-size:0.88rem;margin:16px 0 20px;line-height:1.6;">
-              Enter the email address you used to register
-              and we'll take you straight to your dashboard.
-            </p>
-            """, unsafe_allow_html=True)
+            if "login_stage" not in st.session_state:
+                st.session_state["login_stage"] = "email"
 
-            with st.form("login_form"):
-                login_email = st.text_input("Your Registered Email Address")
-                login_btn = st.form_submit_button(
-                    "Access My Dashboard →", use_container_width=True
-                )
+            # Step 1: email only
+            if st.session_state["login_stage"] == "email":
+                st.markdown("""
+                <p style="color:#8BA0B8;font-size:0.88rem;margin:16px 0 20px;line-height:1.6;">
+                  Enter the email you registered with to continue.
+                </p>
+                """, unsafe_allow_html=True)
 
-            if login_btn:
-                if not login_email:
-                    st.error("Please enter your email address.")
-                    return
+                with st.form("login_email_form"):
+                    login_email_input = st.text_input("Your Registered Email Address")
+                    continue_btn = st.form_submit_button("Continue →", use_container_width=True)
 
-                with st.spinner("Looking up your account..."):
-                    found = login_participant(login_email.strip().lower())
+                if continue_btn:
+                    email_clean = login_email_input.strip().lower()
+                    if not email_clean:
+                        st.error("Please enter your email address.")
+                    else:
+                        pw_set = has_password_set(email_clean)
+                        if pw_set is None:
+                            st.error(
+                                "No account found with that email. "
+                                "Please register first, or check for a typo."
+                            )
+                        else:
+                            st.session_state["login_email"] = email_clean
+                            st.session_state["login_stage"] = "password" if pw_set else "set_password"
+                            st.rerun()
 
-                if found:
+            # Step 2a: returning user, has a password already
+            elif st.session_state["login_stage"] == "password":
+                st.caption(f"Welcome back — logging in as **{st.session_state['login_email']}**")
+                with st.form("login_password_form"):
+                    login_password = st.text_input("Password", type="password")
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        login_btn = st.form_submit_button("Access My Dashboard →", use_container_width=True)
+                    with c2:
+                        back_btn = st.form_submit_button("← Use a different email", use_container_width=True)
+
+                if back_btn:
+                    st.session_state.pop("login_stage", None)
+                    st.session_state.pop("login_email", None)
                     st.rerun()
-                else:
-                    st.error(
-                        "No account found with that email. "
-                        "Please register first or check for a typo."
+
+                if login_btn:
+                    if not login_password:
+                        st.error("Please enter your password.")
+                    else:
+                        with st.spinner("Logging in..."):
+                            ok = login_participant(st.session_state["login_email"], login_password)
+                        if ok:
+                            st.session_state.pop("login_stage", None)
+                            st.session_state.pop("login_email", None)
+                            st.rerun()
+                        else:
+                            st.error("Incorrect password. Please try again.")
+
+            # Step 2b: legacy account, no password on file yet —
+            # verify WhatsApp number on file, then let them set one
+            elif st.session_state["login_stage"] == "set_password":
+                st.markdown("""
+                <div class="alert-warn" style="margin:16px 0 20px;">
+                  <strong>First time logging in with a password?</strong>
+                  Confirm the WhatsApp number you registered with, then
+                  choose a password you'll use from now on.
+                </div>
+                """, unsafe_allow_html=True)
+                st.caption(f"Setting up a password for **{st.session_state['login_email']}**")
+
+                with st.form("set_password_form"):
+                    confirm_phone = st.text_input(
+                        "Your Registered WhatsApp Number", placeholder="+2348012345678"
                     )
+                    set_pw = st.text_input("Choose a Password", type="password")
+                    set_pw_confirm = st.text_input("Confirm Password", type="password")
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        set_btn = st.form_submit_button("Set Password & Log In →", use_container_width=True)
+                    with c2:
+                        back_btn2 = st.form_submit_button("← Use a different email", use_container_width=True)
+
+                if back_btn2:
+                    st.session_state.pop("login_stage", None)
+                    st.session_state.pop("login_email", None)
+                    st.rerun()
+
+                if set_btn:
+                    if not all([confirm_phone, set_pw, set_pw_confirm]):
+                        st.error("Please fill in all fields.")
+                    elif len(set_pw) < 6:
+                        st.error("Password should be at least 6 characters.")
+                    elif set_pw != set_pw_confirm:
+                        st.error("Passwords don't match.")
+                    else:
+                        with st.spinner("Setting up your password..."):
+                            ok = first_time_set_password(
+                                st.session_state["login_email"], confirm_phone.strip(), set_pw
+                            )
+                        if ok:
+                            st.session_state.pop("login_stage", None)
+                            st.session_state.pop("login_email", None)
+                            st.rerun()
+                        else:
+                            st.error(
+                                "That WhatsApp number doesn't match our records. "
+                                "Please check it, or contact support if you're stuck."
+                            )
 
     # ── Trust strip ─────────────────────────────────────────
     st.markdown("""
