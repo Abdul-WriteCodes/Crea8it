@@ -99,6 +99,7 @@ def register_participant(data: dict):
         data["cohort_type"],
         data["payment_code"].upper(),
         data["registered_at"],
+        data.get("password_hash", ""),
     ])
     get_all_participants.clear()
     mark_code_used(data["payment_code"])
@@ -114,6 +115,33 @@ def get_participant_cached(email: str) -> dict | None:
 
 def get_participant(email: str) -> dict | None:
     return get_participant_cached(email)
+
+
+def set_participant_password(email: str, password_hash: str):
+    """Write (or clear, if password_hash='') a participant's password hash.
+    Looks the 'password_hash' column up by header name, so it doesn't
+    matter where it sits in the sheet — it just needs to exist."""
+    ws = get_sheet(WS_PARTICIPANTS)
+    all_values = ws.get_all_values()
+    if not all_values:
+        return
+    headers = [h.strip().lower() for h in all_values[0]]
+    if "email" not in headers:
+        return
+    if "password_hash" not in headers:
+        raise RuntimeError(
+            "The Participants sheet has no 'password_hash' column yet. "
+            "Add that header before using password login."
+        )
+    email_col = headers.index("email")
+    pw_col = headers.index("password_hash")
+    email_clean = email.strip().lower()
+    for i, row in enumerate(all_values[1:], start=2):
+        cell = row[email_col] if email_col < len(row) else ""
+        if str(cell).strip().lower() == email_clean:
+            ws.update_cell(i, pw_col + 1, password_hash)
+            get_all_participants.clear()
+            return
 
 
 # ── Progress ───────────────────────────────────────────────────
@@ -472,3 +500,75 @@ def get_all_feedback() -> list[dict]:
         return get_sheet("Feedback").get_all_records()
     except Exception:
         return []
+
+
+# ── Last active tracking ────────────────────────────────────────
+# One row per participant: email, last_active_at.
+# Written every time a participant logs in, completes a task, or
+# submits a reflection — cheap "heartbeat" so admin can see who's
+# gone quiet without any extra product surface for the learner.
+
+WS_LAST_ACTIVE = "LastActive"
+
+
+def _ensure_last_active_sheet():
+    _ensure_sheet(WS_LAST_ACTIVE, 1000, 2, ["email", "last_active_at"])
+
+
+def touch_last_active(email: str):
+    """Upsert the last-active timestamp for a participant. Never raises —
+    a failure here should never block the actual user action."""
+    try:
+        _ensure_last_active_sheet()
+        ws = get_sheet(WS_LAST_ACTIVE)
+        now = __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        records = ws.get_all_records()
+        email_clean = email.strip().lower()
+        for i, row in enumerate(records, start=2):
+            if str(row.get("email", "")).strip().lower() == email_clean:
+                ws.update_cell(i, 2, now)
+                get_last_active_map.clear()
+                return
+        ws.append_row([email_clean, now])
+        get_last_active_map.clear()
+    except Exception:
+        pass
+
+
+@st.cache_data(ttl=60)
+def get_last_active_map() -> dict:
+    """email -> last_active_at string, for admin dashboards."""
+    try:
+        _ensure_last_active_sheet()
+        records = get_sheet(WS_LAST_ACTIVE).get_all_records()
+        return {
+            str(r.get("email", "")).strip().lower(): r.get("last_active_at", "")
+            for r in records
+        }
+    except Exception:
+        return {}
+
+
+# ── Cohort progress (social visibility) ─────────────────────────
+
+def get_week_completion_stats(program_id: str, week: int, task_count: int) -> tuple[int, int]:
+    """Returns (num_participants_who_finished_all_tasks_this_week, total_participants).
+    Used to show 'X/Y builders finished this week' on the learner dashboard."""
+    if task_count <= 0:
+        return 0, 0
+    participants = get_all_participants()
+    progress = get_all_progress()
+    total = len(participants)
+    if total == 0:
+        return 0, 0
+    done_counts: dict = {}
+    for row in progress:
+        try:
+            if int(row.get("week", 0)) != week:
+                continue
+        except (ValueError, TypeError):
+            continue
+        email = str(row.get("email", "")).strip().lower()
+        done_counts[email] = done_counts.get(email, 0) + 1
+    finished = sum(1 for count in done_counts.values() if count >= task_count)
+    return finished, total
