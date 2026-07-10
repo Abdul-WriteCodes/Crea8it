@@ -1,27 +1,15 @@
 import os
 import base64
 import streamlit as st
-from datetime import datetime
 
 from utils.theme import apply_css
-from utils.sheets import (
-    is_valid_code,
-    register_participant,
-    get_participant
-)
-from utils.auth import (
-    login_participant, login_after_registration,
-    has_password_set, first_time_set_password, hash_password,
+from utils.db import (
+    is_valid_org_code, join_organization, register_organization, sign_in,
 )
 from config import PROGRAM_NAME
 
-
-# ── CSS goes via st.markdown — it injects into the main Streamlit DOM ─────────
-# st.html() is sandboxed per-call; CSS inside it never reaches other elements.
-# st.markdown(unsafe_allow_html=True) with <style> tags DOES reach the main DOM.
 LAB_CSS = """
 <style>
-/* ── Hero ── */
 .lp-hero { padding: 24px 0 16px; text-align: center; }
 .lp-wordmark {
   font-family: 'Syne', sans-serif;
@@ -51,8 +39,6 @@ LAB_CSS = """
   letter-spacing: 0.1em;
 }
 .lp-badge-dot { color: #22c55e; }
-
-/* ── Icon strip ── */
 .lab-icon-strip {
   display: flex;
   align-items: center;
@@ -74,8 +60,6 @@ LAB_CSS = """
   color: #8BA0B8;
   white-space: nowrap;
 }
-
-/* ── Social proof ── */
 .sp-section {
   display: flex;
   flex-direction: column;
@@ -117,8 +101,6 @@ LAB_CSS = """
   max-width: 300px;
   margin: 0 auto 20px;
 }
-
-/* ── Trust strip ── */
 .lp-trust-strip {
   display: flex;
   align-items: center;
@@ -139,20 +121,12 @@ LAB_CSS = """
 </style>
 """
 
-# ── SVG background via st.html() (only SVG here, nothing else) ───────────────
-# The SVG is injected via a <script> that walks up from the iframe to the
-# parent page's document.body and appends the SVG there directly.
-# This is the only reliable way to get content from st.html() onto the real page.
 LAB_SVG_INJECTOR = """
 <script>
 (function() {
-  // Remove any previous instance so re-renders don't stack SVGs
   var old = window.parent.document.getElementById('lab-bg-svg');
   if (old) old.remove();
 
-  var svgNS = 'http://www.w3.org/2000/svg';
-
-  // Inject the fixed-position style into the parent document
   var styleId = 'lab-bg-svg-style';
   if (!window.parent.document.getElementById(styleId)) {
     var s = window.parent.document.createElement('style');
@@ -172,116 +146,16 @@ LAB_SVG_INJECTOR = """
   var svgMarkup = `<svg id="lab-bg-svg" viewBox="0 0 800 900"
     preserveAspectRatio="xMidYMid slice"
     xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-
   <circle cx="740" cy="90" r="80" fill="none" stroke="#00B4D8" stroke-width="0.7" opacity="0.2"/>
   <circle cx="740" cy="90" r="55" fill="none" stroke="#00B4D8" stroke-width="0.5" opacity="0.14"/>
   <circle cx="740" cy="90" r="8"  fill="#00B4D8" opacity="0.28"/>
-  <line x1="740" y1="10" x2="740" y2="170" stroke="#00B4D8" stroke-width="0.4" opacity="0.12"/>
-  <line x1="660" y1="90" x2="820" y2="90"  stroke="#00B4D8" stroke-width="0.4" opacity="0.12"/>
-
   <circle cx="60" cy="780" r="70" fill="none" stroke="#F5A623" stroke-width="0.7" opacity="0.18"/>
   <circle cx="60" cy="780" r="45" fill="none" stroke="#F5A623" stroke-width="0.5" opacity="0.12"/>
   <circle cx="60" cy="780" r="6"  fill="#F5A623" opacity="0.25"/>
-
   <circle cx="790" cy="520" r="60" fill="none" stroke="#00C896" stroke-width="0.6" opacity="0.16"/>
   <circle cx="790" cy="520" r="38" fill="none" stroke="#00C896" stroke-width="0.4" opacity="0.10"/>
   <circle cx="790" cy="520" r="5"  fill="#00C896" opacity="0.25"/>
-
-  <g opacity="0.28" transform="translate(28,40)">
-    <line x1="20" y1="0"  x2="20" y2="55" stroke="#1F2D3D" stroke-width="1.2"/>
-    <line x1="36" y1="0"  x2="36" y2="55" stroke="#1F2D3D" stroke-width="1.2"/>
-    <line x1="14" y1="0"  x2="42" y2="0"  stroke="#1F2D3D" stroke-width="1.2"/>
-    <polygon points="20,55 8,95 48,95 36,55" fill="#0D1117" stroke="#1F2D3D" stroke-width="1"/>
-    <polygon points="20,55 10,90 46,90 36,55" fill="#00B4D8" opacity="0.12"/>
-    <ellipse cx="28" cy="93" rx="20" ry="5" fill="none" stroke="#00B4D8" stroke-width="0.7" opacity="0.4"/>
-    <ellipse cx="28" cy="97" rx="20" ry="5" fill="none" stroke="#00B4D8" stroke-width="0.5" opacity="0.25"/>
-    <circle cx="18" cy="72" r="2.5" fill="#00B4D8" opacity="0.5"/>
-    <circle cx="34" cy="80" r="1.8" fill="#00B4D8" opacity="0.35"/>
-    <circle cx="24" cy="85" r="1.4" fill="#00B4D8" opacity="0.28"/>
-  </g>
-
-  <g opacity="0.22" transform="translate(690,700)">
-    <line x1="18" y1="0"  x2="18" y2="48" stroke="#1F2D3D" stroke-width="1"/>
-    <line x1="32" y1="0"  x2="32" y2="48" stroke="#1F2D3D" stroke-width="1"/>
-    <line x1="12" y1="0"  x2="38" y2="0"  stroke="#1F2D3D" stroke-width="1"/>
-    <polygon points="18,48 7,82 43,82 32,48" fill="#0D1117" stroke="#1F2D3D" stroke-width="0.9"/>
-    <polygon points="18,48 9,78 41,78 32,48" fill="#F5A623" opacity="0.10"/>
-    <ellipse cx="25" cy="80" rx="18" ry="4.5" fill="none" stroke="#F5A623" stroke-width="0.7" opacity="0.35"/>
-    <circle cx="16" cy="62" r="2"   fill="#F5A623" opacity="0.45"/>
-    <circle cx="30" cy="70" r="1.5" fill="#F5A623" opacity="0.30"/>
-  </g>
-
-  <g opacity="0.20" transform="translate(770,200)">
-    <rect x="0"  y="0"  width="14" height="50" rx="2" fill="#0D1117" stroke="#1F2D3D" stroke-width="0.9"/>
-    <rect x="0"  y="28" width="14" height="22" rx="2" fill="#00C896" opacity="0.18"/>
-    <rect x="-3" y="-5" width="20" height="8"  rx="2" fill="#0D1117" stroke="#1F2D3D" stroke-width="0.8"/>
-    <ellipse cx="7" cy="50" rx="7" ry="3" fill="#00C896" opacity="0.3"/>
-  </g>
-
-  <g opacity="0.18" transform="translate(15,390) rotate(-20)">
-    <rect x="0"  y="0"  width="12" height="44" rx="2" fill="#0D1117" stroke="#1F2D3D" stroke-width="0.8"/>
-    <rect x="0"  y="24" width="12" height="20" rx="2" fill="#F5A623" opacity="0.15"/>
-    <rect x="-2" y="-4" width="16" height="7"  rx="2" fill="#0D1117" stroke="#1F2D3D" stroke-width="0.7"/>
-    <ellipse cx="6" cy="44" rx="6" ry="2.5" fill="#F5A623" opacity="0.25"/>
-  </g>
-
-  <g opacity="0.16" transform="translate(360,18)">
-    <circle cx="0"  cy="0"  r="5" fill="#0D1117" stroke="#00B4D8" stroke-width="0.8"/>
-    <circle cx="50" cy="0"  r="5" fill="#0D1117" stroke="#00B4D8" stroke-width="0.8"/>
-    <circle cx="25" cy="32" r="5" fill="#0D1117" stroke="#F5A623"  stroke-width="0.8"/>
-    <circle cx="25" cy="64" r="5" fill="#0D1117" stroke="#00C896"  stroke-width="0.8"/>
-    <line x1="0"  y1="0"  x2="25" y2="32" stroke="#8BA0B8" stroke-width="0.5"/>
-    <line x1="50" y1="0"  x2="25" y2="32" stroke="#8BA0B8" stroke-width="0.5"/>
-    <line x1="25" y1="32" x2="25" y2="64" stroke="#8BA0B8" stroke-width="0.5"/>
-  </g>
-
-  <g opacity="0.14" transform="translate(370,820)">
-    <circle cx="0"  cy="0"  r="4" fill="#0D1117" stroke="#00C896" stroke-width="0.7"/>
-    <circle cx="40" cy="0"  r="4" fill="#0D1117" stroke="#00C896" stroke-width="0.7"/>
-    <circle cx="20" cy="26" r="4" fill="#0D1117" stroke="#F5A623"  stroke-width="0.7"/>
-    <line x1="0"  y1="0"  x2="20" y2="26" stroke="#2A4050" stroke-width="0.5"/>
-    <line x1="40" y1="0"  x2="20" y2="26" stroke="#2A4050" stroke-width="0.5"/>
-  </g>
-
-  <g opacity="0.14" stroke="#1F2D3D" stroke-width="0.7" fill="none">
-    <polyline points="580,10 580,40 640,40 640,70 700,70"/>
-    <circle cx="580" cy="10" r="2.5" fill="#00B4D8" opacity="0.5"  stroke="none"/>
-    <circle cx="640" cy="40" r="2.5" fill="#1F2D3D" stroke="#00B4D8" stroke-width="0.6"/>
-    <circle cx="700" cy="70" r="2.5" fill="#00B4D8" opacity="0.4"  stroke="none"/>
-  </g>
-
-  <g opacity="0.13" stroke="#1F2D3D" stroke-width="0.7" fill="none">
-    <polyline points="30,700 30,660 90,660 90,630 150,630"/>
-    <circle cx="30"  cy="700" r="2.5" fill="#F5A623" opacity="0.45" stroke="none"/>
-    <circle cx="90"  cy="660" r="2.5" fill="#1F2D3D" stroke="#F5A623" stroke-width="0.6"/>
-    <circle cx="150" cy="630" r="2.5" fill="#F5A623" opacity="0.35" stroke="none"/>
-  </g>
-
-  <g opacity="0.12" stroke="#1F2D3D" stroke-width="0.6" fill="none">
-    <polyline points="0,450 50,450 50,490 110,490"/>
-    <circle cx="0"   cy="450" r="2" fill="#00C896" opacity="0.4"  stroke="none"/>
-    <circle cx="50"  cy="490" r="2" fill="#1F2D3D" stroke="#00C896" stroke-width="0.6"/>
-    <circle cx="110" cy="490" r="2" fill="#00C896" opacity="0.3"  stroke="none"/>
-  </g>
-
-  <g opacity="0.16" transform="translate(0,250)">
-    <circle cx="35" cy="35" r="5" fill="#F5A623" opacity="0.5"/>
-    <ellipse cx="35" cy="35" rx="30" ry="10" fill="none" stroke="#F5A623" stroke-width="0.7" transform="rotate(0,35,35)"/>
-    <ellipse cx="35" cy="35" rx="30" ry="10" fill="none" stroke="#F5A623" stroke-width="0.7" transform="rotate(60,35,35)"/>
-    <ellipse cx="35" cy="35" rx="30" ry="10" fill="none" stroke="#F5A623" stroke-width="0.7" transform="rotate(120,35,35)"/>
-  </g>
-
-  <g opacity="0.13" transform="translate(720,600)">
-    <circle cx="35" cy="35" r="4" fill="#00B4D8" opacity="0.45"/>
-    <ellipse cx="35" cy="35" rx="28" ry="9" fill="none" stroke="#00B4D8" stroke-width="0.6" transform="rotate(0,35,35)"/>
-    <ellipse cx="35" cy="35" rx="28" ry="9" fill="none" stroke="#00B4D8" stroke-width="0.6" transform="rotate(60,35,35)"/>
-    <ellipse cx="35" cy="35" rx="28" ry="9" fill="none" stroke="#00B4D8" stroke-width="0.6" transform="rotate(120,35,35)"/>
-  </g>
-
-  <line x1="740" y1="170" x2="700" y2="200" stroke="#1F2D3D" stroke-width="0.4" stroke-dasharray="3 6" opacity="0.18"/>
-  <line x1="60"  y1="710" x2="90"  y2="630" stroke="#1F2D3D" stroke-width="0.4" stroke-dasharray="3 6" opacity="0.14"/>
-  <line x1="385" y1="82"  x2="385" y2="120" stroke="#1F2D3D" stroke-width="0.4" stroke-dasharray="2 5" opacity="0.12"/>
-</svg>`;
+  </svg>`;
 
   var parser = new window.parent.DOMParser();
   var doc = parser.parseFromString(svgMarkup, 'image/svg+xml');
@@ -340,22 +214,30 @@ ICON_STRIP_HTML = """
 """
 
 
-def show():
+def _avatar_strip_html() -> str:
+    """Base64-embeds the local avatar images so the strip doesn't depend on
+    external hosting — same approach as the original single-tenant app."""
+    avatar_files = [f"user{i}.jpeg" for i in range(1, 7)]
+    imgs_html = ""
+    base_dir = os.path.dirname(os.path.dirname(__file__))  # project root
+    for fname in avatar_files:
+        path = os.path.join(base_dir, "assets", "avatars", fname)
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                encoded = base64.b64encode(f.read()).decode()
+                imgs_html += (
+                    f'<img src="data:image/jpeg;base64,{encoded}" '
+                    f'class="sp-avatar" alt="cohort member" />'
+                )
+    return imgs_html
+
+
+def _show_hero(badge_text: str, show_extras: bool = True):
     apply_css()
-
-    # 1. Inject CSS into the main Streamlit DOM via st.markdown
-    #    (st.markdown <style> tags reach the real page DOM, unlike st.html iframes)
     st.markdown(LAB_CSS, unsafe_allow_html=True)
-
-    # 2. Inject the SVG via a script that appends it to the parent page's body.
-    #    st.html() runs inside a sandboxed iframe — position:fixed inside an
-    #    iframe is fixed to the iframe, not the page. The script uses
-    #    window.parent.document to escape the iframe and insert the SVG directly
-    #    into the real DOM, where position:fixed works as expected.
     st.html(LAB_SVG_INJECTOR)
 
-    # 3. Hero — plain markdown, CSS classes already injected above
-    st.markdown("""
+    st.markdown(f"""
     <div class="lp-hero">
       <div class="lp-wordmark">
         <span style="color:#FFD700;">Crea8it</span><span style="color:#00B4D8;"> Lab</span>
@@ -364,30 +246,17 @@ def show():
         Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
       </div>
       <div class="lp-badge">
-        <span class="lp-badge-dot">●</span> Cohort 1 is open
-        <span class="lp-badge-dot">●</span> 6 weeks
+        <span class="lp-badge-dot">●</span> {badge_text}
       </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 4. Icon strip
+    if not show_extras:
+        return
+
     st.markdown(ICON_STRIP_HTML, unsafe_allow_html=True)
 
-    # 5. Avatar strip — build img tags, inject via markdown
-    avatar_files = [f"user{i}.jpeg" for i in range(1, 7)]
-    imgs_html = ""
-    for fname in avatar_files:
-        path = os.path.join("assets", "avatars", fname)
-        if os.path.exists(path):
-            with open(path, "rb") as f:
-                ext = fname.rsplit(".", 1)[-1].lower()
-                mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
-                encoded = base64.b64encode(f.read()).decode()
-                imgs_html += (
-                    f'<img src="data:{mime};base64,{encoded}" '
-                    f'class="sp-avatar" alt="cohort member" />'
-                )
-
+    imgs_html = _avatar_strip_html()
     if imgs_html:
         st.markdown(f"""
         <div class="sp-section">
@@ -405,209 +274,166 @@ def show():
         </div>
         """, unsafe_allow_html=True)
 
-    # ── Registration & Login expander ──────────────────────
-    with st.expander("Get Started Here👇: Registration & Login 🔐", expanded=False):
 
-        tab_register, tab_login = st.tabs(
-            ["✦ New Registration", "→ Already Registered"]
-        )
-
-        # ── REGISTRATION TAB ──
-        with tab_register:
-            st.markdown("""
-            <div class="alert-warn" style="margin:16px 0 20px;">
-              <strong>How to join a Program:</strong>
-              Fill your biodata and the Program Registration Code
-              issued to you and sign up to unlock your 6-week program.
-            </div>
-            """, unsafe_allow_html=True)
-
-            with st.form("registration_form"):
-                col1, col2 = st.columns(2)
-                with col1:
-                    full_name = st.text_input("Full Name")
-                with col2:
-                    email = st.text_input("Email Address")
-
-                col3, col4 = st.columns(2)
-                with col3:
-                    phone = st.text_input("WhatsApp Number", placeholder="+2348012345678")
-                with col4:
-                    cohort_type = st.selectbox(
-                        "Which best describes you?",
-                        ["Student", "Graduate / Job seeker", "Career pivoter"]
-                    )
-
-                col5, col6 = st.columns(2)
-                with col5:
-                    new_password = st.text_input("Create Password", type="password")
-                with col6:
-                    confirm_password = st.text_input("Confirm Password", type="password")
-
-                payment_code = st.text_input("Payment Code", placeholder="Enter your program code")
-                submitted = st.form_submit_button("Create My Account →", use_container_width=True)
-
-            if submitted:
-                if not all([full_name, email, phone, payment_code, new_password, confirm_password]):
-                    st.error("Please fill in all fields.")
-                    return
-
-                if len(new_password) < 6:
-                    st.error("Password should be at least 6 characters.")
-                    return
-
-                if new_password != confirm_password:
-                    st.error("Passwords don't match.")
-                    return
-
-                if get_participant(email.strip().lower()):
-                    st.warning("Email already registered — use the login tab.")
-                    return
-
-                with st.spinner("Verifying payment code..."):
-                    if not is_valid_code(payment_code.strip()):
-                        st.error(
-                            "Invalid or already used payment code. "
-                            "Check your receipt or contact support."
-                        )
-                        return
-
-                with st.spinner("Setting up your account..."):
-                    register_participant({
-                        "full_name":     full_name.strip(),
-                        "email":         email.strip().lower(),
-                        "phone":         phone.strip(),
-                        "cohort_type":   cohort_type,
-                        "payment_code":  payment_code.strip(),
-                        "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "password_hash": hash_password(new_password),
-                    })
-
-                st.success(
-                    f"Welcome, {full_name.split()[0]}! "
-                    f"Your {PROGRAM_NAME} account is ready."
-                )
-                login_after_registration(email.strip().lower())
-                st.rerun()
-
-        # ── LOGIN TAB ──
-        with tab_login:
-            if "login_stage" not in st.session_state:
-                st.session_state["login_stage"] = "email"
-
-            # Step 1: email only
-            if st.session_state["login_stage"] == "email":
-                st.markdown("""
-                <p style="color:#8BA0B8;font-size:0.88rem;margin:16px 0 20px;line-height:1.6;">
-                  Enter the email you registered with to continue.
-                </p>
-                """, unsafe_allow_html=True)
-
-                with st.form("login_email_form"):
-                    login_email_input = st.text_input("Your Registered Email Address")
-                    continue_btn = st.form_submit_button("Continue →", use_container_width=True)
-
-                if continue_btn:
-                    email_clean = login_email_input.strip().lower()
-                    if not email_clean:
-                        st.error("Please enter your email address.")
-                    else:
-                        pw_set = has_password_set(email_clean)
-                        if pw_set is None:
-                            st.error(
-                                "No account found with that email. "
-                                "Please register first, or check for a typo."
-                            )
-                        else:
-                            st.session_state["login_email"] = email_clean
-                            st.session_state["login_stage"] = "password" if pw_set else "set_password"
-                            st.rerun()
-
-            # Step 2a: returning user, has a password already
-            elif st.session_state["login_stage"] == "password":
-                st.caption(f"Welcome back — logging in as **{st.session_state['login_email']}**")
-                with st.form("login_password_form"):
-                    login_password = st.text_input("Password", type="password")
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        login_btn = st.form_submit_button("Access My Dashboard →", use_container_width=True)
-                    with c2:
-                        back_btn = st.form_submit_button("← Use a different email", use_container_width=True)
-
-                if back_btn:
-                    st.session_state.pop("login_stage", None)
-                    st.session_state.pop("login_email", None)
-                    st.rerun()
-
-                if login_btn:
-                    if not login_password:
-                        st.error("Please enter your password.")
-                    else:
-                        with st.spinner("Logging in..."):
-                            ok = login_participant(st.session_state["login_email"], login_password)
-                        if ok:
-                            st.session_state.pop("login_stage", None)
-                            st.session_state.pop("login_email", None)
-                            st.rerun()
-                        else:
-                            st.error("Incorrect password. Please try again.")
-
-            # Step 2b: legacy account, no password on file yet —
-            # verify WhatsApp number on file, then let them set one
-            elif st.session_state["login_stage"] == "set_password":
-                st.markdown("""
-                <div class="alert-warn" style="margin:16px 0 20px;">
-                  <strong>First time logging in with a password?</strong>
-                  Confirm the WhatsApp number you registered with, then
-                  choose a password you'll use from now on.
-                </div>
-                """, unsafe_allow_html=True)
-                st.caption(f"Setting up a password for **{st.session_state['login_email']}**")
-
-                with st.form("set_password_form"):
-                    confirm_phone = st.text_input(
-                        "Your Registered WhatsApp Number", placeholder="+2348012345678"
-                    )
-                    set_pw = st.text_input("Choose a Password", type="password")
-                    set_pw_confirm = st.text_input("Confirm Password", type="password")
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        set_btn = st.form_submit_button("Set Password & Log In →", use_container_width=True)
-                    with c2:
-                        back_btn2 = st.form_submit_button("← Use a different email", use_container_width=True)
-
-                if back_btn2:
-                    st.session_state.pop("login_stage", None)
-                    st.session_state.pop("login_email", None)
-                    st.rerun()
-
-                if set_btn:
-                    if not all([confirm_phone, set_pw, set_pw_confirm]):
-                        st.error("Please fill in all fields.")
-                    elif len(set_pw) < 6:
-                        st.error("Password should be at least 6 characters.")
-                    elif set_pw != set_pw_confirm:
-                        st.error("Passwords don't match.")
-                    else:
-                        with st.spinner("Setting up your password..."):
-                            ok = first_time_set_password(
-                                st.session_state["login_email"], confirm_phone.strip(), set_pw
-                            )
-                        if ok:
-                            st.session_state.pop("login_stage", None)
-                            st.session_state.pop("login_email", None)
-                            st.rerun()
-                        else:
-                            st.error(
-                                "That WhatsApp number doesn't match our records. "
-                                "Please check it, or contact support if you're stuck."
-                            )
-
-    # ── Trust strip ─────────────────────────────────────────
+def _trust_strip():
     st.markdown("""
     <div class="lp-trust-strip">
-      <div class="lp-trust-item"><span class="lp-check">✓</span> No password needed</div>
       <div class="lp-trust-item"><span class="lp-check">✓</span> Secure code access</div>
-      <div class="lp-trust-item"><span class="lp-check">✓</span> 6-week program</div>
+      <div class="lp-trust-item"><span class="lp-check">✓</span> Multi-cohort platform</div>
+      <div class="lp-trust-item"><span class="lp-check">✓</span> Built for builders</div>
     </div>
     """, unsafe_allow_html=True)
+
+
+def show_join():
+    _show_hero("Join with your organization's code")
+
+    st.markdown("""
+    <div class="alert-warn" style="margin:16px 0 20px;">
+      <strong>How to join a program:</strong>
+      Your cohort admin gave you an organization code when you paid or
+      were accepted. Enter it below along with your details to create
+      your account.
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("join_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            full_name = st.text_input("Full Name")
+        with col2:
+            email = st.text_input("Email Address")
+
+        col3, col4 = st.columns(2)
+        with col3:
+            whatsapp = st.text_input("WhatsApp Number", placeholder="+2348012345678")
+        with col4:
+            org_code = st.text_input("Organization Code", placeholder="e.g. AICRE4821")
+
+        col5, col6 = st.columns(2)
+        with col5:
+            new_password = st.text_input("Create Password", type="password")
+        with col6:
+            confirm_password = st.text_input("Confirm Password", type="password")
+
+        payment_code = st.text_input("Payment / access code (leave blank if none required)", value="")
+        submitted = st.form_submit_button("Create My Account →", use_container_width=True)
+
+    if submitted:
+        if not all([full_name, email, whatsapp, org_code, new_password, confirm_password]):
+            st.error("Please fill in all required fields.")
+            return
+        if len(new_password) < 6:
+            st.error("Password should be at least 6 characters.")
+            return
+        if new_password != confirm_password:
+            st.error("Passwords don't match.")
+            return
+
+        with st.spinner("Checking organization code..."):
+            if not is_valid_org_code(org_code):
+                st.error("That organization code isn't valid or is no longer active. "
+                          "Double-check it with your cohort admin.")
+                return
+
+        with st.spinner("Setting up your account..."):
+            try:
+                join_organization(
+                    org_code=org_code,
+                    full_name=full_name.strip(),
+                    whatsapp=whatsapp.strip(),
+                    email=email.strip().lower(),
+                    password=new_password,
+                    payment_code=payment_code.strip() or None,
+                )
+            except Exception as e:
+                st.error(f"Couldn't complete registration: {e}")
+                return
+
+        st.success(f"Welcome, {full_name.split()[0]}! Your account is ready — please log in.")
+
+    _trust_strip()
+
+
+def show_org_signup():
+    _show_hero("Start your own cohort on Crea8it", show_extras=False)
+
+    st.markdown("""
+    <div class="alert-warn" style="margin:16px 0 20px;">
+      <strong>Run your own program.</strong>
+      This creates your organization and admin login. You'll get a
+      unique organization code to share with your participants —
+      your WhatsApp contact is shown to them so they can reach you
+      directly.
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("org_signup_form"):
+        org_name = st.text_input("Organization / cohort name")
+        col1, col2 = st.columns(2)
+        with col1:
+            admin_name = st.text_input("Your name")
+        with col2:
+            admin_whatsapp = st.text_input("Your WhatsApp number", placeholder="+2348012345678")
+        admin_email = st.text_input("Your email")
+        col3, col4 = st.columns(2)
+        with col3:
+            password = st.text_input("Create Password", type="password")
+        with col4:
+            confirm_password = st.text_input("Confirm Password", type="password")
+        submitted = st.form_submit_button("Create My Organization →", use_container_width=True)
+
+    if submitted:
+        if not all([org_name, admin_name, admin_whatsapp, admin_email, password, confirm_password]):
+            st.error("Please fill in every field.")
+            return
+        if len(password) < 6:
+            st.error("Password should be at least 6 characters.")
+            return
+        if password != confirm_password:
+            st.error("Passwords don't match.")
+            return
+
+        with st.spinner("Creating your organization..."):
+            try:
+                result = register_organization(org_name.strip(), admin_name.strip(),
+                                                admin_whatsapp.strip(), admin_email.strip().lower(),
+                                                password)
+            except Exception as e:
+                st.error(f"Couldn't create your organization: {e}")
+                return
+
+        st.success(
+            f"Organization created! Your join code is **{result['org_code']}** — "
+            f"share this with participants so they can register. You're logged in now."
+        )
+        st.rerun()
+
+    _trust_strip()
+
+
+def show_login():
+    _show_hero("Welcome back", show_extras=False)
+
+    with st.form("login_form"):
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Log in →", use_container_width=True)
+
+    if submitted:
+        if not email or not password:
+            st.error("Please enter both your email and password.")
+            return
+        with st.spinner("Logging in..."):
+            try:
+                sign_in(email.strip().lower(), password)
+            except Exception:
+                st.error("Incorrect email or password. Please try again.")
+                return
+        st.rerun()
+
+    _trust_strip()
+
+
+def show():
+    show_join()
