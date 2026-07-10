@@ -215,8 +215,6 @@ ICON_STRIP_HTML = """
 
 
 def _avatar_strip_html() -> str:
-    """Base64-embeds the local avatar images so the strip doesn't depend on
-    external hosting — same approach as the original single-tenant app."""
     avatar_files = [f"user{i}.jpeg" for i in range(1, 7)]
     imgs_html = ""
     base_dir = os.path.dirname(os.path.dirname(__file__))  # project root
@@ -232,68 +230,16 @@ def _avatar_strip_html() -> str:
     return imgs_html
 
 
-def _show_hero(badge_text: str, show_extras: bool = True):
-    apply_css()
-    st.markdown(LAB_CSS, unsafe_allow_html=True)
-    st.html(LAB_SVG_INJECTOR)
+# ═══════════════════════════════════════════════════════════════
+# Tab 1: Participant joins an existing org via org_code
+# ═══════════════════════════════════════════════════════════════
 
-    st.markdown(f"""
-    <div class="lp-hero">
-      <div class="lp-wordmark">
-        <span style="color:#FFD700;">Crea8it</span><span style="color:#00B4D8;"> Lab</span>
-      </div>
-      <div class="lp-tagline">
-        Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
-      </div>
-      <div class="lp-badge">
-        <span class="lp-badge-dot">●</span> {badge_text}
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if not show_extras:
-        return
-
-    st.markdown(ICON_STRIP_HTML, unsafe_allow_html=True)
-
-    imgs_html = _avatar_strip_html()
-    if imgs_html:
-        st.markdown(f"""
-        <div class="sp-section">
-          <div class="sp-wrap">
-            <div class="sp-avatars">{imgs_html}</div>
-            <div class="sp-text">
-              <span><span class="sp-dot"></span>Used by 100+ Builders</span>
-            </div>
-          </div>
-          <p class="sp-blurb">
-            Join the builders turning
-            <span style="color:#FFD700;">ideas into real products, careers, and startups</span>
-            — from scratch, with grit and resilience, in the most creative way.
-          </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-def _trust_strip():
-    st.markdown("""
-    <div class="lp-trust-strip">
-      <div class="lp-trust-item"><span class="lp-check">✓</span> Secure code access</div>
-      <div class="lp-trust-item"><span class="lp-check">✓</span> Multi-cohort platform</div>
-      <div class="lp-trust-item"><span class="lp-check">✓</span> Built for builders</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-def show_join():
-    _show_hero("Join with your organization's code")
-
+def _join_tab():
     st.markdown("""
     <div class="alert-warn" style="margin:16px 0 20px;">
-      <strong>How to join a program:</strong>
-      Your cohort admin gave you an organization code when you paid or
-      were accepted. Enter it below along with your details to create
-      your account.
+      <strong>How to join a Program:</strong>
+      Fill your biodata and the Organization Code issued by your
+      cohort admin to unlock your program.
     </div>
     """, unsafe_allow_html=True)
 
@@ -316,8 +262,8 @@ def show_join():
         with col6:
             confirm_password = st.text_input("Confirm Password", type="password")
 
-        payment_code = st.text_input("Payment / access code (leave blank if none required)", value="")
-        submitted = st.form_submit_button("Create My Account →", use_container_width=True)
+        payment_code = st.text_input("Payment Code (leave blank if none required)", value="")
+        submitted = st.form_submit_button("Create My Account →", width='stretch')
 
     if submitted:
         if not all([full_name, email, whatsapp, org_code, new_password, confirm_password]):
@@ -347,17 +293,22 @@ def show_join():
                     payment_code=payment_code.strip() or None,
                 )
             except Exception as e:
-                st.error(f"Couldn't complete registration: {e}")
+                msg = str(e)
+                if "Invalid or already-used payment code" in msg:
+                    st.error("That payment code isn't valid or has already been used.")
+                else:
+                    st.error(f"Couldn't complete registration: {e}")
                 return
 
-        st.success(f"Welcome, {full_name.split()[0]}! Your account is ready — please log in.")
+        st.success(f"Welcome, {full_name.split()[0]}! Your account is ready — switch to "
+                   f"'Already Registered' to log in.")
 
-    _trust_strip()
 
+# ═══════════════════════════════════════════════════════════════
+# Tab 2: New cohort operator starts their own organization
+# ═══════════════════════════════════════════════════════════════
 
-def show_org_signup():
-    _show_hero("Start your own cohort on Crea8it", show_extras=False)
-
+def _start_cohort_tab():
     st.markdown("""
     <div class="alert-warn" style="margin:16px 0 20px;">
       <strong>Run your own program.</strong>
@@ -381,7 +332,7 @@ def show_org_signup():
             password = st.text_input("Create Password", type="password")
         with col4:
             confirm_password = st.text_input("Confirm Password", type="password")
-        submitted = st.form_submit_button("Create My Organization →", use_container_width=True)
+        submitted = st.form_submit_button("Create My Organization →", width='stretch')
 
     if submitted:
         if not all([org_name, admin_name, admin_whatsapp, admin_email, password, confirm_password]):
@@ -409,16 +360,16 @@ def show_org_signup():
         )
         st.rerun()
 
-    _trust_strip()
 
+# ═══════════════════════════════════════════════════════════════
+# Tab 3: Everyone logs in here (super_admin / org_admin / participant)
+# ═══════════════════════════════════════════════════════════════
 
-def show_login():
-    _show_hero("Welcome back", show_extras=False)
-
+def _login_tab():
     with st.form("login_form"):
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Log in →", use_container_width=True)
+        submitted = st.form_submit_button("Log in →", width='stretch')
 
     if submitted:
         if not email or not password:
@@ -432,8 +383,67 @@ def show_login():
                 return
         st.rerun()
 
-    _trust_strip()
 
+# ═══════════════════════════════════════════════════════════════
+# Full landing page — matches the original single-tenant layout:
+# hero + icon strip + avatar strip once, then one expander with tabs
+# ═══════════════════════════════════════════════════════════════
 
 def show():
-    show_join()
+    apply_css()
+    st.markdown(LAB_CSS, unsafe_allow_html=True)
+    st.html(LAB_SVG_INJECTOR)
+
+    st.markdown("""
+    <div class="lp-hero">
+      <div class="lp-wordmark">
+        <span style="color:#FFD700;">Crea8it</span><span style="color:#00B4D8;"> Lab</span>
+      </div>
+      <div class="lp-tagline">
+        Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
+      </div>
+      <div class="lp-badge">
+        <span class="lp-badge-dot">●</span> Multi-cohort platform
+        <span class="lp-badge-dot">●</span> Open now
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(ICON_STRIP_HTML, unsafe_allow_html=True)
+
+    imgs_html = _avatar_strip_html()
+    if imgs_html:
+        st.markdown(f"""
+        <div class="sp-section">
+          <div class="sp-wrap">
+            <div class="sp-avatars">{imgs_html}</div>
+            <div class="sp-text">
+              <span><span class="sp-dot"></span>Used by 100+ Builders</span>
+            </div>
+          </div>
+          <p class="sp-blurb">
+            Join the builders turning
+            <span style="color:#FFD700;">ideas into real products, careers, and startups</span>
+            — from scratch, with grit and resilience, in the most creative way.
+          </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with st.expander("Get Started Here👇: Registration & Login 🔐", expanded=False):
+        tab_join, tab_start, tab_login = st.tabs(
+            ["✦ New Registration", "🚀 Start a Cohort", "→ Already Registered"]
+        )
+        with tab_join:
+            _join_tab()
+        with tab_start:
+            _start_cohort_tab()
+        with tab_login:
+            _login_tab()
+
+    st.markdown("""
+    <div class="lp-trust-strip">
+      <div class="lp-trust-item"><span class="lp-check">✓</span> Secure code access</div>
+      <div class="lp-trust-item"><span class="lp-check">✓</span> Multi-cohort platform</div>
+      <div class="lp-trust-item"><span class="lp-check">✓</span> Built for builders</div>
+    </div>
+    """, unsafe_allow_html=True)

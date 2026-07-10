@@ -1,574 +1,261 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
-from utils.auth import login_admin, is_admin, logout
-from utils.sheets import (
-    get_all_participants, get_all_progress, get_active_week, set_active_week,
-    get_prompt, set_prompt, get_all_reflections, get_all_feedback, save_feedback,
-    get_all_programs, create_program, delete_program,
+from utils.db import (
+    get_current_profile, logout, get_all_programs, create_program, delete_program,
+    set_active_program, get_active_program, get_active_week, set_active_week,
     get_program_weeks, save_program_week, delete_week_from_program,
-    get_active_program_id_live, set_active_program,
-    get_active_unit_label_live,
-    wipe_all_progress,
-    get_last_active_map,
-    set_participant_password,
+    get_prompt, set_prompt, get_all_participants, get_last_active_map,
+    get_all_reflections, save_feedback, wipe_all_progress,
+    create_payment_codes, get_org_payment_codes, get_my_organization,
 )
 from utils.notify import build_whatsapp_link
-from config import PROGRAM_NAME
-import uuid
+from utils.theme import page_header, subheading
 
-
-# ── Persistent flash messages ──────────────────────────────────
-# st.success/warning/error vanish on rerun. These helpers store the
-# message in session_state so it survives the rerun after a save,
-# then clears itself after being displayed once.
 
 def _flash(key: str, kind: str, msg: str):
-    """Queue a message to display on the next render."""
     st.session_state[f"_flash_{key}"] = (kind, msg)
 
 
 def _show_flash(key: str):
-    """Render and consume a queued flash message if one exists."""
     fkey = f"_flash_{key}"
     if fkey in st.session_state:
         kind, msg = st.session_state.pop(fkey)
-        if kind == "success":
-            st.success(msg)
-        elif kind == "warning":
-            st.warning(msg)
-        elif kind == "error":
-            st.error(msg)
-        elif kind == "info":
-            st.info(msg)
+        getattr(st, kind)(msg)
 
 
 def show():
-    if not is_admin():
-        _admin_login()
-        return
+    profile = get_current_profile()
+    if not profile:
+        st.error("Session expired. Please log in again.")
+        st.stop()
 
-    st.markdown("## Admin panel")
-    st.caption("Crea8it — Program Management")
+    org_id = profile["org_id"]
 
-    if st.button("Log out"):
-        logout()
-        st.rerun()
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        page_header("🧩 Cohort admin", f"Logged in as {profile['full_name']}")
+    with col2:
+        st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
+        if st.button("Log out"):
+            logout()
+            st.rerun()
 
-    st.divider()
+    org = get_my_organization(org_id)
+    if org:
+        st.markdown(f"""
+<div style="background:rgba(0,180,216,0.08);border:1px solid #00B4D8;
+            border-radius:10px;padding:14px 18px;margin:4px 0 20px;
+            display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+  <div>
+    <span style="color:#8BA0B8;font-size:0.8rem;">Your organization code — share this with participants</span><br>
+    <span style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:700;color:#00B4D8;
+                 letter-spacing:0.08em;">{org['org_code']}</span>
+  </div>
+  <div style="color:#4A6080;font-size:0.75rem;">{org['name']}</div>
+</div>
+""", unsafe_allow_html=True)
 
-    # Resolve active program
-    active_pid   = get_active_program_id_live()
-    unit_label   = get_active_unit_label_live() or "Week"
-    all_programs = get_all_programs()
-    prog_map     = {p["program_id"]: p for p in all_programs}
-    active_prog  = prog_map.get(active_pid)
-    PROGRAM_WEEKS = get_program_weeks(active_pid) if active_pid else {}
-    TOTAL_UNITS   = len(PROGRAM_WEEKS)
+    tab_programs, tab_content, tab_members, tab_reflections, tab_codes = st.tabs(
+        ["📚 Programs", "📝 Week content", "👥 Members", "💬 Reflections", "🔑 Payment codes"]
+    )
 
-    tab_programs, tab_overview, tab_participants, tab_engagement, tab_prompts, tab_reflections, tab_content, tab_control = st.tabs([
-        "🗂 Programs", "Overview", "Participants", "Engagement", "Prompts", "Reflections", "📚 Content", "Cohort control"
-    ])
-
-    # ── Programs ──────────────────────────────────────────────
+    # ═══════════════════════════════════════════════════════════
+    # Programs
+    # ═══════════════════════════════════════════════════════════
     with tab_programs:
         _show_flash("programs")
-        st.markdown("### Programs")
-        st.caption("Create programs, set one as active, delete old ones.")
+        programs = get_all_programs(org_id)
 
-        if active_prog:
-            st.success(f"**Active program:** {active_prog['name']}  ·  unit: **{active_prog['unit_label']}**")
-        else:
-            st.warning("No active program set. Create one below and activate it.")
+        subheading("Create a new program", color="var(--teal)")
+        with st.form("create_program_form"):
+            name = st.text_input("Program name")
+            unit_label = st.text_input("Unit label", value="Week", help="e.g. 'Week', 'Module', 'Sprint'")
+            submitted = st.form_submit_button("Create program")
+        if submitted and name.strip():
+            create_program(org_id, name.strip(), unit_label.strip() or "Week")
+            _flash("programs", "success", f"Program '{name}' created.")
+            st.rerun()
 
         st.divider()
+        subheading("Your programs", color="var(--gold)")
+        if not programs:
+            st.info("No programs yet — create one above.")
+        for p in programs:
+            with st.expander(f"{'🟢 ' if p['is_active'] else ''}{p['name']} ({p['unit_label']})"):
+                st.write(f"Active week: **{p['active_week']}**")
+                col_a, col_b, col_c = st.columns(3)
+                with col_a:
+                    if not p["is_active"] and st.button("Set as active program", key=f"activate_{p['id']}"):
+                        set_active_program(org_id, p["id"])
+                        st.rerun()
+                with col_b:
+                    new_week = st.number_input("Set active week", min_value=1, value=p["active_week"],
+                                               key=f"week_input_{p['id']}")
+                    if st.button("Update active week", key=f"update_week_{p['id']}"):
+                        set_active_week(p["id"], int(new_week))
+                        _flash("programs", "success", "Active week updated.")
+                        st.rerun()
+                with col_c:
+                    if st.button("Delete program", key=f"delete_{p['id']}", type="secondary"):
+                        delete_program(p["id"])
+                        _flash("programs", "warning", f"Program '{p['name']}' deleted.")
+                        st.rerun()
 
-        with st.expander("➕ Create new program", expanded=not all_programs):
-            p_name  = st.text_input("Program name", placeholder="e.g. Crea8it AI Career Launch", key="new_prog_name")
-            p_unit  = st.text_input("Unit label", placeholder="Week / Day / Module / Session / Sprint",
-                                    value="Week", key="new_prog_unit")
-            if st.button("Create program", key="create_prog", type="primary"):
-                if not p_name.strip():
-                    st.warning("Program name is required.")
-                elif not p_unit.strip():
-                    st.warning("Unit label is required.")
+    # ═══════════════════════════════════════════════════════════
+    # Week content editor
+    # ═══════════════════════════════════════════════════════════
+    with tab_content:
+        _show_flash("content")
+        programs = get_all_programs(org_id)
+        if not programs:
+            st.info("Create a program first.")
+        else:
+            program_names = {p["id"]: p["name"] for p in programs}
+            selected_pid = st.selectbox("Program", list(program_names.keys()),
+                                        format_func=lambda pid: program_names[pid])
+
+            weeks = get_program_weeks(selected_pid)
+            existing_week_nums = sorted(weeks.keys())
+            week_num = st.number_input("Week / unit number", min_value=1,
+                                       value=(max(existing_week_nums) + 1) if existing_week_nums else 1)
+
+            current = weeks.get(int(week_num), {"title": "", "theme": "", "materials": [], "tasks": []})
+
+            with st.form(f"content_form_{week_num}"):
+                title = st.text_input("Title", value=current["title"])
+                theme = st.text_input("Theme", value=current["theme"])
+
+                st.caption("Materials (one per line, format: `type|label`, e.g. `video|Intro to prompting`)")
+                materials_raw = st.text_area(
+                    "Materials", height=100,
+                    value="\n".join(f"{m['type']}|{m['label']}" for m in current["materials"])
+                )
+
+                st.caption("Tasks (one per line)")
+                tasks_raw = st.text_area("Tasks", height=120, value="\n".join(current["tasks"]))
+
+                prompt_val = st.text_area(
+                    "Reflection prompt (shown once all tasks for this week are done)",
+                    value=get_prompt(selected_pid, int(week_num)), height=80
+                )
+
+                save_btn = st.form_submit_button("Save week content")
+
+            if save_btn:
+                materials = []
+                for line in materials_raw.splitlines():
+                    if "|" in line:
+                        t, label = line.split("|", 1)
+                        materials.append({"type": t.strip(), "label": label.strip()})
+                tasks = [t.strip() for t in tasks_raw.splitlines() if t.strip()]
+
+                save_program_week(org_id, selected_pid, int(week_num), title.strip(),
+                                  theme.strip(), materials, tasks)
+                set_prompt(org_id, selected_pid, int(week_num), prompt_val)
+                _flash("content", "success", f"Week {int(week_num)} saved.")
+                st.rerun()
+
+            if int(week_num) in weeks:
+                if st.button("Delete this week", type="secondary"):
+                    delete_week_from_program(selected_pid, int(week_num))
+                    _flash("content", "warning", f"Week {int(week_num)} deleted.")
+                    st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Members
+    # ═══════════════════════════════════════════════════════════
+    with tab_members:
+        members = get_all_participants(org_id)
+        last_active = get_last_active_map(org_id)
+
+        subheading(f"Members ({len(members)})", color="var(--teal)")
+        if not members:
+            st.info("No participants have joined yet. Share your organization code with them.")
+        for m in members:
+            la = last_active.get(m["id"], "never")
+            with st.container(border=True):
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"**{m['full_name']}**")
+                    st.caption(f"{m['email']} · {m.get('whatsapp','')}")
+                    st.caption(f"Last active: {la}")
+                with col2:
+                    link = build_whatsapp_link(m.get("whatsapp", ""),
+                                               f"Hi {m['full_name'].split()[0]}, checking in on your progress!")
+                    if link:
+                        st.link_button("WhatsApp", link, width='stretch')
+
+        active_program = get_active_program(org_id)
+        if active_program:
+            st.divider()
+            if st.button("⚠️ Wipe all progress for this program", type="secondary"):
+                st.session_state["_confirm_wipe"] = True
+            if st.session_state.get("_confirm_wipe"):
+                st.warning("This deletes ALL progress and reflections for the active program. This can't be undone.")
+                if st.button("Yes, permanently wipe it"):
+                    wipe_all_progress(org_id, active_program["id"])
+                    st.session_state.pop("_confirm_wipe", None)
+                    st.success("Progress wiped.")
+                    st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Reflections review
+    # ═══════════════════════════════════════════════════════════
+    with tab_reflections:
+        active_program = get_active_program(org_id)
+        if not active_program:
+            st.info("No active program set.")
+        else:
+            reflections = get_all_reflections(org_id, active_program["id"])
+            if not reflections:
+                st.info("No reflections submitted yet.")
+            for r in sorted(reflections, key=lambda x: (x["week"], x.get("profiles", {}).get("full_name", ""))):
+                person = r.get("profiles") or {}
+                with st.expander(f"Week {r['week']} — {person.get('full_name', 'Unknown')}"):
+                    st.write(r["response"])
+                    fb_key = f"fb_{r['id']}"
+                    feedback_val = st.text_area("Your feedback", value=r.get("feedback") or "", key=fb_key)
+                    if st.button("Save feedback", key=f"save_{r['id']}"):
+                        save_feedback(r["id"], feedback_val)
+                        st.success("Feedback saved.")
+                        st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Payment codes
+    # ═══════════════════════════════════════════════════════════
+    with tab_codes:
+        subheading("Generate payment/access codes", color="var(--gold)")
+        st.caption("Optional — leave this empty if participants can join with just your organization code.")
+        with st.form("add_codes_form", clear_on_submit=True):
+            codes_raw = st.text_area("New codes (one per line)", height=100)
+            submitted = st.form_submit_button("Add codes")
+
+        if submitted:
+            if not codes_raw.strip():
+                st.warning("Enter at least one code first.")
+            else:
+                try:
+                    create_payment_codes(org_id, codes_raw.splitlines())
+                except Exception as e:
+                    st.error(f"Couldn't add codes: {e}")
                 else:
-                    new_id = str(uuid.uuid4())[:8]
-                    create_program(new_id, p_name.strip(), p_unit.strip(),
-                                   datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                    _flash("programs", "success", f"✅ Program '{p_name.strip()}' created (ID: {new_id})")
+                    st.success("Codes added.")
                     st.rerun()
 
         st.divider()
+        codes = get_org_payment_codes(org_id)
+        used = sum(1 for c in codes if c["used"])
+        st.write(f"**{len(codes)}** total codes, **{used}** used, **{len(codes) - used}** remaining.")
 
-        if not all_programs:
-            st.info("No programs yet. Create one above.")
+        # Deliberately NOT using st.dataframe() here — it routes through
+        # pandas/pyarrow for Arrow serialization, and that native code path
+        # has been unstable on some very new Python builds (segfaults seen
+        # on Python 3.14 + pyarrow 25.x). A plain markdown table avoids that
+        # dependency entirely for what's just a short list of codes.
+        if codes:
+            rows = "".join(
+                f"| `{c['code']}` | {'✅ used' if c['used'] else '⬜ available'} |\n"
+                for c in codes
+            )
+            st.markdown(f"| Code | Status |\n|---|---|\n{rows}")
         else:
-            for prog in all_programs:
-                pid   = prog["program_id"]
-                pname = prog["name"]
-                punit = prog["unit_label"]
-                is_active = pid == active_pid
-
-                col_info, col_activate, col_delete = st.columns([4, 2, 1])
-                with col_info:
-                    badge = "🟢 **ACTIVE**  " if is_active else ""
-                    st.markdown(f"{badge}**{pname}**  ·  unit: *{punit}*  ·  `{pid}`")
-                with col_activate:
-                    if not is_active:
-                        if st.button("Set active", key=f"activate_{pid}", type="primary"):
-                            try:
-                                set_active_program(pid, punit)
-                                _flash("programs", "success", f"✅ '{pname}' is now active.")
-                            except Exception as e:
-                                _flash("programs", "error", f"❌ Failed to activate: {e}")
-                            st.rerun()
-                with col_delete:
-                    if st.button("🗑️", key=f"del_prog_{pid}"):
-                        st.session_state[f"confirm_del_prog_{pid}"] = True
-                    if st.session_state.get(f"confirm_del_prog_{pid}"):
-                        st.warning(f"Delete **{pname}**? This removes all its content permanently.")
-                        c1, c2 = st.columns(2)
-                        with c1:
-                            if st.button("Yes, delete", key=f"confirm_del_prog_yes_{pid}", type="primary"):
-                                delete_program(pid)
-                                st.session_state.pop(f"confirm_del_prog_{pid}", None)
-                                _flash("programs", "success", f"✅ Program '{pname}' deleted.")
-                                st.rerun()
-                        with c2:
-                            if st.button("Cancel", key=f"confirm_del_prog_no_{pid}"):
-                                st.session_state.pop(f"confirm_del_prog_{pid}", None)
-                                st.rerun()
-                st.divider()
-
-    # ── Overview ──────────────────────────────────────────────
-    with tab_overview:
-        if not active_prog:
-            st.info("No active program. Set one in the Programs tab.")
-        else:
-            participants = get_all_participants()
-            active_week  = get_active_week()
-            total = len(participants)
-            col1, col2, col3, col4 = st.columns(4)
-            col1.metric("Total registered", total)
-            col2.metric("Students", sum(1 for p in participants if p.get("cohort_type") == "Student"))
-            col3.metric("Graduates", sum(1 for p in participants if p.get("cohort_type") == "Graduate / Job seeker"))
-            col4.metric("Pivoters", sum(1 for p in participants if p.get("cohort_type") == "Career pivoter"))
-            st.markdown("")
-            week_title = PROGRAM_WEEKS.get(active_week, {}).get("title", "—")
-            st.metric("Active unit", f"{unit_label} {active_week} — {week_title}")
-            st.info(f"💰 Estimated book revenue: **₦{total * 5000:,}** ({total} × ₦5,000)")
-
-    # ── Participants ──────────────────────────────────────────
-    with tab_participants:
-        st.markdown("### All registered participants")
-        participants = get_all_participants()
-        if participants:
-            last_active_map = get_last_active_map()
-            now = datetime.now()
-            for p in participants:
-                la = last_active_map.get(str(p.get("email", "")).strip().lower(), "")
-                p["last_active"] = la or "never"
-                if la:
-                    try:
-                        days = (now - datetime.strptime(la, "%Y-%m-%d %H:%M:%S")).days
-                        p["days_inactive"] = days
-                    except ValueError:
-                        p["days_inactive"] = "—"
-                else:
-                    p["days_inactive"] = "—"
-
-            df = pd.DataFrame(participants)
-            st.dataframe(df, use_container_width=True)
-            st.download_button("Export as CSV", df.to_csv(index=False).encode("utf-8"), "participants.csv", "text/csv")
-
-            # ── At-risk callout ────────────────────────────────
-            at_risk = [
-                p for p in participants
-                if isinstance(p.get("days_inactive"), int) and p["days_inactive"] >= 7
-            ]
-            if at_risk:
-                with st.expander(f"🚨 {len(at_risk)} builder(s) gone quiet (7+ days inactive)", expanded=False):
-                    for p in sorted(at_risk, key=lambda x: x["days_inactive"], reverse=True):
-                        c1, c2 = st.columns([3, 1])
-                        with c1:
-                            st.markdown(
-                                f"**{p['full_name']}** — {p['days_inactive']} days inactive "
-                                f"· last seen {p['last_active']}"
-                            )
-                        with c2:
-                            msg = (
-                                f"Hey {p['full_name'].split()[0]}, it's Abdul from Crea8it Lab 👋 "
-                                f"Noticed you've been quiet for a bit — everything good? "
-                                f"Happy to help if you're stuck on anything."
-                            )
-                            link = build_whatsapp_link(p.get("phone", ""), msg)
-                            if link:
-                                st.link_button("💬 Nudge on WhatsApp", link, use_container_width=True)
-        else:
-            st.info("No participants registered yet.")
-
-        # ── Password reset (only recovery path, since there's no email
-        # delivery infra) ────────────────────────────────────────────
-        if participants:
-            with st.expander("🔑 Reset a participant's password", expanded=False):
-                st.caption(
-                    "Clears their password. Next time they log in with their "
-                    "email, they'll be asked to confirm their WhatsApp number "
-                    "and choose a new password."
-                )
-                email_options = {
-                    f"{p['full_name']} ({p['email']})": p["email"] for p in participants
-                }
-                chosen = st.selectbox("Participant", list(email_options.keys()))
-                if st.button("Reset password", type="secondary"):
-                    try:
-                        set_participant_password(email_options[chosen], "")
-                        st.success(f"Password cleared for {chosen}. They can set a new one at next login.")
-                    except Exception as e:
-                        st.error(f"Couldn't reset password: {e}")
-
-    # ── Engagement ────────────────────────────────────────────
-    with tab_engagement:
-        st.markdown("### Task completion by unit")
-        progress     = get_all_progress()
-        participants = get_all_participants()
-        if progress and participants and PROGRAM_WEEKS:
-            rows = []
-            for p in participants:
-                row = {"Participant": p["full_name"]}
-                for w in sorted(PROGRAM_WEEKS.keys()):
-                    done  = sum(1 for r in progress if r.get("email") == p["email"] and int(r.get("week", 0)) == w)
-                    total = len(PROGRAM_WEEKS[w]["tasks"])
-                    row[f"{unit_label} {w}"] = f"{done}/{total}"
-                rows.append(row)
-            st.dataframe(pd.DataFrame(rows), use_container_width=True)
-        else:
-            st.info("No progress data yet.")
-
-    # ── Prompts ───────────────────────────────────────────────
-    with tab_prompts:
-        _show_flash("prompts")
-        st.markdown("### Reflection prompts")
-        st.caption("Write the question participants must answer after completing each unit's tasks.")
-        if not PROGRAM_WEEKS:
-            st.info("No content yet. Add units in the Content tab.")
-        else:
-            for w in sorted(PROGRAM_WEEKS.keys()):
-                with st.expander(f"{unit_label} {w} — {PROGRAM_WEEKS[w]['title']}", expanded=False):
-                    current = get_prompt(w)
-                    new_prompt = st.text_area("Reflection prompt", value=current,
-                                              placeholder="e.g. What was your biggest insight?",
-                                              key=f"prompt_input_{w}", height=100)
-                    if st.button("Save prompt", key=f"save_prompt_{w}", type="primary"):
-                        if new_prompt.strip():
-                            set_prompt(w, new_prompt.strip())
-                            _flash("prompts", "success", f"✅ {unit_label} {w} prompt saved.")
-                            st.rerun()
-                        else:
-                            st.warning("Prompt cannot be empty.")
-
-    # ── Reflections ───────────────────────────────────────────
-    with tab_reflections:
-        _show_flash("reflections")
-        st.markdown("### Participant reflections & feedback")
-        reflections  = get_all_reflections()
-        feedback_all = get_all_feedback()
-        participants = get_all_participants()
-
-        if not reflections:
-            st.info("No reflections submitted yet.")
-        else:
-            feedback_lookup = {
-                (str(r.get("email", "")).strip().lower(), int(r.get("week", 0))): r.get("feedback", "")
-                for r in feedback_all
-            }
-            participant_map = {p["email"].strip().lower(): p for p in participants}
-            sorted_refs = sorted(reflections, key=lambda r: (int(r.get("week", 0)), r.get("email", "")))
-
-            for ref in sorted_refs:
-                ref_email = str(ref.get("email", "")).strip().lower()
-                ref_week  = int(ref.get("week", 0))
-                p_record  = participant_map.get(ref_email, {})
-                name      = p_record.get("full_name", ref_email)
-                existing_feedback = feedback_lookup.get((ref_email, ref_week), "")
-                label = f"{unit_label} {ref_week} · {name}" + (" ✓" if existing_feedback else "")
-
-                with st.expander(label, expanded=False):
-                    st.markdown(f"**Submitted:** {ref.get('submitted_at', '—')}")
-                    st.markdown("**Their reflection:**")
-                    st.info(ref.get("response", ""))
-                    st.markdown("**Your feedback:**")
-                    feedback_input = st.text_area("Write feedback", value=existing_feedback,
-                                                  placeholder="Write your personal feedback...",
-                                                  key=f"feedback_{ref_email}_{ref_week}",
-                                                  height=120, label_visibility="collapsed")
-                    if st.button("Save feedback", key=f"save_feedback_{ref_email}_{ref_week}", type="primary"):
-                        if feedback_input.strip():
-                            save_feedback(ref_email, ref_week, feedback_input.strip(),
-                                          datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                            get_all_feedback.clear()
-                            _flash("reflections", "success", f"✅ Feedback saved for {name} · {unit_label} {ref_week}.")
-                            st.rerun()
-                        else:
-                            st.warning("Feedback cannot be empty.")
-
-                    if existing_feedback:
-                        first = name.split()[0] if name else "there"
-                        msg = (
-                            f"Hey {first} 👋 Abdul here — I just left you feedback on your "
-                            f"{unit_label} {ref_week} reflection on Crea8it Lab. Go check it out!"
-                        )
-                        link = build_whatsapp_link(p_record.get("phone", ""), msg)
-                        if link:
-                            st.link_button("💬 Let them know on WhatsApp", link)
-
-    # ── Program Content ───────────────────────────────────────
-    with tab_content:
-        _show_flash("content")
-        st.markdown("### Program content")
-        if not active_prog:
-            st.info("No active program. Go to the Programs tab to create and activate one first.")
-        else:
-            st.caption(f"Editing: **{active_prog['name']}**  ·  unit label: **{unit_label}**")
-
-            MATERIAL_TYPES = ["book", "video", "article", "worksheet", "template"]
-
-            with st.expander(f"➕ Add a new {unit_label}", expanded=not PROGRAM_WEEKS):
-                existing_nums = sorted(PROGRAM_WEEKS.keys())
-                suggested_num = max(existing_nums) + 1 if existing_nums else 1
-
-                new_num   = st.number_input(f"{unit_label} number", min_value=1, max_value=365,
-                                            value=suggested_num, key="new_unit_num")
-                new_title = st.text_input("Title", placeholder=f"e.g. {unit_label} 1: Getting Started",
-                                          key="new_unit_title")
-                new_theme = st.text_input("Subtitle / theme",
-                                          placeholder="e.g. Understand the landscape and why it matters",
-                                          key="new_unit_theme")
-
-                st.markdown("**Materials** (up to 8)")
-                mat_count = st.number_input("How many materials?", min_value=0, max_value=8,
-                                            value=3, key="new_mat_count")
-                new_mats = []
-                for m in range(int(mat_count)):
-                    mc1, mc2 = st.columns([3, 1])
-                    with mc1:
-                        lbl = st.text_input(f"Material {m+1}", placeholder="e.g. Watch: Intro video",
-                                            key=f"new_mat_lbl_{m}")
-                    with mc2:
-                        mtp = st.selectbox("Type", MATERIAL_TYPES, key=f"new_mat_type_{m}")
-                    if lbl.strip():
-                        new_mats.append({"label": lbl.strip(), "type": mtp})
-
-                st.markdown("**Activities / Tasks** (up to 10)")
-                st.caption("Add an optional resource link to any task — it becomes clickable on the dashboard.")
-                task_count = st.number_input("How many tasks?", min_value=0, max_value=10,
-                                             value=3, key="new_task_count")
-                new_tasks = []
-                for t in range(int(task_count)):
-                    tc1, tc2 = st.columns([3, 2])
-                    with tc1:
-                        tv = st.text_input(f"Task {t+1}", placeholder="e.g. Complete the worksheet",
-                                           key=f"new_task_{t}")
-                    with tc2:
-                        tl = st.text_input(f"Link {t+1} (optional)", placeholder="https://...",
-                                           key=f"new_task_link_{t}")
-                    if tv.strip():
-                        task_text = f"{tv.strip()} [Open →]({tl.strip()})" if tl.strip() else tv.strip()
-                        new_tasks.append(task_text)
-
-                if st.button(f"Save {unit_label}", key="save_new_unit", type="primary"):
-                    if not new_title.strip():
-                        st.warning("Title is required.")
-                    elif not new_tasks:
-                        st.warning("Add at least one task.")
-                    else:
-                        save_program_week(active_pid, int(new_num), new_title.strip(),
-                                          new_theme.strip(), new_mats, new_tasks)
-                        _flash("content", "success", f"✅ {unit_label} {new_num} — '{new_title.strip()}' saved.")
-                        st.rerun()
-
-            st.divider()
-
-            if not PROGRAM_WEEKS:
-                st.info(f"No {unit_label.lower()}s yet. Add one above.")
-            else:
-                for w in sorted(PROGRAM_WEEKS.keys()):
-                    wdata = PROGRAM_WEEKS[w]
-                    with st.expander(f"{unit_label} {w} — {wdata.get('title','(untitled)')}", expanded=False):
-                        e_title = st.text_input("Title", value=wdata.get("title",""), key=f"e_title_{w}")
-                        e_theme = st.text_input("Subtitle", value=wdata.get("theme",""), key=f"e_theme_{w}")
-
-                        st.markdown("**Materials**")
-                        ex_mats = wdata.get("materials", [])
-                        e_mat_n = st.number_input("Number of materials", min_value=0, max_value=8,
-                                                  value=len(ex_mats), key=f"e_mat_n_{w}")
-                        e_mats = []
-                        for m in range(int(e_mat_n)):
-                            dl = ex_mats[m]["label"] if m < len(ex_mats) else ""
-                            dt = ex_mats[m]["type"]  if m < len(ex_mats) else "article"
-                            mc1, mc2 = st.columns([3, 1])
-                            with mc1:
-                                ml = st.text_input(f"Material {m+1}", value=dl, key=f"e_mat_lbl_{w}_{m}")
-                            with mc2:
-                                idx = MATERIAL_TYPES.index(dt) if dt in MATERIAL_TYPES else 0
-                                mt = st.selectbox("Type", MATERIAL_TYPES, index=idx, key=f"e_mat_tp_{w}_{m}")
-                            if ml.strip():
-                                e_mats.append({"label": ml.strip(), "type": mt})
-
-                        st.markdown("**Tasks**")
-                        st.caption("Add an optional resource link — it becomes clickable on the dashboard.")
-                        ex_tasks = wdata.get("tasks", [])
-                        e_task_n = st.number_input("Number of tasks", min_value=0, max_value=10,
-                                                   value=len(ex_tasks), key=f"e_task_n_{w}")
-                        e_tasks = []
-                        for t in range(int(e_task_n)):
-                            import re as _re
-                            raw = ex_tasks[t] if t < len(ex_tasks) else ""
-                            # Pre-fill: split existing [label](url) back into text + url
-                            m = _re.match(r"^(.*?)\s*\[.*?\]\((https?://[^\)]+)\)\s*$", raw)
-                            dv  = m.group(1).strip() if m else raw
-                            dlnk = m.group(2).strip() if m else ""
-                            tc1, tc2 = st.columns([3, 2])
-                            with tc1:
-                                tv = st.text_input(f"Task {t+1}", value=dv, key=f"e_task_{w}_{t}")
-                            with tc2:
-                                tl = st.text_input(f"Link {t+1} (optional)", value=dlnk,
-                                                   placeholder="https://...", key=f"e_task_link_{w}_{t}")
-                            if tv.strip():
-                                task_text = f"{tv.strip()} [Open →]({tl.strip()})" if tl.strip() else tv.strip()
-                                e_tasks.append(task_text)
-
-                        col_save, col_del = st.columns([3, 1])
-                        with col_save:
-                            if st.button(f"💾 Save {unit_label} {w}", key=f"save_unit_{w}", type="primary"):
-                                if not e_title.strip():
-                                    st.warning("Title required.")
-                                elif not e_tasks:
-                                    st.warning("At least one task required.")
-                                else:
-                                    save_program_week(active_pid, w, e_title.strip(), e_theme.strip(),
-                                                      e_mats, e_tasks)
-                                    _flash("content", "success", f"✅ {unit_label} {w} — '{e_title.strip()}' updated.")
-                                    st.rerun()
-                        with col_del:
-                            if st.button("🗑️ Delete", key=f"del_unit_{w}"):
-                                st.session_state[f"confirm_del_unit_{w}"] = True
-                            if st.session_state.get(f"confirm_del_unit_{w}"):
-                                st.warning(f"Delete {unit_label} {w}? This cannot be undone.")
-                                c1, c2 = st.columns(2)
-                                with c1:
-                                    if st.button("Yes", key=f"del_unit_yes_{w}", type="primary"):
-                                        delete_week_from_program(active_pid, w)
-                                        st.session_state.pop(f"confirm_del_unit_{w}", None)
-                                        _flash("content", "success", f"✅ {unit_label} {w} deleted.")
-                                        st.rerun()
-                                with c2:
-                                    if st.button("Cancel", key=f"del_unit_no_{w}"):
-                                        st.session_state.pop(f"confirm_del_unit_{w}", None)
-                                        st.rerun()
-
-    # ── Cohort control ────────────────────────────────────────
-    with tab_control:
-        _show_flash("control")
-        if not active_prog:
-            st.info("No active program. Set one in the Programs tab.")
-        else:
-            st.markdown(f"### Unlock the next {unit_label.lower()}")
-            active_week = get_active_week()
-            cur_title   = PROGRAM_WEEKS.get(active_week, {}).get("title", "—")
-            st.info(f"Program: **{active_prog['name']}**  ·  Currently active: **{unit_label} {active_week} — {cur_title}**")
-
-            if PROGRAM_WEEKS:
-                new_week = st.selectbox(
-                    f"Set active {unit_label.lower()}",
-                    options=sorted(PROGRAM_WEEKS.keys()),
-                    index=list(sorted(PROGRAM_WEEKS.keys())).index(active_week)
-                          if active_week in PROGRAM_WEEKS else 0,
-                    format_func=lambda w: f"{unit_label} {w} — {PROGRAM_WEEKS[w]['title']}"
-                )
-                if st.button(f"Update active {unit_label.lower()}", type="primary"):
-                    try:
-                        set_active_week(new_week)
-                        st.session_state.pop("active_week", None)
-                        st.session_state.pop("active_week_last_check", None)
-                        _flash("control", "success", f"✅ {unit_label} {new_week} is now live for all participants.")
-                        st.rerun()
-                    except Exception as e:
-                        _flash("control", "error", f"Failed to update: {e}")
-                        st.rerun()
-            else:
-                st.warning(f"No {unit_label.lower()}s defined yet. Add content first.")
-
-            # ── Notify cohort a new unit is live ────────────────
-            if PROGRAM_WEEKS:
-                st.markdown(f"#### 📲 Let everyone know {unit_label.lower()} {active_week} is live")
-                st.caption(
-                    "No auto-send — opens WhatsApp with the message pre-filled, one tap per person."
-                )
-                participants = get_all_participants()
-                if not participants:
-                    st.info("No participants to notify yet.")
-                else:
-                    week_title = PROGRAM_WEEKS.get(active_week, {}).get("title", "")
-                    with st.expander(f"Show {len(participants)} participant(s) to notify", expanded=False):
-                        for p in participants:
-                            first = p.get("full_name", "").split()[0] if p.get("full_name") else "there"
-                            msg = (
-                                f"Hey {first} 👋 {unit_label} {active_week}"
-                                f"{' — ' + week_title if week_title else ''} is now live on "
-                                f"Crea8it Lab. Log in and check it out! 🚀"
-                            )
-                            link = build_whatsapp_link(p.get("phone", ""), msg)
-                            c1, c2 = st.columns([3, 1])
-                            with c1:
-                                st.markdown(f"**{p.get('full_name', '—')}**")
-                            with c2:
-                                if link:
-                                    st.link_button("💬 Notify", link, use_container_width=True)
-                                else:
-                                    st.caption("no valid phone")
-
-            st.divider()
-
-            st.markdown("### Switch program — export & wipe progress")
-            st.caption("Export participant progress before switching to a new program, then wipe.")
-            progress = get_all_progress()
-            if progress:
-                df_prog = pd.DataFrame(progress)
-                st.download_button(
-                    "⬇️ Export progress as CSV",
-                    df_prog.to_csv(index=False).encode("utf-8"),
-                    f"progress_{active_pid}_{datetime.now().strftime('%Y%m%d')}.csv",
-                    "text/csv",
-                )
-                st.markdown("")
-                if st.button("🗑️ Wipe all progress", type="secondary"):
-                    st.session_state["confirm_wipe"] = True
-                if st.session_state.get("confirm_wipe"):
-                    st.warning("This deletes ALL participant progress permanently. Export first!")
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        if st.button("Yes, wipe progress", type="primary"):
-                            wipe_all_progress()
-                            st.session_state.pop("confirm_wipe", None)
-                            _flash("control", "success", "✅ Progress wiped. Ready for new program.")
-                            st.rerun()
-                    with c2:
-                        if st.button("Cancel"):
-                            st.session_state.pop("confirm_wipe", None)
-                            st.rerun()
-            else:
-                st.info("No progress data to export.")
-
-
-def _admin_login():
-    st.markdown("## Admin login")
-    with st.form("admin_login"):
-        password  = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Log in →")
-    if submitted:
-        if login_admin(password):
-            st.rerun()
-        else:
-            st.error("Incorrect password.")
+            st.caption("No codes yet.")
