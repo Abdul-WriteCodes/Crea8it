@@ -10,7 +10,10 @@ from utils.sheets import (
     get_active_program_id_live, set_active_program,
     get_active_unit_label_live,
     wipe_all_progress,
+    get_last_active_map,
+    set_participant_password,
 )
+from utils.notify import build_whatsapp_link
 from config import PROGRAM_NAME
 import uuid
 
@@ -161,11 +164,69 @@ def show():
         st.markdown("### All registered participants")
         participants = get_all_participants()
         if participants:
+            last_active_map = get_last_active_map()
+            now = datetime.now()
+            for p in participants:
+                la = last_active_map.get(str(p.get("email", "")).strip().lower(), "")
+                p["last_active"] = la or "never"
+                if la:
+                    try:
+                        days = (now - datetime.strptime(la, "%Y-%m-%d %H:%M:%S")).days
+                        p["days_inactive"] = days
+                    except ValueError:
+                        p["days_inactive"] = "—"
+                else:
+                    p["days_inactive"] = "—"
+
             df = pd.DataFrame(participants)
             st.dataframe(df, use_container_width=True)
             st.download_button("Export as CSV", df.to_csv(index=False).encode("utf-8"), "participants.csv", "text/csv")
+
+            # ── At-risk callout ────────────────────────────────
+            at_risk = [
+                p for p in participants
+                if isinstance(p.get("days_inactive"), int) and p["days_inactive"] >= 7
+            ]
+            if at_risk:
+                with st.expander(f"🚨 {len(at_risk)} builder(s) gone quiet (7+ days inactive)", expanded=False):
+                    for p in sorted(at_risk, key=lambda x: x["days_inactive"], reverse=True):
+                        c1, c2 = st.columns([3, 1])
+                        with c1:
+                            st.markdown(
+                                f"**{p['full_name']}** — {p['days_inactive']} days inactive "
+                                f"· last seen {p['last_active']}"
+                            )
+                        with c2:
+                            msg = (
+                                f"Hey {p['full_name'].split()[0]}, it's Abdul from Crea8it Lab 👋 "
+                                f"Noticed you've been quiet for a bit — everything good? "
+                                f"Happy to help if you're stuck on anything."
+                            )
+                            link = build_whatsapp_link(p.get("phone", ""), msg)
+                            if link:
+                                st.link_button("💬 Nudge on WhatsApp", link, use_container_width=True)
         else:
             st.info("No participants registered yet.")
+
+        # ── Password reset (only recovery path, since there's no email
+        # delivery infra) ────────────────────────────────────────────
+        if participants:
+            with st.expander("🔑 Reset a participant's password", expanded=False):
+                st.caption(
+                    "Clears their password. Next time they log in with their "
+                    "email, they'll be asked to confirm their WhatsApp number "
+                    "and choose a new password."
+                )
+                email_options = {
+                    f"{p['full_name']} ({p['email']})": p["email"] for p in participants
+                }
+                chosen = st.selectbox("Participant", list(email_options.keys()))
+                if st.button("Reset password", type="secondary"):
+                    try:
+                        set_participant_password(email_options[chosen], "")
+                        st.success(f"Password cleared for {chosen}. They can set a new one at next login.")
+                    except Exception as e:
+                        st.error(f"Couldn't reset password: {e}")
 
     # ── Engagement ────────────────────────────────────────────
     with tab_engagement:
@@ -222,13 +283,14 @@ def show():
                 (str(r.get("email", "")).strip().lower(), int(r.get("week", 0))): r.get("feedback", "")
                 for r in feedback_all
             }
-            participant_map = {p["email"].strip().lower(): p["full_name"] for p in participants}
+            participant_map = {p["email"].strip().lower(): p for p in participants}
             sorted_refs = sorted(reflections, key=lambda r: (int(r.get("week", 0)), r.get("email", "")))
 
             for ref in sorted_refs:
                 ref_email = str(ref.get("email", "")).strip().lower()
                 ref_week  = int(ref.get("week", 0))
-                name      = participant_map.get(ref_email, ref_email)
+                p_record  = participant_map.get(ref_email, {})
+                name      = p_record.get("full_name", ref_email)
                 existing_feedback = feedback_lookup.get((ref_email, ref_week), "")
                 label = f"{unit_label} {ref_week} · {name}" + (" ✓" if existing_feedback else "")
 
@@ -250,6 +312,16 @@ def show():
                             st.rerun()
                         else:
                             st.warning("Feedback cannot be empty.")
+
+                    if existing_feedback:
+                        first = name.split()[0] if name else "there"
+                        msg = (
+                            f"Hey {first} 👋 Abdul here — I just left you feedback on your "
+                            f"{unit_label} {ref_week} reflection on Crea8it Lab. Go check it out!"
+                        )
+                        link = build_whatsapp_link(p_record.get("phone", ""), msg)
+                        if link:
+                            st.link_button("💬 Let them know on WhatsApp", link)
 
     # ── Program Content ───────────────────────────────────────
     with tab_content:
@@ -289,14 +361,21 @@ def show():
                         new_mats.append({"label": lbl.strip(), "type": mtp})
 
                 st.markdown("**Activities / Tasks** (up to 10)")
+                st.caption("Add an optional resource link to any task — it becomes clickable on the dashboard.")
                 task_count = st.number_input("How many tasks?", min_value=0, max_value=10,
                                              value=3, key="new_task_count")
                 new_tasks = []
                 for t in range(int(task_count)):
-                    tv = st.text_input(f"Task {t+1}", placeholder="e.g. Complete the worksheet",
-                                       key=f"new_task_{t}")
+                    tc1, tc2 = st.columns([3, 2])
+                    with tc1:
+                        tv = st.text_input(f"Task {t+1}", placeholder="e.g. Complete the worksheet",
+                                           key=f"new_task_{t}")
+                    with tc2:
+                        tl = st.text_input(f"Link {t+1} (optional)", placeholder="https://...",
+                                           key=f"new_task_link_{t}")
                     if tv.strip():
-                        new_tasks.append(tv.strip())
+                        task_text = f"{tv.strip()} [Open →]({tl.strip()})" if tl.strip() else tv.strip()
+                        new_tasks.append(task_text)
 
                 if st.button(f"Save {unit_label}", key="save_new_unit", type="primary"):
                     if not new_title.strip():
@@ -338,15 +417,27 @@ def show():
                                 e_mats.append({"label": ml.strip(), "type": mt})
 
                         st.markdown("**Tasks**")
+                        st.caption("Add an optional resource link — it becomes clickable on the dashboard.")
                         ex_tasks = wdata.get("tasks", [])
                         e_task_n = st.number_input("Number of tasks", min_value=0, max_value=10,
                                                    value=len(ex_tasks), key=f"e_task_n_{w}")
                         e_tasks = []
                         for t in range(int(e_task_n)):
-                            dv = ex_tasks[t] if t < len(ex_tasks) else ""
-                            tv = st.text_input(f"Task {t+1}", value=dv, key=f"e_task_{w}_{t}")
+                            import re as _re
+                            raw = ex_tasks[t] if t < len(ex_tasks) else ""
+                            # Pre-fill: split existing [label](url) back into text + url
+                            m = _re.match(r"^(.*?)\s*\[.*?\]\((https?://[^\)]+)\)\s*$", raw)
+                            dv  = m.group(1).strip() if m else raw
+                            dlnk = m.group(2).strip() if m else ""
+                            tc1, tc2 = st.columns([3, 2])
+                            with tc1:
+                                tv = st.text_input(f"Task {t+1}", value=dv, key=f"e_task_{w}_{t}")
+                            with tc2:
+                                tl = st.text_input(f"Link {t+1} (optional)", value=dlnk,
+                                                   placeholder="https://...", key=f"e_task_link_{w}_{t}")
                             if tv.strip():
-                                e_tasks.append(tv.strip())
+                                task_text = f"{tv.strip()} [Open →]({tl.strip()})" if tl.strip() else tv.strip()
+                                e_tasks.append(task_text)
 
                         col_save, col_del = st.columns([3, 1])
                         with col_save:
@@ -408,6 +499,35 @@ def show():
                         st.rerun()
             else:
                 st.warning(f"No {unit_label.lower()}s defined yet. Add content first.")
+
+            # ── Notify cohort a new unit is live ────────────────
+            if PROGRAM_WEEKS:
+                st.markdown(f"#### 📲 Let everyone know {unit_label.lower()} {active_week} is live")
+                st.caption(
+                    "No auto-send — opens WhatsApp with the message pre-filled, one tap per person."
+                )
+                participants = get_all_participants()
+                if not participants:
+                    st.info("No participants to notify yet.")
+                else:
+                    week_title = PROGRAM_WEEKS.get(active_week, {}).get("title", "")
+                    with st.expander(f"Show {len(participants)} participant(s) to notify", expanded=False):
+                        for p in participants:
+                            first = p.get("full_name", "").split()[0] if p.get("full_name") else "there"
+                            msg = (
+                                f"Hey {first} 👋 {unit_label} {active_week}"
+                                f"{' — ' + week_title if week_title else ''} is now live on "
+                                f"Crea8it Lab. Log in and check it out! 🚀"
+                            )
+                            link = build_whatsapp_link(p.get("phone", ""), msg)
+                            c1, c2 = st.columns([3, 1])
+                            with c1:
+                                st.markdown(f"**{p.get('full_name', '—')}**")
+                            with c2:
+                                if link:
+                                    st.link_button("💬 Notify", link, use_container_width=True)
+                                else:
+                                    st.caption("no valid phone")
 
             st.divider()
 

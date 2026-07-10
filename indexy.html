@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Crea8it— An Ecosystem for Builders, Founders & Future Tech Professionals</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --bg:#0a0a0a;
+    --card:#121212;
+    --text:#f4f4f4;
+    --muted:#9a9a9a;
+    --accent:#ffb703;
+    --border:#222;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Merriweather', serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+}
+
+.container{
+    width:min(1200px,92%);
+    margin:auto;
+}
+
+nav{
+    padding:24px 0;
+    border-bottom:1px solid var(--border);
+}
+
+.nav-wrapper{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo{
+    font-family:'Permanent Marker',cursive;
+    font-size:1.8rem;
+    color:var(--accent);
+    transform:rotate(-2deg);
+}
+
+.nav-links{
+    display:flex;
+    gap:30px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:var(--text);
+    font-size:.95rem;
+}
+
+.btn{
+    display:inline-block;
+    padding:14px 24px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-primary{
+    background:var(--accent);
+    color:black;
+}
+
+.btn-primary:hover{
+    transform:translateY(-2px);
+}
+
+.btn-secondary{
+    background-color: green;
+    border:1px solid yellow;
+    color: white;
+}
+
+.hero{
+    padding:110px 0 80px;
+    text-align:center;
+}
+
+.hero-tag{
+    color:var(--accent);
+    font-weight:700;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:18px;
+}
+
+.hero h1{
+    font-size:clamp(3rem,7vw,6rem);
+    line-height:1;
+    margin-bottom:24px;
+    font-family:'Permanent Marker',cursive;
+    transform:rotate(-1deg);
+}
+
+.hero p{
+    max-width:760px;
+    margin:auto;
+    color:var(--muted);
+    font-size:1.1rem;
+}
+
+.hero-buttons{
+    margin-top:40px;
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.section{
+    padding:90px 0;
+}
+
+.section-title{
+    font-size:2.4rem;
+    margin-bottom:50px;
+    font-family:'Permanent Marker',cursive;
+    transform:rotate(-1deg)
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:24px;
+}
+
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    overflow:hidden;
+    display:grid;
+    grid-template-columns:280px 1fr;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-4px);
+    border-color:var(--accent);
+    box-shadow:0 16px 40px rgba(255,183,3,.1);
+}
+
+.card-image{
+    position:relative;
+    overflow:hidden;
+    min-height:260px;
+}
+
+.card-image img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    transition:.4s ease;
+}
+
+.card:hover .card-image img{
+    transform:scale(1.04);
+}
+
+.card-body{
+    padding:32px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+}
+
+.card-body h3{
+    font-size:1.3rem;
+    margin-bottom:10px;
+}
+.card-body h3 span{
+    color: var(--accent);
+}
+
+.card-body p{
+    color:var(--muted);
+    margin-bottom:20px;
+    flex-grow:1;
+}
+
+.card-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.price{
+    font-size:1.6rem;
+    font-weight:800;
+    color:var(--accent);
+}
+
+.btn-buy{
+    background:var(--accent);
+    color:black;
+    padding:12px 22px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:.9rem;
+    transition:.3s;
+    white-space:nowrap;
+}
+
+.btn-buy:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(255,183,3,.3);
+}
+
+@media(max-width:680px){
+.card{
+    grid-template-columns:1fr;
+}
+.card-image{
+    min-height:140px;
+    max-height:170px;
+}
+.card-body{
+    padding:14px;
+}
+.card-body h3{
+    font-size:0.95rem;
+    margin-bottom:6px;
+}
+.card-body p{
+    font-size:0.82rem;
+    margin-bottom:8px;
+}
+.card-footer{
+    margin-top:8px;
+}
+}
+
+/* ── 2-col bullet grid for program cards ── */
+.bullet-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:4px 12px;
+    margin:10px 0 14px;
+    font-size:0.82rem;
+    color:var(--muted);
+}
+
+@media(min-width:681px){
+.bullet-grid{
+    grid-template-columns:1fr;
+    font-size:0.9rem;
+}
+}
+
+.why{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:60px;
+    align-items:center;
+}
+
+.graffiti-box{
+    border:2px dashed var(--accent);
+    border-radius:24px;
+    padding:40px;
+    font-family:'Permanent Marker',cursive;
+    font-size:2rem;
+    line-height:1.4;
+    transform:rotate(-1deg);
+}
+
+.about{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    gap:50px;
+    align-items:center;
+}
+
+.avatar{
+    width:250px;
+    height:250px;
+    border-radius:24px;
+    overflow:hidden;
+    border:2px solid var(--accent);
+    transition:.3s ease;
+}
+
+.avatar:hover{
+    transform:translateY(-6px) rotate(-2deg);
+    box-shadow:0 20px 40px rgba(255,183,3,.25);
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.cred-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin:20px 0 24px;
+}
+
+.cred-item{
+    background:rgba(255,183,3,.06);
+    border:1px solid rgba(255,183,3,.18);
+    border-radius:12px;
+    padding:14px 16px;
+}
+
+.cred-num{
+    font-family:'Permanent Marker',cursive;
+    font-size:1.6rem;
+    color:var(--accent);
+    line-height:1;
+    margin-bottom:4px;
+}
+
+.cred-label{
+    font-size:0.75rem;
+    color:var(--muted);
+    line-height:1.3;
+}
+
+/* Difference section — tighter right box */
+.graffiti-box{
+    border:2px dashed var(--accent);
+    border-radius:24px;
+    padding:36px;
+    font-family:'Permanent Marker',cursive;
+    font-size:1.6rem;
+    line-height:1.6;
+    transform:rotate(-1deg);
+    background:rgba(255,183,3,.03);
+}
+
+@media(max-width:768px){
+    .cred-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+.badge{
+    display:inline-block;
+    background:rgba(255,183,3,.15);
+    color:var(--accent);
+    padding:8px 14px;
+    border-radius:999px;
+    margin-bottom:15px;
+    font-weight:600;
+}
+
+.newsletter{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:60px;
+    text-align:center;
+}
+
+.newsletter p{
+    color:var(--muted);
+    max-width:650px;
+    margin:20px auto;
+}
+
+.newsletter form{
+    margin-top:25px;
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+input{
+    padding:15px 20px;
+    min-width:320px;
+    border:none;
+    border-radius:12px;
+    background:#1d1d1d;
+    color:white;
+}
+
+footer{
+    padding:60px 0 40px;
+    border-top:1px solid var(--border);
+}
+
+.footer-inner{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    text-align:center;
+}
+
+.footer-logo{
+    font-family:'Permanent Marker',cursive;
+    font-size:2rem;
+    color:var(--accent);
+    transform:rotate(-2deg);
+}
+
+.footer-tagline{
+    font-family:'Permanent Marker',cursive;
+    font-size:0.85rem;
+    color:var(--muted);
+    letter-spacing:3px;
+}
+
+.footer-links{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+}
+
+.footer-links a{
+    color:var(--text);
+    text-decoration:none;
+    font-size:0.9rem;
+    transition:.2s;
+}
+
+.footer-links a:hover{ color:var(--accent); }
+
+.footer-links span{ color:var(--border); }
+
+.footer-socials{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:center;
+}
+
+.footer-socials a{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;height:44px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    color:var(--muted);
+    text-decoration:none;
+    transition:all .2s ease;
+    background:rgba(255,255,255,.02);
+}
+
+.footer-socials a svg{
+    width:20px;height:20px;
+    fill:currentColor;
+    flex-shrink:0;
+}
+
+.footer-socials a:hover{
+    color:var(--accent);
+    border-color:var(--accent);
+    background:rgba(255,183,3,.08);
+    transform:translateY(-3px);
+}
+
+.footer-cta{
+    display:inline-block;
+    background:rgba(255,183,3,.1);
+    border:1px solid rgba(255,183,3,.3);
+    color:var(--accent);
+    padding:12px 24px;
+    border-radius:12px;
+    text-decoration:none;
+    font-size:0.95rem;
+    transition:.3s;
+}
+
+.footer-cta:hover{
+    background:var(--accent);
+    color:black;
+}
+
+.footer-copy{
+    color:var(--muted);
+    font-size:0.8rem;
+}
+
+@media(max-width:768px){
+
+.nav-links{
+    display:none;
+}
+
+.why,
+.about{
+    grid-template-columns:1fr;
+}
+
+.hero{
+    padding-top:70px;
+}
+
+.newsletter{
+    padding:40px 25px;
+}
+
+input{
+    min-width:100%;
+}
+
+}
+
+/* ── Testimonial Carousel ── */
+.carousel-wrapper{
+    position:relative;
+    margin-top:32px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+}
+
+.carousel-track-container{
+    width:100%;
+    max-width:520px;
+    overflow:hidden;
+    border-radius:20px;
+}
+
+.carousel-track{
+    display:flex;
+    transition:transform .4s ease;
+    will-change:transform;
+}
+
+.carousel-slide{
+    min-width:100%;
+}
+
+.carousel-slide img{
+    width:100%;
+    display:block;
+    border-radius:20px;
+    border:1px solid var(--border);
+    user-select:none;
+    -webkit-user-drag:none;
+}
+
+.carousel-arrow{
+    position:absolute;
+    top:50%;
+    transform:translateY(-60%);
+    background:rgba(255,183,3,.15);
+    border:1px solid var(--accent);
+    color:var(--accent);
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    font-size:1.1rem;
+    cursor:pointer;
+    transition:.3s;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.carousel-arrow:hover{
+    background:var(--accent);
+    color:black;
+}
+
+.carousel-prev{ left:0; }
+.carousel-next{ right:0; }
+
+.carousel-dots{
+    display:flex;
+    gap:8px;
+}
+
+.dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#333;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.dot.active{
+    background:var(--accent);
+    width:24px;
+    border-radius:999px;
+}
+
+@media(max-width:600px){
+    .carousel-prev{ left:-4px; }
+    .carousel-next{ right:-4px; }
+}
+
+/* ── Program Countdown ── */
+.countdown{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.cd-block{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    background:rgba(255,183,3,.1);
+    border:1px solid rgba(255,183,3,.25);
+    border-radius:8px;
+    padding:6px 10px;
+    min-width:44px;
+}
+
+.cd-num{
+    font-size:1.2rem;
+    font-weight:800;
+    color:var(--accent);
+    line-height:1;
+    font-family:'Inter',sans-serif;
+}
+
+.cd-label{
+    font-size:0.55rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-top:3px;
+}
+
+.cd-sep{
+    color:var(--accent);
+    font-weight:800;
+    font-size:1rem;
+    margin-bottom:12px;
+}
+
+.price-open{
+    font-size:1.1rem;
+    font-weight:800;
+    color:#22c55e;
+    animation: pulse-open 2s infinite;
+}
+
+@keyframes pulse-open{
+    0%,100%{ opacity:1; }
+    50%{ opacity:.6; }
+}
+
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container nav-wrapper">
+
+<div class="logo">Crea8it</div>
+
+<div class="nav-links">
+<a href="#playbooks">Resources 📚</a>
+<a href="#testimonials">Achievement 🏆</a>
+<a href="#submit-request">Submit Request 📩</a>
+</div>
+
+<a href="https://chat.whatsapp.com/Gbm13AqaNSt24MAxszzkcB" class="btn btn-primary">Join Crea8it🫂 </a>
+
+</div>
+</nav>
+
+<section class="hero">
+<div class="container">
+
+<span class="badge">The Hub for Builders, Founders & Tech Aspirants who don't just dream — they EXECUTE & BUILD against all odds </span>
+
+<h1>BUILD.<br> LAUNCH. <br> WIN.</h1>
+
+<p style="color:white">
+
+Crea8it encompasses programs and playbooks that equips builders, founders, and future tech professionals with practical strategies, proven frameworks,
+and real-world lessons to launch careers, build products, and grow startups.
+</p>
+
+<div class="hero-buttons">
+<a href="#playbooks" class="btn btn-primary">Resources 📚</a>
+<a href="#programs" class="btn btn-secondary">Programs🚀<a/>
+<a href="https://crea8it.streamlit.app/" class="btn btn-secondary">Enter Lab 📟</a>
+<a href="#testimonials" class="btn btn-primary">Impacts 🏆</a>
+
+
+</div>
+
+</div>
+</section>
+
+
+<!---Programs--->
+<section id="programs" class="section">
+<div class="container">
+
+<span class="badge">Programs</span>
+<h2 class="section-title">Core Programs</h2>
+
+<div class="grid">
+
+<div class="card" data-launch="2026-07-11T09:00:00">
+    <div class="card-image">
+        <img src="assets/Scr1.jpg" alt="Career Launch Accelerator">
+    </div>
+
+    <div class="card-body">
+        <div>
+            <h3> AI Career Acceleration </h3>
+            <p>A career launch and acceleration program designed for ambitious individuals who want to build valuable skills, create opportunities, and thrive in the age of Artificial Intelligence</p>
+            
+            <p style="color: green;font-weight:700; font-size:1.2rem;">Upcoming Program</p>
+            <p style="color: gold;font-weight: bold;"> Open Seminar 🎙</p>
+        </div>
+
+        <div class="card-footer">
+            <div class="price program-price">Comming Soon</div>
+            <a href="#" class="btn-buy">Register Here→</a>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-image">
+        <img src="assets/Scr2.jpg" alt="Career Launch Accelerator">
+    </div>
+
+    <div class="card-body">
+        <div>
+            <h3> Crea8it Build in Public Challenge</h3>
+            <p>  The Build in Public Challenge is a hands-on execution program that encourages builders to stop overthinking and start shipping</p>
+            
+        </div>
+
+        <div class="card-footer">
+            <div class="price program-price">Coming Soon</div>
+            <a href="#" class="btn-buy">Join Waitlist →</a>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="card">
+    <div class="card-image">
+        <img src="assets/Scr3.jpg" alt="Startup Validation Lab">
+    </div>
+
+    <div class="card-body">
+        <div>
+            <h3>🧪 Zero to 1</h3>
+
+            <p>Zero to 1 is an idea validation and startup launch program for aspiring founders and indie hackers who want to build real businesses from scratch </p>
+
+            </p>
+        </div>
+
+        <div class="card-footer">
+            <div class="price program-price">Coming Soon</div>
+            <a href="#" class="btn-buy">Join Waitlist →</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</section>
+
+<!--programs--->
+
+<!----Resources--->
+<section class="section">
+<section id="playbooks" class="section">
+<div class="container">
+
+
+<span class="badge">Featured</span>
+<h2 class="section-title">Playbooks</h2>
+
+<div class="grid">
+
+<div class="card">
+    <div class="card-image">
+        <img src="assets/EntAI.jpg" alt="AI Career Launch Playbook">
+    </div>
+    <div class="card-body">
+        <div>
+            <h3><span>📘 Enter AI</span> </h3>
+            <p> A Comprehensive Guide for AI Career Launch
+
+            <br><br>
+            
+            ✓Over 10 downloads📥 and counting.<br>
+            ✓20% of active readers🧑‍🏫 have successfully break into AI🚀<br>
+            ✓No CS degree is not a barrier.<br>
+            ✓Contain Real steps🤸🏻, and Tested strategies🧩.
+            
+            </p>
+        </div>
+        <div class="card-footer">
+            <div class="price">₦5,000</div>
+            <a href="https://flutterwave.com/pay/uuzhcwanejde" class="btn-buy">Get Book →</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-image">
+        <img src="assets/T2M.jpeg" alt="Bootstrap Founder Playbook">
+    </div>
+    <div class="card-body">
+        <div>
+            <h3>Talk to the Machine</h3>
+            <p>A comprehensive prompt engineering handbook for everyone.</p>
+        </div>
+        <div class="card-footer">
+            <div class="price program-price">Available for Free</div>
+            <a href="https://app.box.com/s/qluhjskz4smsz0158nij9qmz4a28al6d" class="btn-buy">Get Playbook →</a>
+        </div>
+    </div>
+</div>
+<!--
+<div class="card">
+    <div class="card-image">
+        <img src="assets/saas-growth-blueprint.jpg" alt="SaaS Growth Blueprint">
+    </div>
+    <div class="card-body">
+        <div>
+            <h3>SaaS Growth Blueprint</h3>
+            <p>Validation, launch, traction and growth strategies for SaaS builders. From zero users to sustainable MRR — documented and repeatable.</p>
+        </div>
+        <div class="card-footer">
+            <div class="price">£39</div>
+            <a href="YOUR_PAYMENT_LINK_HERE" class="btn-buy">Get Playbook →</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div>
+-->
+
+<!---Resources--->
+
+
+
+</section>
+
+<section class="section" style="padding-top:0;">
+<section id="testimonials" class="section">
+<div class="container" style="text-align:center;">
+<span class="badge">Impact-driven Results & Testimonials</span>
+
+<div class="carousel-wrapper">
+
+    <button class="carousel-arrow carousel-prev" aria-label="Previous">&#8592;</button>
+
+    <div class="carousel-track-container">
+        <div class="carousel-track">
+            <div class="carousel-slide"><img src="assets/Testx1.png" alt="Reader testimonial 1"></div>
+        </div>
+    </div>
+
+    <button class="carousel-arrow carousel-next" aria-label="Next">&#8594;</button>
+
+    <div class="carousel-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+    </div>
+
+</div>
+
+</div>
+</section>
+
+<section class="section">
+<div class="container why">
+
+<div>
+<span class="badge">The Difference</span>
+
+<h2 class="section-title">The Crea8it Way</h2>
+
+<p style="color:white;font-size:1.05rem;line-height:1.8;">
+No fake guru tactics. No clout-chasing content. No theory without skin in the game. Just serious execution with grit and resilience when it gets tough<br><br>
+While many builder communities focus on courses and theory, we build capacity through action. Every program is built around real launches, real experiments, and real execution. Every framework here was earned through real time, real money, or real failure—turned into practical lessons. 🤸🏻<br><br>
+The strategies work because they're continually being tested — right now, on live products, with paying customers. This isn't a course. It's a growing ecosystem with a dedicated lab. And the experiments never stop.
+</p>
+</div>
+
+<div class="graffiti-box">
+    🧩<br>
+→ Build ⚙️<br>
+→ Launch 🚀<br>
+→ <s>Fail</s> Learn 🤸<br>
+→ Win 🏆<br>
+→ Do it Again 🦾
+</div>
+
+</div>
+</section>
+
+<section class="section">
+<span class="badge">About Me</span>
+<div class="container about">
+<div class="avatar"><img src="images/Abdul3.jpg" alt="Abdul-Azeez Olohunjuwon"></div>
+
+<div>
+<h2 class="section-title">Meet the Builder</h2>
+
+<p style="color:white;font-size:1rem;line-height:1.8;margin-bottom:20px;">
+I'm Abdul — actively building and selling SaaS products (BizTrack-OS, StaX360) to real customers right now. Everything I teach inside Crea8it is something I'm currently doing or have already done and documented.
+</p>
+
+<div class="cred-grid">
+    <div class="cred-item">
+        <div class="cred-num">2×</div>
+        <div class="cred-label">Bootstrap founder<br>building in public</div>
+    </div>
+    <div class="cred-item">
+        <div class="cred-num">10+</div>
+        <div class="cred-label">Years as a<br>Researcher</div>
+    </div>
+    <div class="cred-item">
+        <div class="cred-num">2</div>
+        <div class="cred-label">Published books<br>on AI</div>
+    </div>
+    <div class="cred-item">
+        <div class="cred-num">10+</div>
+        <div class="cred-label">Production apps<br>shipped & live</div>
+    </div>
+</div>
+
+<p style="color:white;font-size:1rem;line-height:1.8;">
+Before Crea8it🧩 had a name, I had already helped 2 people break into tech from scratch. No program. No curriculum. Just what I knew, but adapted and applied to their situation. Both of them made it work 🚀. That told me the approach was real. So I built a system around it.<br><br>
+I started this to help ambitious people build real careers and real income from tech. Not just skills but make actual money while solving problems and creating opportunities. I'm doing the same thing I'm asking you to do with faith, through grit and in good spirit, Which means when something stops working, I'll know before you do. And when something works, you'll hear about it first.<br><br>
+Crea8it is the ecosystem I wish had existed when I was starting. Now it does 🚀
+</p>
+
+</div>
+
+</div>
+</section>
+
+<section class="section">
+<section id="submit-request" class="section">
+<div class="container">
+
+<div class="newsletter">
+
+<h2>Submit a Request</h2>
+
+<p>
+Got an idea, a project or something worth addressing? Bring it. Let's have it 🫴🏾
+</p>
+
+<a href="mailto:Abdulwrite77@gmail.com?subject=Subscribe me to The Builder's Dispatch" class="btn btn-primary" style="margin-top:25px;display:inline-block;">Submit via Email</a>
+
+</div>
+
+</div>
+</section>
+
+
+
+
+
+<footer>
+<div class="container footer-inner">
+
+    <div class="footer-logo">Crea8it</div>
+
+    <p class="footer-tagline">BUILD. LAUNCH. WIN.</p>
+
+    <nav class="footer-links">
+        <a href="#playbooks">Resources</a>
+        <span>•</span>
+        <a href="#programs">Programs</a>
+        <span>•</span>
+        <a href="#testimonials">Impacts</a>
+        <span>•</span>
+    </nav>
+
+    <div class="footer-socials">
+        <!-- Twitter / X -->
+        <a href="https://twitter.com/abdul_git07" target="_blank" rel="noopener" aria-label="Twitter / X">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.262 5.636 5.901-5.636Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+        </a>
+        <!-- LinkedIn -->
+        <a href="https://linkedin.com/in/anafiabdul" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+        </a>
+        <!-- Blogger -->
+        <a href="https://abdulbuilds.blogspot.com" target="_blank" rel="noopener" aria-label="Blog">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.976 24H2.026C.9 24 0 23.1 0 21.976V2.026C0 .9.9 0 2.026 0h19.95C23.1 0 24 .9 24 2.026v19.95C24 23.1 23.1 24 21.976 24zm-3.953-8.353c0-1.18-.966-2.135-2.15-2.135h-.592c-.363 0-.66-.295-.66-.655v-1.714c0-1.18-.966-2.136-2.15-2.136H8.13c-1.184 0-2.15.956-2.15 2.136v5.358c0 1.18.966 2.136 2.15 2.136h9.743c1.184 0 2.15-.956 2.15-2.136v-.854zm0-7.177c0-1.18-.966-2.136-2.15-2.136H8.13c-1.184 0-2.15.956-2.15 2.136v.427c0 1.18.966 2.136 2.15 2.136h7.743c1.184 0 2.15-.956 2.15-2.136v-.427zm-3.103 7.603H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284zm0-2.991H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284zm0-4.275H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284z"/>
+            </svg>
+        </a>
+    </div>
+
+
+    <p class="footer-copy">© 2024 Crea8it — Built for builders.</p>
+
+</div>
+</footer>
+
+<script>
+(function(){
+    const track    = document.querySelector('.carousel-track');
+    const slides   = document.querySelectorAll('.carousel-slide');
+    const dots     = document.querySelectorAll('.dot');
+    const prev     = document.querySelector('.carousel-prev');
+    const next     = document.querySelector('.carousel-next');
+    const total    = slides.length;
+    let current    = 0;
+
+    function goTo(index){
+        current = (index + total) % total;
+        track.style.transform = `translateX(-${current * 100}%)`;
+        dots.forEach((d,i) => d.classList.toggle('active', i === current));
+    }
+
+    prev.addEventListener('click', () => goTo(current - 1));
+    next.addEventListener('click', () => goTo(current + 1));
+    dots.forEach((d,i) => d.addEventListener('click', () => goTo(i)));
+
+    /* Touch/swipe */
+    let startX = 0;
+    track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+    track.addEventListener('touchend',   e => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if(Math.abs(diff) > 40) goTo(diff > 0 ? current + 1 : current - 1);
+    });
+
+    /* Mouse drag (desktop swipe) */
+    let mouseStartX = 0, isDragging = false;
+    track.addEventListener('mousedown',  e => { isDragging = true; mouseStartX = e.clientX; });
+    track.addEventListener('mouseup',    e => {
+        if(!isDragging) return;
+        isDragging = false;
+        const diff = mouseStartX - e.clientX;
+        if(Math.abs(diff) > 40) goTo(diff > 0 ? current + 1 : current - 1);
+    });
+    track.addEventListener('mouseleave', () => { isDragging = false; });
+})();
+</script>
+
+<script>
+(function(){
+    function pad(n){ return String(n).padStart(2,'0'); }
+
+    function buildCountdown(el, launchDate){
+        function tick(){
+            const now  = new Date();
+            const diff = launchDate - now;
+
+            if(diff <= 0){
+                // Program is live
+                el.innerHTML = '<span class="price-open">🟢 Now Open!</span>';
+                return;
+            }
+
+            const days  = Math.floor(diff / (1000*60*60*24));
+            const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+            const mins  = Math.floor((diff % (1000*60*60))    / (1000*60));
+            const secs  = Math.floor((diff % (1000*60))       / 1000);
+
+            el.innerHTML = `
+                <div class="countdown">
+                    <div class="cd-block"><span class="cd-num">${pad(days)}</span><span class="cd-label">Days</span></div>
+                    <span class="cd-sep">:</span>
+                    <div class="cd-block"><span class="cd-num">${pad(hours)}</span><span class="cd-label">Hrs</span></div>
+                    <span class="cd-sep">:</span>
+                    <div class="cd-block"><span class="cd-num">${pad(mins)}</span><span class="cd-label">Min</span></div>
+                    <span class="cd-sep">:</span>
+                    <div class="cd-block"><span class="cd-num">${pad(secs)}</span><span class="cd-label">Sec</span></div>
+                </div>`;
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    }
+
+    // Find every program card that has a data-launch date
+    document.querySelectorAll('.card[data-launch]').forEach(function(card){
+        const raw = card.getAttribute('data-launch');
+        if(!raw) return;
+
+        const launchDate = new Date(raw);
+        if(isNaN(launchDate)) return;
+
+        const priceEl = card.querySelector('.program-price');
+        if(priceEl) buildCountdown(priceEl, launchDate);
+    });
+})();
+</script>
+
+</body>
+</html>

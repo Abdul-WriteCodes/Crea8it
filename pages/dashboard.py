@@ -9,6 +9,7 @@ from utils.sheets import (
     get_progress_from_sheet, mark_task_done, get_active_week_live,
     get_reflection, submit_reflection, get_feedback, get_prompt,
     get_program_weeks, get_active_program_id_live, get_active_unit_label_live,
+    touch_last_active, get_week_completion_stats,
 )
 from config import PROGRAM_NAME
 import time
@@ -62,6 +63,7 @@ def show():
     participant = get_current_participant()
     first_name  = participant["full_name"].split()[0]
     email       = participant["email"]
+    touch_last_active(email)
 
     # ── Header ────────────────────────────────────────────────
     col1, col2 = st.columns([5, 1])
@@ -130,6 +132,18 @@ def show():
 </div>""", unsafe_allow_html=True)
                 continue
 
+            # Cohort progress — social visibility, not just a solo checklist
+            finished, total = get_week_completion_stats(
+                active_pid, week_num, len(week_data["tasks"])
+            )
+            if total > 1:
+                st.markdown(
+                    f'<div style="font-size:0.78rem;color:#8BA0B8;margin:-4px 0 14px;">'
+                    f'👥 <strong>{finished}/{total}</strong> builders have finished all '
+                    f'{unit_label.lower()} {week_num} tasks</div>',
+                    unsafe_allow_html=True
+                )
+
             # Materials
             section_label("This week's materials", color="var(--teal)")
             icon_map = {"book":"📖","video":"🎥","article":"📄","worksheet":"📝","template":"🗂️"}
@@ -157,6 +171,7 @@ def show():
                             email, week_num, idx,
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         )
+                        touch_last_active(email)
                         if len(week_done) + 1 == len(week_data["tasks"]):
                             st.session_state["celebrate"] = "tasks"
                             st.session_state["celebrate_week"] = week_num
@@ -214,6 +229,7 @@ def show():
                                 email, week_num, response.strip(),
                                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             )
+                            touch_last_active(email)
                             st.session_state["celebrate"] = "reflection"
                             st.session_state["celebrate_week"] = week_num
                             st.rerun()
