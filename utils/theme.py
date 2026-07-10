@@ -463,6 +463,19 @@ def section_label(text: str, color: str = ""):
                 unsafe_allow_html=True)
 
 
+def subheading(text: str, color: str = ""):
+    """Mid-size branded heading (Syne font) for panel sub-sections —
+    e.g. 'Create a new program', 'Your programs'. Bigger and more
+    prominent than section_label(), which is a small uppercase eyebrow
+    label meant for finer subsections within a page."""
+    accent = f"color:{color};" if color else "color:var(--text-1);"
+    st.markdown(f"""
+<div style="font-family:var(--font-d);font-size:1.15rem;font-weight:700;
+            {accent}letter-spacing:-0.02em;margin:1.4rem 0 0.6rem 0;">
+  {text}
+</div>""", unsafe_allow_html=True)
+
+
 def page_header(title: str, subtitle: str = ""):
     st.markdown(f"""
 <div style="margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">

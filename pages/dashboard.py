@@ -1,54 +1,50 @@
 import streamlit as st
-from datetime import datetime
-from utils.auth import get_current_participant, logout
+from utils.db import (
+    get_current_profile, logout, get_active_program, get_active_week,
+    get_program_weeks, get_progress, mark_task_done, get_reflection,
+    submit_reflection, get_prompt, touch_last_active, get_week_completion_stats,
+)
 from utils.theme import (
     apply_css, page_header, section_label, week_badge,
     task_card, material_card, reflection_box, feedback_box, kpi_card,
 )
-from utils.sheets import (
-    get_progress_from_sheet, mark_task_done, get_active_week_live,
-    get_reflection, submit_reflection, get_feedback, get_prompt,
-    get_program_weeks, get_active_program_id_live, get_active_unit_label_live,
-    touch_last_active, get_week_completion_stats,
-)
-from config import PROGRAM_NAME
 import time
 
 
-def get_progress(email: str) -> dict:
-    if "progress" not in st.session_state or st.session_state.get("progress_email") != email:
-        st.session_state["progress"] = get_progress_from_sheet(email)
-        st.session_state["progress_email"] = email
-    return st.session_state["progress"]
+def get_progress_cached(participant_id: str, program_id: str) -> dict:
+    key = f"progress_{program_id}"
+    if key not in st.session_state or st.session_state.get(f"{key}_pid") != participant_id:
+        st.session_state[key] = get_progress(participant_id, program_id)
+        st.session_state[f"{key}_pid"] = participant_id
+    return st.session_state[key]
 
 
-def get_active_week_cached() -> int:
-    now = time.time()
-    if now - st.session_state.get("active_week_last_check", 0) > 60 \
-            or "active_week" not in st.session_state:
-        st.session_state["active_week"] = get_active_week_live()
-        st.session_state["active_week_last_check"] = now
-    return st.session_state["active_week"]
-
-
-def get_reflection_cached(email: str, week: int) -> dict | None:
-    key = f"reflection_{week}"
+def get_reflection_cached(participant_id: str, program_id: str, week: int) -> dict | None:
+    key = f"reflection_{program_id}_{week}"
     if key not in st.session_state:
-        st.session_state[key] = get_reflection(email, week)
+        st.session_state[key] = get_reflection(participant_id, program_id, week)
     return st.session_state[key]
 
 
 def show():
     apply_css()
 
-    # Load active program content
-    active_pid   = get_active_program_id_live()
-    PROGRAM_WEEKS = get_program_weeks(active_pid) if active_pid else {}
-    TOTAL_WEEKS   = len(PROGRAM_WEEKS)
-    unit_label    = get_active_unit_label_live() or "Week"
+    profile = get_current_profile()
+    if not profile:
+        st.error("Session expired. Please log in again.")
+        st.stop()
 
-    # ── Celebration handler (runs at top of next rerun) ───────
+    org_id = profile["org_id"]
+    participant_id = profile["id"]
+    first_name = profile["full_name"].split()[0]
+
+    active_program = get_active_program(org_id)
+
+    touch_last_active(org_id, participant_id)
+
+    # ── Celebration handler ────────────────────────────────────
     celebrate = st.session_state.pop("celebrate", None)
+    unit_label = active_program["unit_label"] if active_program else "Week"
     if celebrate == "tasks":
         w = st.session_state.pop("celebrate_week", "")
         st.toast(f"{unit_label} {w} tasks complete! Now write your reflection 🎉", icon="🏅")
@@ -60,43 +56,44 @@ def show():
     elif celebrate == "task_single":
         st.toast("Task marked complete!", icon="✅")
 
-    participant = get_current_participant()
-    first_name  = participant["full_name"].split()[0]
-    email       = participant["email"]
-    touch_last_active(email)
-
     # ── Header ────────────────────────────────────────────────
     col1, col2 = st.columns([5, 1])
     with col1:
-        page_header(
-            f"Welcome back, {first_name}",
-            f"{PROGRAM_NAME} · {participant['cohort_type']}"
-        )
+        page_header(f"Welcome back, {first_name}", profile.get("email", ""))
     with col2:
         st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
         if st.button("Log out", type="secondary"):
             logout()
             st.rerun()
 
-    # ── KPI row ───────────────────────────────────────────────
-    active_week = get_active_week_cached()
-    progress    = get_progress(email)
+    if not active_program:
+        st.info("Your organization hasn't activated a program yet. Check back soon, "
+                 "or reach out to your cohort admin.")
+        return
 
-    week_keys       = sorted(PROGRAM_WEEKS.keys())
-    total_tasks     = sum(len(PROGRAM_WEEKS[w]["tasks"]) for w in week_keys if w <= active_week)
+    program_id = active_program["id"]
+    active_week = active_program["active_week"]
+    PROGRAM_WEEKS = get_program_weeks(program_id)
+    week_keys = sorted(PROGRAM_WEEKS.keys())
+
+    progress = get_progress_cached(participant_id, program_id)
+
+    total_tasks = sum(len(PROGRAM_WEEKS[w]["tasks"]) for w in week_keys if w <= active_week)
     completed_tasks = sum(len(v) for v in progress.values())
-    pct             = min(100, int((completed_tasks / total_tasks * 100) if total_tasks else 0))
+    pct = min(100, int((completed_tasks / total_tasks * 100) if total_tasks else 0))
 
     col_a, col_b, col_c = st.columns(3)
-    with col_a: kpi_card("Current unit",   f"{unit_label} {active_week}", icon="🗓")
-    with col_b: kpi_card("Tasks done",     f"{completed_tasks}/{total_tasks}", icon="✅")
-    with col_c: kpi_card("Progress",       f"{pct}%", icon="📈")
+    with col_a:
+        kpi_card("Current unit", f"{unit_label} {active_week}", icon="🗓")
+    with col_b:
+        kpi_card("Tasks done", f"{completed_tasks}/{total_tasks}", icon="✅")
+    with col_c:
+        kpi_card("Progress", f"{pct}%", icon="📈")
 
     section_label("Overall completion")
     st.progress(pct / 100)
     st.markdown("<div style='margin-bottom:1.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── Week tabs ─────────────────────────────────────────────
     if not week_keys:
         st.info("No program content has been published yet. Check back soon.")
         return
@@ -105,10 +102,9 @@ def show():
 
     for tab, week_num in zip(tabs, week_keys):
         week_data = PROGRAM_WEEKS[week_num]
-        locked    = week_num > active_week
+        locked = week_num > active_week
 
         with tab:
-            # Week title + badge
             st.markdown(f"""
 <div style="display:flex;align-items:center;gap:12px;padding:6px 0 4px;">
   <div style="font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:#F0F4F8;">
@@ -120,7 +116,6 @@ def show():
   {week_data['theme']}
 </div>""", unsafe_allow_html=True)
 
-            # Locked state
             if locked:
                 st.markdown("""
 <div style="background:rgba(255,255,255,0.02);border:1px dashed #1F2D3D;
@@ -132,10 +127,7 @@ def show():
 </div>""", unsafe_allow_html=True)
                 continue
 
-            # Cohort progress — social visibility, not just a solo checklist
-            finished, total = get_week_completion_stats(
-                active_pid, week_num, len(week_data["tasks"])
-            )
+            finished, total = get_week_completion_stats(program_id, week_num, len(week_data["tasks"]))
             if total > 1:
                 st.markdown(
                     f'<div style="font-size:0.78rem;color:#8BA0B8;margin:-4px 0 14px;">'
@@ -144,13 +136,11 @@ def show():
                     unsafe_allow_html=True
                 )
 
-            # Materials
             section_label("This week's materials", color="var(--teal)")
-            icon_map = {"book":"📖","video":"🎥","article":"📄","worksheet":"📝","template":"🗂️"}
+            icon_map = {"book": "📖", "video": "🎥", "article": "📄", "worksheet": "📝", "template": "🗂️"}
             for mat in week_data["materials"]:
                 material_card(icon_map.get(mat["type"], "•"), mat["label"])
 
-            # Tasks
             section_label("Your tasks", color="var(--gold)")
             week_done = progress.get(week_num, [])
 
@@ -159,31 +149,23 @@ def show():
                 if done:
                     task_card(task, done=True)
                 else:
-                    # Show card + a checkbox below it to mark complete
                     task_card(task, done=False)
-                    checked = st.checkbox(
-                        "Mark as complete",
-                        key=f"task_{week_num}_{idx}",
-                        value=False,
-                    )
+                    checked = st.checkbox("Mark as complete", key=f"task_{week_num}_{idx}", value=False)
                     if checked:
-                        mark_task_done(
-                            email, week_num, idx,
-                            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        )
-                        touch_last_active(email)
+                        mark_task_done(org_id, participant_id, program_id, week_num, idx)
+                        touch_last_active(org_id, participant_id)
                         if len(week_done) + 1 == len(week_data["tasks"]):
                             st.session_state["celebrate"] = "tasks"
                             st.session_state["celebrate_week"] = week_num
                         else:
                             st.session_state["celebrate"] = "task_single"
+                        st.session_state.pop(f"progress_{program_id}", None)
                         st.rerun()
 
             st.divider()
 
-            # ── Reflection ────────────────────────────────────
             all_tasks_done = len(week_done) == len(week_data["tasks"])
-            reflection     = get_reflection_cached(email, week_num)
+            reflection = get_reflection_cached(participant_id, program_id, week_num)
 
             if not all_tasks_done:
                 remaining = len(week_data["tasks"]) - len(week_done)
@@ -206,13 +188,13 @@ def show():
                         unsafe_allow_html=True
                     )
 
-                fb = get_feedback(email, week_num)
+                fb = reflection.get("feedback", "")
                 if fb:
-                    section_label("Feedback from Abdul", color="var(--gold)")
+                    section_label("Feedback from your cohort admin", color="var(--gold)")
                     feedback_box(fb)
 
             else:
-                prompt = get_prompt(week_num)
+                prompt = get_prompt(program_id, week_num)
                 if prompt:
                     section_label("Weekly reflection", color="var(--gold)")
                     reflection_box(prompt)
@@ -222,16 +204,13 @@ def show():
                         key=f"reflection_input_{week_num}",
                         height=140,
                     )
-                    if st.button("Submit reflection →",
-                                 key=f"submit_ref_{week_num}", type="primary"):
+                    if st.button("Submit reflection →", key=f"submit_ref_{week_num}", type="primary"):
                         if response.strip():
-                            submit_reflection(
-                                email, week_num, response.strip(),
-                                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            )
-                            touch_last_active(email)
+                            submit_reflection(org_id, participant_id, program_id, week_num, response.strip())
+                            touch_last_active(org_id, participant_id)
                             st.session_state["celebrate"] = "reflection"
                             st.session_state["celebrate_week"] = week_num
+                            st.session_state.pop(f"reflection_{program_id}_{week_num}", None)
                             st.rerun()
                         else:
                             st.warning("Please write something before submitting.")
@@ -243,14 +222,12 @@ def show():
 
     st.divider()
 
-    # ── Footer actions ────────────────────────────────────────
     col_r1, col_r2 = st.columns(2)
     with col_r1:
-        if st.button("🔄 Refresh progress", use_container_width=True, type="secondary"):
-            st.session_state.pop("progress", None)
+        if st.button("🔄 Refresh progress", width='stretch', type="secondary"):
+            st.session_state.pop(f"progress_{program_id}", None)
             st.rerun()
     with col_r2:
-        if st.button("🔄 Check for new weeks", use_container_width=True, type="secondary"):
-            st.session_state.pop("active_week", None)
-            st.session_state.pop("active_week_last_check", None)
+        if st.button("🔄 Check for new weeks", width='stretch', type="secondary"):
+            st.session_state.pop("profile", None)  # forces active_program re-fetch too
             st.rerun()
