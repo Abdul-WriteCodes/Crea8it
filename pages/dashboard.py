@@ -137,9 +137,15 @@ def show():
                 )
 
             section_label("This week's materials", color="var(--teal)")
-            icon_map = {"book": "📖", "video": "🎥", "article": "📄", "worksheet": "📝", "template": "🗂️"}
+            icon_map = {
+                "book": "📖", "video": "🎥", "article": "📄", "worksheet": "📝",
+                "template": "🗂️", "portfolio": "💼", "portfolio task": "💼",
+                "assignment": "🧩", "link": "🔗", "podcast": "🎧", "quiz": "❓",
+                "slides": "📊", "code": "💻", "tool": "🛠️",
+            }
             for mat in week_data["materials"]:
-                material_card(icon_map.get(mat["type"], "•"), mat["label"])
+                icon = icon_map.get(mat["type"].strip().lower(), "🔗")
+                material_card(icon, mat["label"])
 
             section_label("Your tasks", color="var(--gold)")
             week_done = progress.get(week_num, [])
