@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 from utils.db import (
     get_current_profile, logout, get_all_programs, create_program, delete_program,
@@ -136,71 +137,92 @@ def show():
         if not programs:
             st.info("Create a program first.")
         else:
+            MATERIAL_TYPES = ["book", "video", "article", "worksheet", "template",
+                              "portfolio", "assignment", "podcast", "quiz", "slides", "code", "tool"]
+
             program_names = {p["id"]: p["name"] for p in programs}
             selected_pid = st.selectbox("Program", list(program_names.keys()),
                                         format_func=lambda pid: program_names[pid])
             selected_program = next(p for p in programs if p["id"] == selected_pid)
+            unit_label = selected_program.get("unit_label", "Week")
 
             weeks = get_program_weeks(selected_pid)
             existing_week_nums = sorted(weeks.keys())
-            week_num = st.number_input(
-                "Week / unit number", min_value=1, max_value=selected_program.get("duration_weeks", 52),
+            week_num = int(st.number_input(
+                f"{unit_label} number", min_value=1, max_value=selected_program.get("duration_weeks", 52),
                 value=min((max(existing_week_nums) + 1) if existing_week_nums else 1,
                          selected_program.get("duration_weeks", 52))
-            )
+            ))
 
-            current = weeks.get(int(week_num), {"title": "", "theme": "", "materials": [], "tasks": []})
+            current = weeks.get(week_num, {"title": "", "theme": "", "materials": [], "tasks": []})
 
-            title = st.text_input("Title", value=current["title"], key=f"title_{week_num}")
-            theme = st.text_input("Theme", value=current["theme"], key=f"theme_{week_num}")
+            title = st.text_input("Title", value=current["title"],
+                                  placeholder=f"e.g. {unit_label} {week_num}: Getting Started",
+                                  key=f"title_{week_num}")
+            theme = st.text_input("Subtitle / theme", value=current["theme"],
+                                  placeholder="e.g. Understand the landscape and why it matters",
+                                  key=f"theme_{week_num}")
 
-            st.caption("Materials — add as many rows as you need. Type is free text: "
-                      "'video', 'article', 'portfolio task', anything.")
-            materials_df = st.data_editor(
-                [{"type": m["type"], "label": m["label"]} for m in current["materials"]] or
-                [{"type": "video", "label": ""}],
-                num_rows="dynamic",
-                key=f"materials_editor_{week_num}",
-                column_config={
-                    "type": st.column_config.TextColumn("Type", width="small"),
-                    "label": st.column_config.TextColumn("Description", width="large"),
-                },
-                width='stretch',
-            )
+            st.markdown("**Materials** (up to 8)")
+            ex_mats = current["materials"]
+            mat_count = st.number_input("How many materials?", min_value=0, max_value=8,
+                                        value=len(ex_mats), key=f"mat_n_{week_num}")
+            materials = []
+            for m in range(int(mat_count)):
+                default_label = ex_mats[m]["label"] if m < len(ex_mats) else ""
+                default_type = ex_mats[m]["type"] if m < len(ex_mats) else "article"
+                mc1, mc2 = st.columns([3, 1])
+                with mc1:
+                    ml = st.text_input(f"Material {m+1}", value=default_label,
+                                       placeholder="e.g. Watch: Intro video", key=f"mat_lbl_{week_num}_{m}")
+                with mc2:
+                    idx = MATERIAL_TYPES.index(default_type) if default_type in MATERIAL_TYPES else 0
+                    mt = st.selectbox("Type", MATERIAL_TYPES, index=idx, key=f"mat_tp_{week_num}_{m}")
+                if ml.strip():
+                    materials.append({"label": ml.strip(), "type": mt})
 
-            st.caption("Tasks — add as many as this week needs, one row each.")
-            tasks_df = st.data_editor(
-                [{"task": t} for t in current["tasks"]] or [{"task": ""}],
-                num_rows="dynamic",
-                key=f"tasks_editor_{week_num}",
-                column_config={
-                    "task": st.column_config.TextColumn("Task description", width="large"),
-                },
-                width='stretch',
-            )
+            st.markdown("**Activities / Tasks** (up to 10)")
+            st.caption("Add an optional resource link to any task — it becomes clickable on the dashboard.")
+            ex_tasks = current["tasks"]
+            task_count = st.number_input("How many tasks?", min_value=0, max_value=10,
+                                         value=len(ex_tasks), key=f"task_n_{week_num}")
+            tasks = []
+            for t in range(int(task_count)):
+                raw = ex_tasks[t] if t < len(ex_tasks) else ""
+                # Reverse-parse an existing "text [Open →](url)" back into text + url,
+                # so re-opening a saved week pre-fills the Link field correctly.
+                m = re.match(r"^(.*?)\s*\[.*?\]\((https?://[^\)]+)\)\s*$", raw)
+                default_text = m.group(1).strip() if m else raw
+                default_link = m.group(2).strip() if m else ""
+                tc1, tc2 = st.columns([3, 2])
+                with tc1:
+                    tv = st.text_input(f"Task {t+1}", value=default_text,
+                                       placeholder="e.g. Complete the worksheet", key=f"task_{week_num}_{t}")
+                with tc2:
+                    tl = st.text_input(f"Link {t+1} (optional)", value=default_link,
+                                       placeholder="https://...", key=f"task_link_{week_num}_{t}")
+                if tv.strip():
+                    task_text = f"{tv.strip()} [Open →]({tl.strip()})" if tl.strip() else tv.strip()
+                    tasks.append(task_text)
 
             prompt_val = st.text_area(
                 "Reflection prompt (shown once all tasks for this week are done)",
-                value=get_prompt(selected_pid, int(week_num)), height=80,
+                value=get_prompt(selected_pid, week_num), height=80,
                 key=f"prompt_{week_num}"
             )
 
-            if st.button("💾 Save week content", type="primary", key=f"save_{week_num}"):
-                materials = [
-                    {"type": row["type"].strip(), "label": row["label"].strip()}
-                    for row in materials_df
-                    if row.get("type", "").strip() and row.get("label", "").strip()
-                ]
-                tasks = [row["task"].strip() for row in tasks_df if row.get("task", "").strip()]
-
-                if not tasks:
+            if st.button(f"💾 Save {unit_label} {week_num}", type="primary", key=f"save_{week_num}"):
+                if not title.strip():
+                    st.warning("Title is required.")
+                elif not tasks:
                     st.warning("Add at least one task before saving.")
                 else:
-                    save_program_week(org_id, selected_pid, int(week_num), title.strip(),
+                    save_program_week(org_id, selected_pid, week_num, title.strip(),
                                       theme.strip(), materials, tasks)
-                    set_prompt(org_id, selected_pid, int(week_num), prompt_val)
+                    set_prompt(org_id, selected_pid, week_num, prompt_val)
                     _flash("content", "success",
-                          f"Week {int(week_num)} saved — {len(materials)} material(s), {len(tasks)} task(s).")
+                          f"{unit_label} {week_num} — '{title.strip()}' saved. "
+                          f"{len(materials)} material(s), {len(tasks)} task(s).")
                     st.rerun()
 
             if int(week_num) in weeks:
