@@ -6,6 +6,7 @@ from utils.db import (
     get_prompt, set_prompt, get_all_participants, get_last_active_map,
     get_all_reflections, save_feedback, wipe_all_progress,
     create_payment_codes, get_org_payment_codes, get_my_organization,
+    get_program_engagement,
 )
 from utils.notify import build_whatsapp_link
 from utils.theme import page_header, subheading
@@ -30,6 +31,8 @@ def show():
 
     org_id = profile["org_id"]
 
+    org = get_my_organization(org_id)
+
     col1, col2 = st.columns([5, 1])
     with col1:
         page_header("🧩 Cohort admin", f"Logged in as {profile['full_name']}")
@@ -39,7 +42,21 @@ def show():
             logout()
             st.rerun()
 
-    org = get_my_organization(org_id)
+    if not org or not org["is_active"]:
+        st.markdown("""
+<div style="background:rgba(245,166,35,0.08);border:1px solid #F5A623;
+            border-radius:10px;padding:20px;margin:8px 0;">
+  <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;
+              color:#F5A623;margin-bottom:6px;">⏳ Awaiting approval</div>
+  <div style="color:#8BA0B8;font-size:0.88rem;line-height:1.6;">
+    Your organization has been created, but a Crea8it platform admin
+    needs to approve it before you can start building your program or
+    inviting participants. This is usually quick — check back shortly,
+    or reach out if it's been a while.
+  </div>
+</div>""", unsafe_allow_html=True)
+        return
+
     if org:
         st.markdown(f"""
 <div style="background:rgba(0,180,216,0.08);border:1px solid #00B4D8;
@@ -54,8 +71,8 @@ def show():
 </div>
 """, unsafe_allow_html=True)
 
-    tab_programs, tab_content, tab_members, tab_reflections, tab_codes = st.tabs(
-        ["📚 Programs", "📝 Week content", "👥 Members", "💬 Reflections", "🔑 Payment codes"]
+    tab_programs, tab_content, tab_members, tab_engagement, tab_reflections, tab_codes = st.tabs(
+        ["📚 Programs", "📝 Week content", "👥 Members", "📊 Engagement", "💬 Reflections", "🔑 Payment codes"]
     )
 
     # ═══════════════════════════════════════════════════════════
@@ -68,11 +85,18 @@ def show():
         subheading("Create a new program", color="var(--teal)")
         with st.form("create_program_form"):
             name = st.text_input("Program name")
-            unit_label = st.text_input("Unit label", value="Week", help="e.g. 'Week', 'Module', 'Sprint'")
+            col_a, col_b = st.columns(2)
+            with col_a:
+                unit_label = st.text_input("Unit label", value="Week", help="e.g. 'Week', 'Module', 'Sprint'")
+            with col_b:
+                duration_weeks = st.number_input(
+                    "Duration", min_value=1, max_value=52, value=4,
+                    help="How many units this program runs for — 1, 2, 6, 12... your call."
+                )
             submitted = st.form_submit_button("Create program")
         if submitted and name.strip():
-            create_program(org_id, name.strip(), unit_label.strip() or "Week")
-            _flash("programs", "success", f"Program '{name}' created.")
+            create_program(org_id, name.strip(), unit_label.strip() or "Week", int(duration_weeks))
+            _flash("programs", "success", f"Program '{name}' created — {int(duration_weeks)} {unit_label or 'Week'}(s).")
             st.rerun()
 
         st.divider()
@@ -81,15 +105,18 @@ def show():
             st.info("No programs yet — create one above.")
         for p in programs:
             with st.expander(f"{'🟢 ' if p['is_active'] else ''}{p['name']} ({p['unit_label']})"):
-                st.write(f"Active week: **{p['active_week']}**")
+                st.write(f"Active week: **{p['active_week']}** of **{p.get('duration_weeks', '—')}**")
                 col_a, col_b, col_c = st.columns(3)
                 with col_a:
                     if not p["is_active"] and st.button("Set as active program", key=f"activate_{p['id']}"):
                         set_active_program(org_id, p["id"])
                         st.rerun()
                 with col_b:
-                    new_week = st.number_input("Set active week", min_value=1, value=p["active_week"],
-                                               key=f"week_input_{p['id']}")
+                    new_week = st.number_input(
+                        "Set active week", min_value=1, max_value=p.get("duration_weeks", 52),
+                        value=min(p["active_week"], p.get("duration_weeks", 52)),
+                        key=f"week_input_{p['id']}"
+                    )
                     if st.button("Update active week", key=f"update_week_{p['id']}"):
                         set_active_week(p["id"], int(new_week))
                         _flash("programs", "success", "Active week updated.")
@@ -112,53 +139,117 @@ def show():
             program_names = {p["id"]: p["name"] for p in programs}
             selected_pid = st.selectbox("Program", list(program_names.keys()),
                                         format_func=lambda pid: program_names[pid])
+            selected_program = next(p for p in programs if p["id"] == selected_pid)
 
             weeks = get_program_weeks(selected_pid)
             existing_week_nums = sorted(weeks.keys())
-            week_num = st.number_input("Week / unit number", min_value=1,
-                                       value=(max(existing_week_nums) + 1) if existing_week_nums else 1)
+            week_num = st.number_input(
+                "Week / unit number", min_value=1, max_value=selected_program.get("duration_weeks", 52),
+                value=min((max(existing_week_nums) + 1) if existing_week_nums else 1,
+                         selected_program.get("duration_weeks", 52))
+            )
 
             current = weeks.get(int(week_num), {"title": "", "theme": "", "materials": [], "tasks": []})
 
-            with st.form(f"content_form_{week_num}"):
-                title = st.text_input("Title", value=current["title"])
-                theme = st.text_input("Theme", value=current["theme"])
+            title = st.text_input("Title", value=current["title"], key=f"title_{week_num}")
+            theme = st.text_input("Theme", value=current["theme"], key=f"theme_{week_num}")
 
-                st.caption("Materials (one per line, format: `type|label`, e.g. `video|Intro to prompting`)")
-                materials_raw = st.text_area(
-                    "Materials", height=100,
-                    value="\n".join(f"{m['type']}|{m['label']}" for m in current["materials"])
-                )
+            st.caption("Materials — add as many rows as you need. Type is free text: "
+                      "'video', 'article', 'portfolio task', anything.")
+            materials_df = st.data_editor(
+                [{"type": m["type"], "label": m["label"]} for m in current["materials"]] or
+                [{"type": "video", "label": ""}],
+                num_rows="dynamic",
+                key=f"materials_editor_{week_num}",
+                column_config={
+                    "type": st.column_config.TextColumn("Type", width="small"),
+                    "label": st.column_config.TextColumn("Description", width="large"),
+                },
+                width='stretch',
+            )
 
-                st.caption("Tasks (one per line)")
-                tasks_raw = st.text_area("Tasks", height=120, value="\n".join(current["tasks"]))
+            st.caption("Tasks — add as many as this week needs, one row each.")
+            tasks_df = st.data_editor(
+                [{"task": t} for t in current["tasks"]] or [{"task": ""}],
+                num_rows="dynamic",
+                key=f"tasks_editor_{week_num}",
+                column_config={
+                    "task": st.column_config.TextColumn("Task description", width="large"),
+                },
+                width='stretch',
+            )
 
-                prompt_val = st.text_area(
-                    "Reflection prompt (shown once all tasks for this week are done)",
-                    value=get_prompt(selected_pid, int(week_num)), height=80
-                )
+            prompt_val = st.text_area(
+                "Reflection prompt (shown once all tasks for this week are done)",
+                value=get_prompt(selected_pid, int(week_num)), height=80,
+                key=f"prompt_{week_num}"
+            )
 
-                save_btn = st.form_submit_button("Save week content")
+            if st.button("💾 Save week content", type="primary", key=f"save_{week_num}"):
+                materials = [
+                    {"type": row["type"].strip(), "label": row["label"].strip()}
+                    for row in materials_df
+                    if row.get("type", "").strip() and row.get("label", "").strip()
+                ]
+                tasks = [row["task"].strip() for row in tasks_df if row.get("task", "").strip()]
 
-            if save_btn:
-                materials = []
-                for line in materials_raw.splitlines():
-                    if "|" in line:
-                        t, label = line.split("|", 1)
-                        materials.append({"type": t.strip(), "label": label.strip()})
-                tasks = [t.strip() for t in tasks_raw.splitlines() if t.strip()]
-
-                save_program_week(org_id, selected_pid, int(week_num), title.strip(),
-                                  theme.strip(), materials, tasks)
-                set_prompt(org_id, selected_pid, int(week_num), prompt_val)
-                _flash("content", "success", f"Week {int(week_num)} saved.")
-                st.rerun()
+                if not tasks:
+                    st.warning("Add at least one task before saving.")
+                else:
+                    save_program_week(org_id, selected_pid, int(week_num), title.strip(),
+                                      theme.strip(), materials, tasks)
+                    set_prompt(org_id, selected_pid, int(week_num), prompt_val)
+                    _flash("content", "success",
+                          f"Week {int(week_num)} saved — {len(materials)} material(s), {len(tasks)} task(s).")
+                    st.rerun()
 
             if int(week_num) in weeks:
-                if st.button("Delete this week", type="secondary"):
+                if st.button("Delete this week", type="secondary", key=f"delete_{week_num}"):
                     delete_week_from_program(selected_pid, int(week_num))
                     _flash("content", "warning", f"Week {int(week_num)} deleted.")
                     st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Engagement
+    # ═══════════════════════════════════════════════════════════
+    with tab_engagement:
+        programs = get_all_programs(org_id)
+        if not programs:
+            st.info("Create a program first.")
+        else:
+            program_names = {p["id"]: p["name"] for p in programs}
+            eng_pid = st.selectbox("Program", list(program_names.keys()),
+                                   format_func=lambda pid: program_names[pid], key="engagement_program_select")
+
+            engagement = get_program_engagement(org_id, eng_pid)
+
+            if not engagement:
+                st.info("No participants yet for this program.")
+            else:
+                total = len(engagement)
+                fully_engaged = sum(1 for e in engagement if e["pct"] >= 80)
+                avg_pct = round(sum(e["pct"] for e in engagement) / total) if total else 0
+
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Participants", total)
+                col2.metric("Avg. completion", f"{avg_pct}%")
+                col3.metric("Highly engaged (80%+)", fully_engaged)
+
+                st.divider()
+                for e in engagement:
+                    with st.container(border=True):
+                        col_a, col_b = st.columns([3, 2])
+                        with col_a:
+                            st.write(f"**{e['full_name']}**")
+                            st.caption(f"{e['email']} · {e['whatsapp']}")
+                            st.caption(f"Last active: {e['last_active']}")
+                        with col_b:
+                            st.progress(e["pct"] / 100,
+                                       text=f"{e['tasks_done']}/{e['tasks_total']} tasks ({e['pct']}%)")
+                            st.caption(
+                                f"{e['weeks_completed']}/{e['weeks_total']} weeks fully done · "
+                                f"{e['reflections_submitted']} reflection(s) submitted"
+                            )
 
     # ═══════════════════════════════════════════════════════════
     # Members
