@@ -189,10 +189,11 @@ def get_all_programs(org_id: str) -> list[dict]:
     return res.data
 
 
-def create_program(org_id: str, name: str, unit_label: str = "Week") -> dict:
+def create_program(org_id: str, name: str, unit_label: str = "Week", duration_weeks: int = 4) -> dict:
     client = get_client()
     res = client.table("programs").insert({
         "org_id": org_id, "name": name, "unit_label": unit_label,
+        "duration_weeks": duration_weeks,
     }).execute()
     return res.data[0]
 
@@ -344,6 +345,61 @@ def get_week_completion_stats(program_id: str, week: int, task_count: int) -> tu
     finished = sum(1 for c in counts.values() if c >= task_count)
     total = len(counts)
     return finished, total
+
+
+def get_program_engagement(org_id: str, program_id: str) -> list[dict]:
+    """Full per-participant engagement breakdown across every week of a
+    program — task completion counts, reflection status, and last active
+    time. This is the data behind the admin 'Engagement' tab."""
+    client = get_client()
+
+    participants = get_all_participants(org_id)
+    weeks_data = get_program_weeks(program_id)
+    task_counts_by_week = {w: len(v["tasks"]) for w, v in weeks_data.items()}
+
+    progress_rows = (client.table("progress").select("participant_id, week, task_index")
+                      .eq("program_id", program_id).execute()).data
+    reflection_rows = (client.table("reflections").select("participant_id, week")
+                        .eq("program_id", program_id).execute()).data
+    last_active = get_last_active_map(org_id)
+
+    done_by_participant: dict = {}
+    for row in progress_rows:
+        pid, wk = row["participant_id"], row["week"]
+        done_by_participant.setdefault(pid, {}).setdefault(wk, set()).add(row["task_index"])
+
+    reflected_by_participant: dict = {}
+    for row in reflection_rows:
+        reflected_by_participant.setdefault(row["participant_id"], set()).add(row["week"])
+
+    total_tasks_overall = sum(task_counts_by_week.values()) or 1
+    week_keys = sorted(task_counts_by_week.keys())
+
+    out = []
+    for p in participants:
+        pid = p["id"]
+        per_week = done_by_participant.get(pid, {})
+        total_done = sum(len(v) for v in per_week.values())
+        weeks_fully_done = sum(
+            1 for w in week_keys
+            if len(per_week.get(w, set())) >= task_counts_by_week.get(w, 0) and task_counts_by_week.get(w, 0) > 0
+        )
+        out.append({
+            "participant_id": pid,
+            "full_name": p["full_name"],
+            "whatsapp": p.get("whatsapp", ""),
+            "email": p.get("email", ""),
+            "tasks_done": total_done,
+            "tasks_total": total_tasks_overall,
+            "pct": round(100 * total_done / total_tasks_overall) if total_tasks_overall else 0,
+            "weeks_completed": weeks_fully_done,
+            "weeks_total": len(week_keys),
+            "reflections_submitted": len(reflected_by_participant.get(pid, set())),
+            "last_active": last_active.get(pid, "never"),
+        })
+
+    out.sort(key=lambda r: r["pct"], reverse=True)
+    return out
 
 
 # ═══════════════════════════════════════════════════════════════
