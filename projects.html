@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Projects — Crea8it — The Product Shelf</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --bg:#171009;
+    --board:#1d160e;
+    --paper:#f7efdc;
+    --paper-dim:#efe3c8;
+    --ink:#f4f0e6;
+    --ink-dark:#2a2113;
+    --muted:#a89b83;
+    --accent:#ffb703;      /* marker gold — brand */
+    --accent2:#e2572b;     /* rust pin / tape */
+    --accent3:#3f7a68;     /* stamp green */
+    --border:#3a2f1e;
+    --hand:'Permanent Marker', cursive;
+    --mono:'Space Mono', monospace;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html{ scroll-behavior:smooth; }
+
+body{
+    font-family:'Inter', sans-serif;
+    background-color:var(--bg);
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 0);
+    background-size:16px 16px;
+    color:var(--ink);
+    line-height:1.6;
+}
+
+.container{
+    width:min(1200px,92%);
+    margin:auto;
+}
+
+a{ color:inherit; }
+
+::selection{ background:var(--accent); color:#1a1207; }
+
+@media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001s !important; animation-iteration-count:1 !important; transition-duration:.001s !important; }
+}
+
+/* ── shared hand-drawn bits ── */
+
+.hand{ font-family:var(--hand); }
+
+.tape{
+    position:absolute;
+    width:76px; height:28px;
+    background:linear-gradient(135deg, rgba(255,244,214,.75), rgba(255,224,170,.5));
+    border:1px solid rgba(255,255,255,.5);
+    box-shadow:0 3px 6px rgba(0,0,0,.28);
+    z-index:4;
+}
+.tape.tl{ top:-14px; left:14px; transform:rotate(-8deg); }
+.tape.tr{ top:-14px; right:14px; transform:rotate(7deg); }
+.tape.tc{ top:-14px; left:50%; transform:translateX(-50%) rotate(-4deg); }
+
+.pin{
+    position:absolute; top:-11px; left:50%; transform:translateX(-50%);
+    width:17px; height:17px; border-radius:50%;
+    background:radial-gradient(circle at 32% 30%, #ff7a63, var(--accent2) 72%);
+    box-shadow:0 3px 6px rgba(0,0,0,.45), inset 0 -2px 2px rgba(0,0,0,.25);
+    z-index:5;
+}
+
+.stamp{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:var(--mono);
+    font-size:.72rem;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--accent3);
+    border:2px solid var(--accent3);
+    border-radius:6px;
+    padding:5px 10px;
+    transform:rotate(-4deg);
+    opacity:.9;
+}
+
+.badge{
+    display:inline-block;
+    background:var(--accent);
+    color:#1c1305;
+    padding:9px 16px;
+    border-radius:3px;
+    margin-bottom:18px;
+    font-family:var(--mono);
+    font-size:.78rem;
+    font-weight:700;
+    letter-spacing:.5px;
+    box-shadow:0 6px 14px rgba(0,0,0,.35);
+    transform:rotate(-2deg);
+    position:relative;
+}
+
+.eyebrow{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--mono);
+    font-size:.75rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    margin-bottom:10px;
+}
+.eyebrow::before{
+    content:"";
+    width:22px; height:1px;
+    background:var(--accent2);
+}
+
+/* ── nav ── */
+
+nav{
+    padding:22px 0;
+    border-bottom:1px dashed var(--border);
+    position:sticky;
+    top:0;
+    background:rgba(23,16,9,.88);
+    backdrop-filter:blur(6px);
+    z-index:50;
+}
+
+.nav-wrapper{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo-block{ display:flex; align-items:baseline; gap:10px; }
+
+.logo{
+    font-family:var(--hand);
+    font-size:1.7rem;
+    color:var(--accent);
+    transform:rotate(-3deg);
+}
+
+.logo-sub{
+    font-family:var(--mono);
+    font-size:.68rem;
+    color:var(--muted);
+    letter-spacing:1px;
+}
+
+.nav-links{ display:flex; gap:28px; }
+
+.nav-links a{
+    text-decoration:none;
+    color:var(--ink);
+    font-size:.9rem;
+    font-weight:500;
+    position:relative;
+}
+.nav-links a:hover{ color:var(--accent); }
+
+.btn{
+    display:inline-block;
+    padding:13px 22px;
+    border-radius:4px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:.88rem;
+    transition:.25s;
+    border:2px solid transparent;
+}
+
+.btn-primary{
+    background:var(--accent);
+    color:#1c1305;
+    box-shadow:0 6px 0 #b98200;
+}
+.btn-primary:hover{ transform:translateY(2px); box-shadow:0 4px 0 #b98200; }
+
+.btn-secondary{
+    background:transparent;
+    border:2px dashed var(--accent2);
+    color:var(--accent2);
+}
+.btn-secondary:hover{ background:rgba(226,87,43,.12); transform:translateY(-2px); }
+
+/* ── hero ── */
+
+.hero{
+    padding:100px 0 90px;
+    position:relative;
+    overflow:hidden;
+}
+
+.hero-grid{
+    display:grid;
+    grid-template-columns:1.15fr .85fr;
+    gap:50px;
+    align-items:center;
+}
+
+.hero h1{
+    font-family:var(--hand);
+    font-size:clamp(3.2rem,7vw,5.6rem);
+    line-height:1.02;
+    margin:6px 0 26px;
+}
+.hero h1 span{ display:inline-block; }
+.hero h1 .l1{ transform:rotate(-2deg); }
+.hero h1 .l2{ color:var(--accent); transform:rotate(1.5deg); margin-left:.4em; }
+.hero h1 .l3{ transform:rotate(-1deg); }
+
+.hero p.lede{
+    max-width:560px;
+    color:var(--muted);
+    font-size:1.05rem;
+}
+
+.hero-buttons{
+    margin-top:36px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+}
+.hero-buttons a:nth-child(2){ transform:rotate(-1deg); }
+.hero-buttons a:nth-child(3){ transform:rotate(1deg); }
+
+.hero-photo-wrap{
+    position:relative;
+    display:flex;
+    justify-content:center;
+}
+
+.hero-sticky{
+    position:absolute;
+    top:-18px;
+    right:-6px;
+    background:var(--accent);
+    color:#1c1305;
+    font-family:var(--mono);
+    font-size:.7rem;
+    font-weight:700;
+    padding:10px 12px;
+    width:112px;
+    line-height:1.4;
+    box-shadow:4px 6px 0 rgba(0,0,0,.35);
+    transform:rotate(6deg);
+    z-index:6;
+}
+
+/* ── polaroid / index-card system ── */
+
+.polaroid{
+    position:relative;
+    background:var(--paper);
+    padding:12px 12px 44px;
+    box-shadow:0 14px 30px rgba(0,0,0,.5), 0 3px 8px rgba(0,0,0,.35);
+}
+.polaroid img{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+.polaroid figcaption{
+    position:absolute;
+    bottom:10px; left:0; right:0;
+    text-align:center;
+    font-family:var(--hand);
+    font-size:.95rem;
+    color:#2c2412;
+}
+
+/* ── hero flip effect ── */
+.flip-polaroid .flip-inner{
+    position:relative;
+    width:100%;
+    aspect-ratio:1/1; /* match this to your photo's real w/h ratio, e.g. 1/1 for square, 3/4 for classic portrait */
+    perspective:1000px;
+}
+.flip-polaroid .flip-img{
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    opacity:0;
+    transform:rotateY(90deg);
+    transition:transform .6s ease, opacity .3s ease;
+    backface-visibility:hidden;
+}
+.flip-polaroid .flip-img.active{
+    opacity:1;
+    transform:rotateY(0deg);
+}
+
+.index-card{
+    position:relative;
+    background:var(--paper-dim);
+    border-radius:3px;
+    box-shadow:0 14px 30px rgba(0,0,0,.45);
+    overflow:hidden;
+}
+.index-card::after{
+    content:"";
+    position:absolute;
+    top:0; bottom:0; left:36px;
+    width:1.5px;
+    background:#c0596b;
+    opacity:.4;
+}
+
+/* ── section shell ── */
+
+.section{ padding:100px 0; position:relative; }
+
+.section-head{ margin-bottom:56px; max-width:640px; }
+
+.section-title{
+    font-family:var(--hand);
+    font-size:2.3rem;
+    line-height:1.15;
+    transform:rotate(-1deg);
+}
+
+.section-note{
+    color:var(--muted);
+    margin-top:12px;
+    font-size:.98rem;
+}
+
+/* ── programs ── */
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:34px;
+}
+
+@media(min-width:880px){
+    .grid.programs-grid{ grid-template-columns:repeat(3,1fr); }
+    .grid.playbook-grid{ grid-template-columns:repeat(2,1fr); }
+}
+
+.card{
+    padding-top:22px;
+}
+
+.card-photo{
+    margin:0 16px;
+    height:170px;
+    overflow:hidden;
+    border:1px solid rgba(0,0,0,.08);
+}
+.card-photo img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:sepia(.08) contrast(1.02);
+}
+
+.card-body{
+    padding:20px 22px 24px;
+    color:var(--ink-dark);
+}
+
+.card-body h3{
+    font-family:var(--hand);
+    font-size:1.25rem;
+    margin-bottom:10px;
+    color:#20180c;
+}
+
+.card-body p{
+    color:#4a3f2b;
+    font-size:.92rem;
+    margin-bottom:14px;
+}
+
+.card-tag{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:.7rem;
+    font-weight:700;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    padding:4px 9px;
+    border-radius:3px;
+    margin-bottom:10px;
+}
+.card-tag.open{ background:rgba(63,122,104,.15); color:var(--accent3); }
+.card-tag.soon{ background:rgba(226,87,43,.14); color:var(--accent2); }
+
+.card-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+    border-top:1px dashed rgba(0,0,0,.18);
+    padding-top:14px;
+    margin-top:6px;
+}
+
+.price{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:1.05rem;
+    color:var(--accent2);
+}
+
+.btn-buy{
+    background:var(--ink-dark);
+    color:var(--paper);
+    padding:11px 18px;
+    border-radius:4px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:.82rem;
+    white-space:nowrap;
+    transition:.25s;
+}
+.btn-buy:hover{ background:var(--accent2); transform:translateY(-2px); }
+
+/* varied hand-placed rotation, undone smoothly on hover */
+.rot--1{ transform:rotate(-2.2deg); }
+.rot--2{ transform:rotate(1.6deg); }
+.rot--3{ transform:rotate(-1deg); }
+.rot--4{ transform:rotate(2.4deg); }
+.rot--5{ transform:rotate(-2.8deg); }
+.rot--6{ transform:rotate(1.2deg); }
+
+.tilt-card{ transition:transform .3s ease, box-shadow .3s ease; }
+.tilt-card:hover{ transform:rotate(0deg) translateY(-6px) scale(1.015); }
+
+/* ── playbooks ── */
+
+.playbook-photo{
+    height:230px;
+    overflow:hidden;
+    margin-bottom:0;
+}
+.playbook-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.price-sticker{
+    position:absolute;
+    top:14px; right:-10px;
+    background:var(--accent);
+    color:#1c1305;
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:.78rem;
+    padding:7px 10px;
+    border-radius:50%;
+    width:56px; height:56px;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    line-height:1.1;
+    box-shadow:0 6px 14px rgba(0,0,0,.4);
+    transform:rotate(9deg);
+    z-index:5;
+}
+
+/* ── testimonials ── */
+
+.testimonial-wrap{ display:flex; justify-content:center; margin-top:10px; }
+
+.testimonial-polaroid{
+    max-width:520px;
+    width:100%;
+}
+
+.carousel-wrapper{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+}
+
+.carousel-track-container{ width:100%; overflow:hidden; }
+
+.carousel-track{ display:flex; transition:transform .4s ease; will-change:transform; }
+
+.carousel-slide{ min-width:100%; }
+
+.carousel-slide img{
+    width:100%; display:block; user-select:none; -webkit-user-drag:none;
+}
+
+.carousel-arrow{
+    position:absolute; top:44%; transform:translateY(-50%);
+    background:var(--ink-dark); color:var(--paper);
+    border:none; width:38px; height:38px; border-radius:50%;
+    font-size:1.05rem; cursor:pointer; transition:.25s; z-index:6;
+    display:flex; align-items:center; justify-content:center;
+}
+.carousel-arrow:hover{ background:var(--accent2); }
+.carousel-prev{ left:-6px; }
+.carousel-next{ right:-6px; }
+
+.carousel-dots{ display:flex; gap:8px; }
+.dot{ width:8px; height:8px; border-radius:50%; background:var(--border); cursor:pointer; transition:.3s; }
+.dot.active{ background:var(--accent); width:22px; border-radius:999px; }
+
+/* ── the crea8it way ── */
+
+.why{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:60px;
+    align-items:center;
+}
+
+.notebook{
+    background:
+        linear-gradient(var(--board), var(--board)) padding-box,
+        repeating-linear-gradient(transparent, transparent 33px, rgba(255,183,3,.08) 34px);
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent2);
+    border-radius:2px;
+    padding:34px 32px;
+}
+.notebook p{ color:#d9cdb6; font-size:1rem; line-height:1.9; }
+
+.graffiti-box{
+    position:relative;
+    border:2px dashed var(--accent);
+    border-radius:6px;
+    padding:38px 34px;
+    font-family:var(--hand);
+    font-size:1.55rem;
+    line-height:1.7;
+    background:rgba(255,183,3,.04);
+    transform:rotate(1.4deg);
+}
+
+/* ── about ── */
+
+.about{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:54px;
+    align-items:start;
+}
+
+.about .polaroid{ width:280px; transform:rotate(-3deg); }
+.about .polaroid:hover{ transform:rotate(0); }
+
+.about-text p{ color:#d9cdb6; font-size:1rem; line-height:1.85; margin-bottom:18px; }
+
+.quote-strip{
+    font-family:var(--hand);
+    font-size:1.5rem;
+    line-height:1.5;
+    color:var(--accent);
+    margin:26px 0;
+    transform:rotate(-.6deg);
+}
+
+.cred-scatter{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    margin:24px 0 8px;
+}
+
+.cred-item{
+    background:var(--paper);
+    color:var(--ink-dark);
+    border-radius:4px;
+    padding:14px 18px;
+    box-shadow:0 8px 18px rgba(0,0,0,.4);
+    min-width:128px;
+}
+.cred-item:nth-child(1){ transform:rotate(-3deg); }
+.cred-item:nth-child(2){ transform:rotate(2deg); }
+.cred-item:nth-child(3){ transform:rotate(-1.5deg); }
+.cred-item:nth-child(4){ transform:rotate(2.5deg); }
+
+.cred-num{
+    font-family:var(--hand);
+    font-size:1.5rem;
+    color:var(--accent2);
+    line-height:1;
+    margin-bottom:4px;
+}
+.cred-label{ font-family:var(--mono); font-size:.68rem; color:#5a4d33; line-height:1.4; text-transform:uppercase; }
+
+/* ── submit request ── */
+
+.postcard{
+    background:var(--paper);
+    color:var(--ink-dark);
+    border-radius:4px;
+    padding:60px;
+    text-align:center;
+    position:relative;
+    box-shadow:0 18px 40px rgba(0,0,0,.45);
+    border:1px solid rgba(0,0,0,.08);
+}
+
+.postcard::before{
+    content:"";
+    position:absolute; inset:14px;
+    border:1.5px dashed rgba(0,0,0,.18);
+    pointer-events:none;
+}
+
+.postmark{
+    position:absolute; top:22px; right:26px;
+    width:78px; height:78px;
+    border:2.5px solid var(--accent2);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:.62rem; font-weight:700;
+    color:var(--accent2); text-transform:uppercase; letter-spacing:.5px;
+    transform:rotate(-8deg);
+    text-align:center;
+    line-height:1.3;
+}
+
+.postcard h2{ font-family:var(--hand); font-size:2rem; margin-bottom:14px; color:#20180c; }
+
+.postcard p{ color:#4a3f2b; max-width:560px; margin:0 auto; font-size:1rem; }
+
+/* ── footer ── */
+
+footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
+
+.footer-inner{ display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center; }
+
+.footer-logo{ font-family:var(--hand); font-size:1.9rem; color:var(--accent); transform:rotate(-2deg); }
+
+.footer-tagline{ font-family:var(--mono); font-size:.72rem; color:var(--muted); letter-spacing:3px; }
+
+.footer-links{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; align-items:center; font-size:.85rem; }
+.footer-links a{ text-decoration:none; color:var(--ink); }
+.footer-links a:hover{ color:var(--accent); }
+.footer-links span{ color:var(--border); }
+
+.footer-socials{ display:flex; gap:12px; }
+.footer-socials a{
+    display:flex; align-items:center; justify-content:center;
+    width:40px; height:40px; border-radius:4px;
+    border:1px solid var(--border); color:var(--muted);
+    text-decoration:none; transition:.2s; transform:rotate(-3deg);
+}
+.footer-socials a:nth-child(2){ transform:rotate(2deg); }
+.footer-socials a:nth-child(3){ transform:rotate(-1.5deg); }
+.footer-socials a svg{ width:18px; height:18px; fill:currentColor; }
+.footer-socials a:hover{ color:var(--accent); border-color:var(--accent); transform:rotate(0) translateY(-2px); }
+
+.footer-copy{ color:var(--muted); font-size:.76rem; font-family:var(--mono); }
+
+/* ── countdown ── */
+
+.countdown{ display:flex; gap:6px; align-items:center; }
+.cd-block{
+    display:flex; flex-direction:column; align-items:center;
+    background:rgba(226,87,43,.08); border:1px solid rgba(226,87,43,.3);
+    border-radius:4px; padding:5px 8px; min-width:38px;
+}
+.cd-num{ font-size:1.05rem; font-weight:700; color:var(--accent2); font-family:var(--mono); line-height:1; }
+.cd-label{ font-size:.5rem; color:#8a7c62; text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+.cd-sep{ color:var(--accent2); font-weight:700; margin-bottom:10px; }
+.price-open{ font-size:1rem; font-weight:800; color:var(--accent3); font-family:var(--mono); animation:pulse-open 2s infinite; }
+@keyframes pulse-open{ 0%,100%{opacity:1;} 50%{opacity:.55;} }
+
+/* ── responsive ── */
+
+@media(max-width:900px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .hero-photo-wrap{ order:-1; max-width:280px; margin:0 auto 30px; }
+    .why, .about{ grid-template-columns:1fr; }
+    .about .polaroid{ margin:0 auto; }
+}
+
+@media(max-width:768px){
+    .nav-links{ display:none; }
+    .section{ padding:70px 0; }
+    .postcard{ padding:40px 22px; }
+    .postmark{ position:static; margin:0 auto 18px; }
+    [class^="rot--"]{ transform:rotate(0deg) !important; }
+    .cred-item{ transform:none !important; }
+}
+
+/* ── project shelf page ── */
+
+.shelf-hero{ padding:80px 0 20px; }
+
+.shelf-hero h1{
+    font-family:var(--hand);
+    font-size:clamp(2.6rem,5.5vw,4.2rem);
+    line-height:1.05;
+    transform:rotate(-1.5deg);
+    margin:6px 0 20px;
+}
+.shelf-hero h1 span{ color:var(--accent); }
+
+.shelf-hero p.lede{ max-width:620px; color:var(--muted); font-size:1.05rem; }
+
+.grid.projects-grid{ grid-template-columns:1fr; }
+@media(min-width:700px){ .grid.projects-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(min-width:1100px){ .grid.projects-grid{ grid-template-columns:repeat(3,1fr); } }
+
+.stamp.status-live{ color:var(--accent3); border-color:var(--accent3); }
+.stamp.status-building{ color:var(--accent2); border-color:var(--accent2); }
+
+.project-card .card-body{ padding-top:4px; }
+
+.project-card .cred-scatter{ margin:18px 0 4px; gap:10px; }
+.project-card .cred-item{ padding:10px 14px; min-width:auto; box-shadow:0 6px 14px rgba(0,0,0,.28); }
+.project-card .cred-num{ font-size:1.2rem; }
+.project-card .cred-label{ font-size:.62rem; }
+
+.project-card .card-tag.stack{ background:rgba(63,122,104,.12); color:var(--accent3); margin-left:8px; }
+
+.placeholder-note{
+    font-family:var(--mono);
+    font-size:.68rem;
+    color:var(--muted);
+    text-align:center;
+    margin-top:-10px;
+    margin-bottom:40px;
+    opacity:.75;
+}
+
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container nav-wrapper">
+
+<div class="logo-block">
+    <div class="logo">Crea8it</div>
+    <div class="logo-sub">Build⚙️• Launch 🚀• Learn🤸🏻 • Win 🏆</div>
+</div>
+
+<div class="nav-links">
+<a href="index.html#programs">Programs 🚀</a>
+<a href="index.html#playbooks">Resources 📚</a>
+<a href="projects.html" style="color:var(--accent);">Projects 🧰</a>
+<a href="index.html#testimonials">Impact 🏆</a>
+<a href="index.html#submit-request">Submit Request 📩</a>
+</div>
+
+<a href="https://crea8it.streamlit.app/" class="btn btn-primary">Enter Lab 📟</a>
+
+</div>
+</nav>
+
+<section class="shelf-hero">
+<div class="container">
+<span class="badge">🧰 The Product Shelf</span>
+
+<h1>Real Products.<br><span>Real Users.</span><br>Real Numbers.</h1>
+
+<p class="lede">
+Every product below is something I'm actively building, running, or have already shipped to real customers — not a mockup or a "coming soon" landing page. Here's what's live in the workshop right now.
+</p>
+</div>
+</section>
+
+<section id="project-shelf" class="section" style="padding-top:40px;">
+<div class="container">
+
+<div class="grid projects-grid">
+
+<!-- BizTrack-OS -->
+<div class="card index-card tilt-card rot--1 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>BizTrack-OS</h3>
+    <p>A business management SaaS built for African SMEs — sales, inventory, debtors, and multi-currency tracking in one dashboard.</p>
+    <span class="card-tag open">SME TOOLS</span>
+    <span class="card-tag stack">STREAMLIT + SUPABASE</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Active Users</div></div>
+        <div class="cred-item"><div class="cred-num">25</div><div class="cred-label">Countries Supported</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">MRR</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Since 2025</span>
+        <a href="#" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+<!-- StaX360 Suite -->
+<div class="card index-card tilt-card rot--2 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>StaX360 Suite</h3>
+    <p>A statistical analysis toolkit — panel data, data synthesis, exploratory factor analysis, and data cleaning, unified under one credit-based platform.</p>
+    <span class="card-tag open">RESEARCH TOOLS</span>
+    <span class="card-tag stack">STREAMLIT</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">4</div><div class="cred-label">Tools in Suite</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Analyses Run</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Active Users</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Bayantx360</span>
+        <a href="#" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+<!-- Kopt-OS -->
+<div class="card index-card tilt-card rot--3 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>Kopt-OS</h3>
+    <p>Cooperative society management, rebuilt from the ground up — member records, contributions, and loan tracking for coop admins.</p>
+    <span class="card-tag open">COOP TOOLS</span>
+    <span class="card-tag stack">REFLEX</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Coops Onboarded</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Members Tracked</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Reflex Cloud</span>
+        <a href="#" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+<!-- Crea8it Labs -->
+<div class="card index-card tilt-card rot--4 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>Crea8it Labs</h3>
+    <p>The cohort-based learning platform behind Crea8it itself — where builders execute real projects instead of just consuming courses.</p>
+    <span class="card-tag open">COMMUNITY</span>
+    <span class="card-tag stack">MULTI-TENANT SUPABASE</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Builders in Lab</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Cohorts Run</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Enter the Lab</span>
+        <a href="https://crea8it.streamlit.app/" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+<!-- Agent43 -->
+<div class="card index-card tilt-card rot--5 project-card">
+<div class="card-body">
+    <span class="stamp status-building">Building 🟨</span>
+    <h3>Agent43</h3>
+    <p>An AI writing assistant built to help founders and creators draft faster without losing their own voice.</p>
+    <span class="card-tag soon">AI AGENT</span>
+    <span class="card-tag stack">IN DEVELOPMENT</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">🚧</div><div class="cred-label">In the Workshop</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Coming Soon</span>
+        <a href="#" class="btn-buy" target="_blank" rel="noopener">Get Notified →</a>
+    </div>
+</div>
+</div>
+
+<!-- EmpiricX -->
+<div class="card index-card tilt-card rot--6 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>EmpiricX</h3>
+    <p>An AI-powered metadata extractor for academic papers — pulls authors, citations, and structured data out of PDFs in seconds.</p>
+    <span class="card-tag open">RESEARCH AI</span>
+    <span class="card-tag stack">GPT-4o</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Papers Processed</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Active Users</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Credit-based</span>
+        <a href="#" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+</div>
+
+<p class="placeholder-note">📝 Numbers marked "--" are placeholders — swap in your real metrics whenever you're ready. Card links marked "#" need their live product URLs added.</p>
+
+</div>
+</section>
+
+<footer>
+<div class="container footer-inner">
+
+    <div class="footer-logo">Crea8it</div>
+
+    <p class="footer-tagline">BUILD. LAUNCH. WIN.</p>
+
+    <nav class="footer-links">
+        <a href="index.html#playbooks">Resources</a>
+        <span>•</span>
+        <a href="index.html#programs">Programs</a>
+        <span>•</span>
+        <a href="index.html#testimonials">Impacts</a>
+    </nav>
+
+    <div class="footer-socials">
+        <!-- Twitter / X -->
+        <a href="https://twitter.com/abdul_git07" target="_blank" rel="noopener" aria-label="Twitter / X">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.262 5.636 5.901-5.636Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+        </a>
+        <!-- LinkedIn -->
+        <a href="https://linkedin.com/in/anafiabdul" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+        </a>
+        <!-- Blogger -->
+        <a href="https://abdulbuilds.blogspot.com" target="_blank" rel="noopener" aria-label="Blog">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.976 24H2.026C.9 24 0 23.1 0 21.976V2.026C0 .9.9 0 2.026 0h19.95C23.1 0 24 .9 24 2.026v19.95C24 23.1 23.1 24 21.976 24zm-3.953-8.353c0-1.18-.966-2.135-2.15-2.135h-.592c-.363 0-.66-.295-.66-.655v-1.714c0-1.18-.966-2.136-2.15-2.136H8.13c-1.184 0-2.15.956-2.15 2.136v5.358c0 1.18.966 2.136 2.15 2.136h9.743c1.184 0 2.15-.956 2.15-2.136v-.854zm0-7.177c0-1.18-.966-2.136-2.15-2.136H8.13c-1.184 0-2.15.956-2.15 2.136v.427c0 1.18.966 2.136 2.15 2.136h7.743c1.184 0 2.15-.956 2.15-2.136v-.427zm-3.103 7.603H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284zm0-2.991H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284zm0-4.275H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284z"/>
+            </svg>
+        </a>
+    </div>
+
+    <p class="footer-copy">© 2026 Crea8it — Built for builders.</p>
+
+</div>
+</footer>
+
+</body>
+</html>
