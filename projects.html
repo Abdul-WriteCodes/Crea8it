@@ -766,7 +766,9 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 </nav>
 
 <section class="shelf-hero">
-<div class="container">
+<div class="container hero-grid">
+
+<div class="hero-content">
 <span class="badge">🧰 The Product Shelf</span>
 
 <h1>Real Products.<br><span>Real Users.</span><br>Real Numbers.</h1>
@@ -774,6 +776,22 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 <p class="lede">
 Every product below is something I'm actively building, running, or have already shipped to real customers — not a mockup or a "coming soon" landing page. Here's what's live in the workshop right now.
 </p>
+</div>
+
+<div class="hero-photo-wrap">
+    <div class="hero-sticky hand">6 products<br>shipping in public 🚀</div>
+    <div class="polaroid rot--1 flip-polaroid" style="width:260px;" id="shelfPolaroid">
+        <div class="tape tc"></div>
+        <div class="pin"></div>
+        <div class="flip-inner">
+            <img src="images/Z1.jpg" alt="Abdul-Azeez Olohunjuwon, founder of Crea8it" class="flip-img active">
+            <img src="images/Z2.jpg" alt="Abdul-Azeez Olohunjuwon coding" class="flip-img">
+            <img src="images/Z3.jpg" alt="Abdul-Azeez Olohunjuwon coding" class="flip-img">
+        </div>
+        <figcaption id="shelfCaption">the workshop, live</figcaption>
+    </div>
+</div>
+
 </div>
 </section>
 
@@ -911,6 +929,8 @@ Every product below is something I'm actively building, running, or have already
 
 </div>
 
+
+
 </div>
 </section>
 
@@ -954,6 +974,31 @@ Every product below is something I'm actively building, running, or have already
 
 </div>
 </footer>
+
+<script>
+(function(){
+    const wrap = document.getElementById('shelfPolaroid');
+    if(!wrap) return;
+
+    const imgs = wrap.querySelectorAll('.flip-img');
+    const captionEl = document.getElementById('shelfCaption');
+    if(imgs.length < 2) return;
+
+    // captions shown per image, in order (edit these to match your photos)
+    const captions = ['the workshop, live', 'six products, one founder', 'building in public'];
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion) return; // leave the first image static, no flipping
+
+    let current = 0;
+    setInterval(function(){
+        imgs[current].classList.remove('active');
+        current = (current + 1) % imgs.length;
+        imgs[current].classList.add('active');
+        if(captionEl && captions[current]) captionEl.textContent = captions[current];
+    }, 4000);
+})();
+</script>
 
 </body>
 </html>
