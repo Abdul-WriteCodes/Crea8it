@@ -504,3 +504,13 @@ def get_my_organization(org_id: str) -> dict | None:
 def suspend_organization(org_id: str, active: bool):
     client = get_client()
     client.table("organizations").update({"is_active": active}).eq("id", org_id).execute()
+
+
+def delete_organization(org_id: str):
+    """Permanently deletes an organization and everything scoped to it
+    (members, programs, content, progress, reflections, payment codes,
+    heartbeats) via the delete_organization_cascade RPC — irreversible.
+    The RPC re-checks that the caller is super_admin server-side, so
+    this can't be abused even if a route guard is ever bypassed."""
+    client = get_client()
+    client.rpc("delete_organization_cascade", {"p_org_id": org_id}).execute()
