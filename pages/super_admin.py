@@ -8,7 +8,10 @@ a routing mistake here can't leak another org's data to the wrong role.
 """
 
 import streamlit as st
-from utils.db import require_role, get_all_organizations, get_org_stats, suspend_organization, logout
+from utils.db import (
+    require_role, get_all_organizations, get_org_stats,
+    suspend_organization, delete_organization, logout,
+)
 from utils.theme import page_header
 
 
@@ -53,6 +56,37 @@ def show():
             else:
                 if st.button("Reactivate organization", key=f"reactivate_{org['id']}"):
                     suspend_organization(org["id"], True)
+                    st.rerun()
+
+            st.divider()
+            confirm_key = f"confirm_delete_{org['id']}"
+            if st.session_state.get(confirm_key):
+                st.error(
+                    f"This permanently deletes **{org['name']}** and everything "
+                    "in it — members, programs, progress, reflections, payment "
+                    "codes. This cannot be undone."
+                )
+                typed = st.text_input(
+                    "Type the organization name to confirm",
+                    key=f"delete_input_{org['id']}",
+                )
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    if st.button(
+                        "Confirm delete", key=f"do_delete_{org['id']}",
+                        type="primary", disabled=(typed != org["name"]),
+                    ):
+                        delete_organization(org["id"])
+                        st.session_state.pop(confirm_key, None)
+                        st.success(f"{org['name']} deleted.")
+                        st.rerun()
+                with col_b:
+                    if st.button("Cancel", key=f"cancel_delete_{org['id']}"):
+                        st.session_state.pop(confirm_key, None)
+                        st.rerun()
+            else:
+                if st.button("Delete organization", key=f"delete_{org['id']}"):
+                    st.session_state[confirm_key] = True
                     st.rerun()
 
     st.divider()
