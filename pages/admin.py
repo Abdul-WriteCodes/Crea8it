@@ -148,11 +148,17 @@ def show():
 
             weeks = get_program_weeks(selected_pid)
             existing_week_nums = sorted(weeks.keys())
+            current_active_week = get_active_week(selected_pid)
             week_num = int(st.number_input(
                 f"{unit_label} number", min_value=1, max_value=selected_program.get("duration_weeks", 52),
                 value=min((max(existing_week_nums) + 1) if existing_week_nums else 1,
                          selected_program.get("duration_weeks", 52))
             ))
+
+            if week_num == current_active_week:
+                st.caption(f"🟢 This is the current active {unit_label.lower()} for {selected_program['name']}.")
+            else:
+                st.caption(f"Current active {unit_label.lower()}: **{current_active_week}**")
 
             current = weeks.get(week_num, {"title": "", "theme": "", "materials": [], "tasks": []})
 
@@ -211,25 +217,47 @@ def show():
                 key=f"prompt_{week_num}"
             )
 
-            if st.button(f"💾 Save {unit_label} {week_num}", type="primary", key=f"save_{week_num}"):
-                if not title.strip():
-                    st.warning("Title is required.")
-                elif not tasks:
-                    st.warning("Add at least one task before saving.")
-                else:
-                    save_program_week(org_id, selected_pid, week_num, title.strip(),
-                                      theme.strip(), materials, tasks)
-                    set_prompt(org_id, selected_pid, week_num, prompt_val)
-                    _flash("content", "success",
-                          f"{unit_label} {week_num} — '{title.strip()}' saved. "
-                          f"{len(materials)} material(s), {len(tasks)} task(s).")
-                    st.rerun()
+            also_activate = st.checkbox(
+                f"Also make {unit_label} {week_num} the active {unit_label.lower()} for participants",
+                value=False, key=f"also_activate_{week_num}",
+                disabled=(week_num == current_active_week),
+            )
 
-            if int(week_num) in weeks:
-                if st.button("Delete this week", type="secondary", key=f"delete_{week_num}"):
-                    delete_week_from_program(selected_pid, int(week_num))
-                    _flash("content", "warning", f"Week {int(week_num)} deleted.")
-                    st.rerun()
+            save_col, activate_col, delete_col = st.columns(3)
+            with save_col:
+                if st.button(f"💾 Save {unit_label} {week_num}", type="primary", key=f"save_{week_num}"):
+                    if not title.strip():
+                        st.warning("Title is required.")
+                    elif not tasks:
+                        st.warning("Add at least one task before saving.")
+                    else:
+                        save_program_week(org_id, selected_pid, week_num, title.strip(),
+                                          theme.strip(), materials, tasks)
+                        set_prompt(org_id, selected_pid, week_num, prompt_val)
+                        msg = (f"{unit_label} {week_num} — '{title.strip()}' saved. "
+                               f"{len(materials)} material(s), {len(tasks)} task(s).")
+                        if also_activate:
+                            set_active_week(selected_pid, week_num)
+                            msg += f" It's now the active {unit_label.lower()}."
+                        _flash("content", "success", msg)
+                        st.rerun()
+
+            with activate_col:
+                # Only offer to activate a week whose content has already been saved —
+                # activating an empty week would show participants nothing to do.
+                if int(week_num) in weeks and week_num != current_active_week:
+                    if st.button(f"✅ Set as active {unit_label.lower()}", key=f"activate_content_{week_num}"):
+                        set_active_week(selected_pid, week_num)
+                        _flash("content", "success",
+                              f"{unit_label} {week_num} is now the active {unit_label.lower()}.")
+                        st.rerun()
+
+            with delete_col:
+                if int(week_num) in weeks:
+                    if st.button("Delete this week", type="secondary", key=f"delete_{week_num}"):
+                        delete_week_from_program(selected_pid, int(week_num))
+                        _flash("content", "warning", f"Week {int(week_num)} deleted.")
+                        st.rerun()
 
     # ═══════════════════════════════════════════════════════════
     # Engagement
