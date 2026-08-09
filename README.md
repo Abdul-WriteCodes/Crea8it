@@ -14,6 +14,6 @@ Crea8it Studio is a SaaS hub for Founders, Builders and Tech Aspirants for
 ---
 ## 🔗 Visit Website
 
-👉 **[Try the Live App Here](https://abdul-writecodes.github.io/Crea8it/)**
+👉 **[Try Website](https://abdul-writecodes.github.io/Crea8it/)**
 
   
