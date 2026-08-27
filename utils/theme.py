@@ -313,6 +313,18 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 }
 .task-status.done-label { color: var(--jade); }
 .task-status.pending-label { color: var(--text-3); }
+.task-status.review-label { color: var(--gold); }
+.task-status.revision-label { color: var(--ruby); }
+.task-icon.review {
+  background: rgba(245,166,35,0.15);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+}
+.task-icon.revision {
+  background: rgba(230,70,70,0.12);
+  border: 1.5px solid var(--ruby);
+  color: var(--ruby);
+}
 
 /* Material card */
 .mat-card {
@@ -540,6 +552,37 @@ def task_card(text: str, done: bool):
   <div class="task-body">
     <div class="task-text">{rendered}</div>
     <div class="task-status pending-label">Pending</div>
+  </div>
+</div>""", unsafe_allow_html=True)
+
+
+def upload_task_card(text: str, status: str, file_name: str = ""):
+    """Render an upload-required task in its current review state.
+    status: 'not_submitted' | 'pending' | 'approved' | 'needs_revision'."""
+    rendered = _render_links(text)
+    icon_map = {
+        "not_submitted": ("pending", "&#9675;"),
+        "pending": ("review", "&#128196;"),
+        "approved": ("complete", "&#10003;"),
+        "needs_revision": ("revision", "&#9888;"),
+    }
+    label_map = {
+        "not_submitted": ("pending-label", "Awaiting upload"),
+        "pending": ("review-label", "Submitted — awaiting review"),
+        "approved": ("done-label", "Approved"),
+        "needs_revision": ("revision-label", "Needs revision"),
+    }
+    icon_class, icon_glyph = icon_map[status]
+    status_class, status_text = label_map[status]
+    file_line = f'<div class="task-text muted" style="margin-top:2px;">📎 {file_name}</div>' if file_name else ""
+    card_class = "task-card done" if status == "approved" else "task-card"
+    st.markdown(f"""
+<div class="{card_class}">
+  <div class="task-icon {icon_class}">{icon_glyph}</div>
+  <div class="task-body">
+    <div class="task-text">{rendered}</div>
+    {file_line}
+    <div class="task-status {status_class}">{status_text}</div>
   </div>
 </div>""", unsafe_allow_html=True)
 
