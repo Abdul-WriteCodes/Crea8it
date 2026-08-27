@@ -11,6 +11,7 @@ so bypasses every RLS policy in schema.sql.
 """
 
 from __future__ import annotations
+import re as _re
 import streamlit as st
 from supabase import create_client, Client
 
@@ -253,12 +254,16 @@ def get_program_weeks(program_id: str) -> dict:
         elif rtype == "material":
             weeks[w]["materials"].append({"type": extra or "article", "label": value})
         elif rtype == "task":
-            weeks[w]["tasks"].append(value)
+            # extra == "upload" marks a task that requires a reviewed file
+            # instead of a plain self-check — see admin.py task editor and
+            # dashboard.py's upload-task branch.
+            weeks[w]["tasks"].append({"text": value, "upload_required": extra == "upload"})
     return weeks
 
 
 def save_program_week(org_id: str, program_id: str, week: int, title: str, theme: str,
-                       materials: list[dict], tasks: list[str]):
+                       materials: list[dict], tasks: list[dict]):
+    """tasks: list of {"text": str, "upload_required": bool}."""
     client = get_client()
     (client.table("program_content").delete()
      .eq("program_id", program_id).eq("week", week)
@@ -273,7 +278,8 @@ def save_program_week(org_id: str, program_id: str, week: int, title: str, theme
                      "value": mat.get("label", ""), "extra": mat.get("type", "article"), "order_index": idx})
     for idx, task in enumerate(tasks):
         rows.append({"org_id": org_id, "program_id": program_id, "week": week, "type": "task",
-                     "value": task, "order_index": idx})
+                     "value": task["text"], "extra": "upload" if task.get("upload_required") else "",
+                     "order_index": idx})
 
     client.table("program_content").insert(rows).execute()
 
@@ -400,6 +406,78 @@ def get_program_engagement(org_id: str, program_id: str) -> list[dict]:
 
     out.sort(key=lambda r: r["pct"], reverse=True)
     return out
+
+
+# ═══════════════════════════════════════════════════════════════
+# Task submissions (file-upload tasks that need admin review)
+# ═══════════════════════════════════════════════════════════════
+
+_SUBMISSIONS_BUCKET = "task-submissions"
+
+
+def get_task_submissions(participant_id: str, program_id: str) -> dict:
+    """Returns {(week, task_index): submission_row} for this participant/program."""
+    client = get_client()
+    res = (client.table("task_submissions").select("*")
+           .eq("participant_id", participant_id).eq("program_id", program_id).execute())
+    return {(row["week"], row["task_index"]): row for row in res.data}
+
+
+def submit_task_file(org_id: str, participant_id: str, program_id: str,
+                      week: int, task_index: int, file_bytes: bytes,
+                      file_name: str, content_type: str = "application/octet-stream"):
+    """Uploads the file to the private bucket, then upserts the tracking
+    row. Re-submission (e.g. after 'needs_revision') overwrites the
+    stored file and resets status back to pending."""
+    client = get_client()
+    safe_name = _re.sub(r"[^A-Za-z0-9._-]", "_", file_name)
+    file_path = f"{org_id}/{participant_id}/{program_id}_{week}_{task_index}_{safe_name}"
+
+    client.storage.from_(_SUBMISSIONS_BUCKET).upload(
+        file_path, file_bytes,
+        {"content-type": content_type, "upsert": "true"},
+    )
+    client.table("task_submissions").upsert({
+        "org_id": org_id, "participant_id": participant_id, "program_id": program_id,
+        "week": week, "task_index": task_index,
+        "file_path": file_path, "file_name": file_name,
+        "status": "pending", "reviewer_feedback": "", "reviewed_at": None,
+    }, on_conflict="participant_id,program_id,week,task_index").execute()
+
+
+def get_submission_download_url(file_path: str, expires_in: int = 3600) -> str:
+    client = get_client()
+    res = client.storage.from_(_SUBMISSIONS_BUCKET).create_signed_url(file_path, expires_in)
+    return res.get("signedURL") or res.get("signed_url") or ""
+
+
+def get_pending_submissions(org_id: str, program_id: str) -> list[dict]:
+    client = get_client()
+    res = (client.table("task_submissions").select("*, profiles(full_name, email)")
+           .eq("org_id", org_id).eq("program_id", program_id).eq("status", "pending")
+           .order("submitted_at").execute())
+    return res.data
+
+
+def review_submission(submission: dict, status: str, feedback: str = ""):
+    """status: 'approved' or 'needs_revision'. `submission` is a row as
+    returned by get_pending_submissions() — needs org_id/participant_id/
+    program_id/week/task_index/id.
+
+    On approval, also writes the normal `progress` row for this task —
+    this is what makes an upload task count toward week completion /
+    unlocking the next week, and keeps every existing stats function
+    (get_week_completion_stats, get_program_engagement, ...) working
+    without having to special-case task_submissions everywhere."""
+    client = get_client()
+    client.table("task_submissions").update({
+        "status": status, "reviewer_feedback": feedback,
+        "reviewed_at": "now()",
+    }).eq("id", submission["id"]).execute()
+
+    if status == "approved":
+        mark_task_done(submission["org_id"], submission["participant_id"],
+                        submission["program_id"], submission["week"], submission["task_index"])
 
 
 # ═══════════════════════════════════════════════════════════════
