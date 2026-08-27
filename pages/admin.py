@@ -8,6 +8,7 @@ from utils.db import (
     get_all_reflections, save_feedback, wipe_all_progress,
     create_payment_codes, get_org_payment_codes, get_my_organization,
     get_program_engagement,
+    get_pending_submissions, get_submission_download_url, review_submission,
 )
 from utils.notify import build_whatsapp_link
 from utils.theme import page_header, subheading
@@ -72,8 +73,9 @@ def show():
 </div>
 """, unsafe_allow_html=True)
 
-    tab_programs, tab_content, tab_members, tab_engagement, tab_reflections, tab_codes = st.tabs(
-        ["📚 Programs", "📝 Week content", "👥 Members", "📊 Engagement", "💬 Reflections", "🔑 Payment codes"]
+    tab_programs, tab_content, tab_members, tab_engagement, tab_reflections, tab_submissions, tab_codes = st.tabs(
+        ["📚 Programs", "📝 Week content", "👥 Members", "📊 Engagement",
+         "💬 Reflections", "📎 Submissions", "🔑 Payment codes"]
     )
 
     # ═══════════════════════════════════════════════════════════
@@ -188,28 +190,34 @@ def show():
                     materials.append({"label": ml.strip(), "type": mt})
 
             st.markdown("**Activities / Tasks** (up to 10)")
-            st.caption("Add an optional resource link to any task — it becomes clickable on the dashboard.")
+            st.caption("Add an optional resource link to any task — it becomes clickable on the dashboard. "
+                       "Check 'Requires file upload' for tasks that need a doc reviewed before they count as done.")
             ex_tasks = current["tasks"]
             task_count = st.number_input("How many tasks?", min_value=0, max_value=10,
                                          value=len(ex_tasks), key=f"task_n_{week_num}")
             tasks = []
             for t in range(int(task_count)):
-                raw = ex_tasks[t] if t < len(ex_tasks) else ""
+                raw = ex_tasks[t] if t < len(ex_tasks) else {"text": "", "upload_required": False}
+                raw_text = raw["text"]
                 # Reverse-parse an existing "text [Open →](url)" back into text + url,
                 # so re-opening a saved week pre-fills the Link field correctly.
-                m = re.match(r"^(.*?)\s*\[.*?\]\((https?://[^\)]+)\)\s*$", raw)
-                default_text = m.group(1).strip() if m else raw
+                m = re.match(r"^(.*?)\s*\[.*?\]\((https?://[^\)]+)\)\s*$", raw_text)
+                default_text = m.group(1).strip() if m else raw_text
                 default_link = m.group(2).strip() if m else ""
-                tc1, tc2 = st.columns([3, 2])
+                tc1, tc2, tc3 = st.columns([3, 2, 1.3])
                 with tc1:
                     tv = st.text_input(f"Task {t+1}", value=default_text,
                                        placeholder="e.g. Complete the worksheet", key=f"task_{week_num}_{t}")
                 with tc2:
                     tl = st.text_input(f"Link {t+1} (optional)", value=default_link,
                                        placeholder="https://...", key=f"task_link_{week_num}_{t}")
+                with tc3:
+                    st.markdown("<div style='margin-top:1.8rem;'></div>", unsafe_allow_html=True)
+                    upload_req = st.checkbox("Requires file upload", value=raw.get("upload_required", False),
+                                             key=f"task_upload_{week_num}_{t}")
                 if tv.strip():
                     task_text = f"{tv.strip()} [Open →]({tl.strip()})" if tl.strip() else tv.strip()
-                    tasks.append(task_text)
+                    tasks.append({"text": task_text, "upload_required": upload_req})
 
             prompt_val = st.text_area(
                 "Reflection prompt (shown once all tasks for this week are done)",
@@ -359,6 +367,45 @@ def show():
                         save_feedback(r["id"], feedback_val)
                         st.success("Feedback saved.")
                         st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Task submissions (upload-required tasks awaiting review)
+    # ═══════════════════════════════════════════════════════════
+    with tab_submissions:
+        active_program = get_active_program(org_id)
+        if not active_program:
+            st.info("No active program set.")
+        else:
+            pending = get_pending_submissions(org_id, active_program["id"])
+            if not pending:
+                st.info("No submissions waiting for review. 🎉")
+            for s in pending:
+                person = s.get("profiles") or {}
+                with st.expander(f"Week {s['week']}, Task {s['task_index'] + 1} — {person.get('full_name', 'Unknown')}"):
+                    st.write(f"**File:** {s['file_name']}")
+                    try:
+                        url = get_submission_download_url(s["file_path"])
+                        if url:
+                            st.link_button("⬇ Download / view file", url)
+                    except Exception as e:
+                        st.warning(f"Couldn't generate a download link: {e}")
+
+                    fb_key = f"sub_fb_{s['id']}"
+                    feedback_val = st.text_area("Feedback (shown to the participant)", key=fb_key)
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        if st.button("✅ Approve", key=f"approve_{s['id']}", type="primary"):
+                            review_submission(s, "approved", feedback_val)
+                            st.success("Approved — this task now counts toward their progress.")
+                            st.rerun()
+                    with col_b:
+                        if st.button("↩ Send back for revision", key=f"revise_{s['id']}"):
+                            if not feedback_val.strip():
+                                st.warning("Add a note explaining what needs fixing before sending back.")
+                            else:
+                                review_submission(s, "needs_revision", feedback_val)
+                                st.success("Sent back — the participant can re-upload.")
+                                st.rerun()
 
     # ═══════════════════════════════════════════════════════════
     # Payment codes
