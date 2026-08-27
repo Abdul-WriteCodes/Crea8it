@@ -3,10 +3,11 @@ from utils.db import (
     get_current_profile, logout, get_active_program, get_active_week,
     get_program_weeks, get_progress, mark_task_done, get_reflection,
     submit_reflection, get_prompt, touch_last_active, get_week_completion_stats,
+    get_task_submissions, submit_task_file,
 )
 from utils.theme import (
     apply_css, page_header, section_label, week_badge,
-    task_card, material_card, reflection_box, feedback_box, kpi_card,
+    task_card, upload_task_card, material_card, reflection_box, feedback_box, kpi_card,
 )
 import time
 
@@ -23,6 +24,14 @@ def get_reflection_cached(participant_id: str, program_id: str, week: int) -> di
     key = f"reflection_{program_id}_{week}"
     if key not in st.session_state:
         st.session_state[key] = get_reflection(participant_id, program_id, week)
+    return st.session_state[key]
+
+
+def get_submissions_cached(participant_id: str, program_id: str) -> dict:
+    key = f"submissions_{program_id}"
+    if key not in st.session_state or st.session_state.get(f"{key}_pid") != participant_id:
+        st.session_state[key] = get_task_submissions(participant_id, program_id)
+        st.session_state[f"{key}_pid"] = participant_id
     return st.session_state[key]
 
 
@@ -77,6 +86,7 @@ def show():
     week_keys = sorted(PROGRAM_WEEKS.keys())
 
     progress = get_progress_cached(participant_id, program_id)
+    submissions = get_submissions_cached(participant_id, program_id)
 
     total_tasks = sum(len(PROGRAM_WEEKS[w]["tasks"]) for w in week_keys if w <= active_week)
     completed_tasks = sum(len(v) for v in progress.values())
@@ -152,21 +162,51 @@ def show():
 
             for idx, task in enumerate(week_data["tasks"]):
                 done = idx in week_done
-                if done:
-                    task_card(task, done=True)
-                else:
-                    task_card(task, done=False)
-                    checked = st.checkbox("Mark as complete", key=f"task_{week_num}_{idx}", value=False)
-                    if checked:
-                        mark_task_done(org_id, participant_id, program_id, week_num, idx)
-                        touch_last_active(org_id, participant_id)
-                        if len(week_done) + 1 == len(week_data["tasks"]):
-                            st.session_state["celebrate"] = "tasks"
-                            st.session_state["celebrate_week"] = week_num
-                        else:
+
+                if not task["upload_required"]:
+                    if done:
+                        task_card(task["text"], done=True)
+                    else:
+                        task_card(task["text"], done=False)
+                        checked = st.checkbox("Mark as complete", key=f"task_{week_num}_{idx}", value=False)
+                        if checked:
+                            mark_task_done(org_id, participant_id, program_id, week_num, idx)
+                            touch_last_active(org_id, participant_id)
+                            if len(week_done) + 1 == len(week_data["tasks"]):
+                                st.session_state["celebrate"] = "tasks"
+                                st.session_state["celebrate_week"] = week_num
+                            else:
+                                st.session_state["celebrate"] = "task_single"
+                            st.session_state.pop(f"progress_{program_id}", None)
+                            st.rerun()
+                    continue
+
+                # ── upload-required task ──
+                sub = submissions.get((week_num, idx))
+                sub_status = sub["status"] if sub else "not_submitted"
+                upload_task_card(task["text"], sub_status, sub["file_name"] if sub else "")
+
+                if sub_status == "needs_revision" and sub.get("reviewer_feedback"):
+                    feedback_box(f"Reviewer note: {sub['reviewer_feedback']}")
+
+                if sub_status in ("not_submitted", "needs_revision"):
+                    uploaded = st.file_uploader(
+                        "Upload your file" if sub_status == "not_submitted" else "Re-upload your file",
+                        type=["pdf", "docx", "doc", "png", "jpg", "jpeg"],
+                        key=f"upload_{week_num}_{idx}",
+                    )
+                    if uploaded is not None:
+                        if uploaded.size > 10 * 1024 * 1024:
+                            st.warning("File too large — 10MB max.")
+                        elif st.button("Submit for review", key=f"submit_upload_{week_num}_{idx}"):
+                            submit_task_file(
+                                org_id, participant_id, program_id, week_num, idx,
+                                uploaded.getvalue(), uploaded.name, uploaded.type or "application/octet-stream",
+                            )
+                            touch_last_active(org_id, participant_id)
                             st.session_state["celebrate"] = "task_single"
-                        st.session_state.pop(f"progress_{program_id}", None)
-                        st.rerun()
+                            st.session_state.pop(f"submissions_{program_id}", None)
+                            st.rerun()
 
             st.divider()
 
