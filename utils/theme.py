@@ -457,6 +457,7 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 
 def kpi_card(label: str, value, sub: str = "",
              positive: bool | None = None, icon: str = ""):
+    label, value, sub = _html.escape(str(label)), _html.escape(str(value)), _html.escape(str(sub))
     sub_class = ""
     if positive is True:  sub_class = "kpi-positive"
     elif positive is False: sub_class = "kpi-negative"
@@ -489,6 +490,7 @@ def subheading(text: str, color: str = ""):
 
 
 def page_header(title: str, subtitle: str = ""):
+    title, subtitle = _html.escape(title), _html.escape(subtitle)
     st.markdown(f"""
 <div style="margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
   <div style="font-family:var(--font-d);font-size:1.7rem;font-weight:800;
@@ -509,28 +511,30 @@ def week_badge(week_num: int, active_week: int) -> str:
 
 
 import re as _re
+import html as _html
 
 
 def _render_links(text: str) -> str:
     """Convert markdown [label](url) and bare URLs into clickable <a> tags.
-    Safe to call on plain text — returns it unchanged if no links found.
-    """
+    Everything else is HTML-escaped, so stray <, >, &, or " characters in
+    admin- or participant-authored text (task names, resource links) can
+    never break the surrounding card markup — safe to call on any text."""
     ls = "color:var(--teal);text-decoration:underline;"
-    # [label](url) pattern
-    text = _re.sub(
-        r'\[([^\]]+)\]\((https?://[^\)]+)\)',
-        lambda m: '<a href="{u}" target="_blank" rel="noopener" style="{s}">{l}</a>'.format(
-            u=m.group(2), l=m.group(1), s=ls),
-        text
-    )
-    # bare URLs not already inside href="..."
-    text = _re.sub(
-        r'(?<!href=")(https?://\S+)',
-        lambda m: '<a href="{u}" target="_blank" rel="noopener" style="{s}">{u}</a>'.format(
-            u=m.group(1), s=ls),
-        text
-    )
-    return text
+    pattern = _re.compile(r'\[([^\]]+)\]\((https?://[^\s\)]+)\)|(https?://\S+)')
+    parts = []
+    last = 0
+    for m in pattern.finditer(text):
+        parts.append(_html.escape(text[last:m.start()]))
+        if m.group(1) is not None:
+            label, url = m.group(1), m.group(2)
+        else:
+            label = url = m.group(3)
+        url = url.rstrip('.,;:!?)')  # trim trailing punctuation \S+ tends to sweep up
+        parts.append('<a href="{u}" target="_blank" rel="noopener" style="{s}">{l}</a>'.format(
+            u=_html.escape(url, quote=True), l=_html.escape(label), s=ls))
+        last = m.end()
+    parts.append(_html.escape(text[last:]))
+    return "".join(parts)
 
 
 def task_card(text: str, done: bool):
@@ -574,7 +578,8 @@ def upload_task_card(text: str, status: str, file_name: str = ""):
     }
     icon_class, icon_glyph = icon_map[status]
     status_class, status_text = label_map[status]
-    file_line = f'<div class="task-text muted" style="margin-top:2px;">📎 {file_name}</div>' if file_name else ""
+    file_line = (f'<div class="task-text muted" style="margin-top:2px;">📎 {_html.escape(file_name)}</div>'
+                 if file_name else "")
     card_class = "task-card done" if status == "approved" else "task-card"
     st.markdown(f"""
 <div class="{card_class}">
@@ -598,10 +603,10 @@ def material_card(icon: str, label: str):
 
 
 def reflection_box(prompt: str):
-    st.markdown(f'<div class="reflection-prompt">{prompt}</div>',
+    st.markdown(f'<div class="reflection-prompt">{_html.escape(prompt)}</div>',
                 unsafe_allow_html=True)
 
 
 def feedback_box(text: str):
-    st.markdown(f'<div class="feedback-box">{text}</div>',
+    st.markdown(f'<div class="feedback-box">{_html.escape(text)}</div>',
                 unsafe_allow_html=True)
