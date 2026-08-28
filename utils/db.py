@@ -464,20 +464,29 @@ def review_submission(submission: dict, status: str, feedback: str = ""):
     returned by get_pending_submissions() — needs org_id/participant_id/
     program_id/week/task_index/id.
 
-    On approval, also writes the normal `progress` row for this task —
-    this is what makes an upload task count toward week completion /
-    unlocking the next week, and keeps every existing stats function
+    Approval goes through the approve_task_submission RPC (see
+    rpc_functions.sql) rather than a direct client update: writing to
+    `progress` on the participant's behalf can't satisfy that table's
+    RLS policy (participant_id = auth.uid()) from the admin's own
+    session, so the RPC does both writes as a security-definer function,
+    re-checking the caller is actually this org's admin first. This is
+    what makes an upload task count toward week completion / unlocking
+    the next week, and keeps every existing stats function
     (get_week_completion_stats, get_program_engagement, ...) working
-    without having to special-case task_submissions everywhere."""
-    client = get_client()
-    client.table("task_submissions").update({
-        "status": status, "reviewer_feedback": feedback,
-        "reviewed_at": "now()",
-    }).eq("id", submission["id"]).execute()
+    without having to special-case task_submissions everywhere.
 
+    needs_revision doesn't touch `progress`, so it stays a plain client
+    update under the existing "org_admin reviews org submissions" policy."""
+    client = get_client()
     if status == "approved":
-        mark_task_done(submission["org_id"], submission["participant_id"],
-                        submission["program_id"], submission["week"], submission["task_index"])
+        client.rpc("approve_task_submission", {
+            "p_submission_id": submission["id"], "p_feedback": feedback,
+        }).execute()
+    else:
+        client.table("task_submissions").update({
+            "status": status, "reviewer_feedback": feedback,
+            "reviewed_at": "now()",
+        }).eq("id", submission["id"]).execute()
 
 
 # ═══════════════════════════════════════════════════════════════
