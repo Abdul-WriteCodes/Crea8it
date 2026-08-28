@@ -397,7 +397,7 @@ def show():
     st.markdown("""
     <div class="lp-hero">
       <div class="lp-wordmark">
-        <span style="color:#FFD700;">Crea8Lab</span><span style="color:#00B4D8;"></span>
+        <span style="color:#FFD700;">Crea8it</span><span style="color:#00B4D8;">Lab</span>
       </div>
       <div class="lp-tagline">
         Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
@@ -431,7 +431,7 @@ def show():
 
     with st.expander("Get Started Here👇: Registration & Login 🔐", expanded=False):
         tab_join, tab_start, tab_login = st.tabs(
-            ["✦ New Registration", "🚀 Start a Cohort", "→ Already Registered"]
+            ["✦ New Registration", "🚀 Start a Cohort", "→ 📋 Already Registered"]
         )
         with tab_join:
             _join_tab()
