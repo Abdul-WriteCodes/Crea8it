@@ -337,6 +337,21 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 .mat-card:hover { border-color: var(--border2); color: var(--text-1); }
 .mat-icon { font-size: 1.1rem; }
 
+/* Library resource card */
+.resource-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+}
+.resource-header { display: flex; align-items: flex-start; gap: 10px; }
+.resource-icon { font-size: 1.3rem; line-height: 1.3; }
+.resource-title { font-size: 0.95rem; font-weight: 700; color: var(--text-1); }
+.resource-desc { font-size: 0.82rem; color: var(--text-3); margin-top: 3px; }
+.resource-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.resource-tag {
+  font-size: 0.72rem; color: var(--teal); background: rgba(0,200,150,0.10);
+  border: 1px solid rgba(0,200,150,0.25); border-radius: 999px; padding: 2px 9px;
+}
+
 /* Section label */
 .section-label {
   font-family: var(--font-m);
@@ -624,3 +639,33 @@ def reflection_box(prompt: str):
 def feedback_box(text: str):
     st.markdown(f'<div class="feedback-box">{_html.escape(text)}</div>',
                 unsafe_allow_html=True)
+
+
+_RESOURCE_ICONS = {"article": "📄", "video": "🎬", "pdf": "📕", "doc": "📝", "tool": "🛠", "other": "🔗"}
+
+
+def resource_card(resource: dict):
+    """Render a library resource's info block (title, description, tags).
+    Doesn't render the Open/Download action — real Streamlit buttons
+    can't live inside a raw HTML block, so the caller places an
+    st.link_button or download link right after calling this."""
+    icon = _RESOURCE_ICONS.get(resource.get("resource_type", "other"), "🔗")
+    title = _html.escape(resource.get("title", ""))
+    desc = resource.get("description") or ""
+    desc_line = f'<div class="resource-desc">{_html.escape(desc)}</div>' if desc else ""
+    tags = resource.get("tags") or []
+    tags_line = ""
+    if tags:
+        chips = "".join(f'<span class="resource-tag">{_html.escape(t)}</span>' for t in tags)
+        tags_line = f'<div class="resource-tags">{chips}</div>'
+    _html_block(f"""
+<div class="resource-card">
+  <div class="resource-header">
+    <div class="resource-icon">{icon}</div>
+    <div>
+      <div class="resource-title">{title}</div>
+      {desc_line}
+    </div>
+  </div>
+  {tags_line}
+</div>""")
