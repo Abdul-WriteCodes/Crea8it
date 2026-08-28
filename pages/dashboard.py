@@ -4,10 +4,12 @@ from utils.db import (
     get_program_weeks, get_progress, mark_task_done, get_reflection,
     submit_reflection, get_prompt, touch_last_active, get_week_completion_stats,
     get_task_submissions, submit_task_file,
+    get_library_resources, get_resource_download_url,
 )
 from utils.theme import (
     apply_css, page_header, section_label, week_badge,
     task_card, upload_task_card, material_card, reflection_box, feedback_box, kpi_card,
+    resource_card,
 )
 import time
 
@@ -75,11 +77,20 @@ def show():
             logout()
             st.rerun()
 
-    if not active_program:
-        st.info("Your organization hasn't activated a program yet. Check back soon, "
-                 "or reach out to your cohort admin.")
-        return
+    top_program, top_library = st.tabs(["🗓 My Program", "📚 Library"])
 
+    with top_library:
+        show_library(org_id)
+
+    with top_program:
+        if not active_program:
+            st.info("Your organization hasn't activated a program yet. Check back soon, "
+                     "or reach out to your cohort admin.")
+        else:
+            show_program(profile, active_program, org_id, participant_id, first_name, unit_label)
+
+
+def show_program(profile, active_program, org_id, participant_id, first_name, unit_label):
     program_id = active_program["id"]
     active_week = active_program["active_week"]
     PROGRAM_WEEKS = get_program_weeks(program_id)
@@ -277,3 +288,41 @@ def show():
         if st.button("🔄 Check for new weeks", width='stretch', type="secondary"):
             st.session_state.pop("profile", None)  # forces active_program re-fetch too
             st.rerun()
+
+
+def show_library(org_id: str):
+    """Org-wide resource library — independent of whichever program is
+    currently active, so resources stay reachable across cohort switches
+    and aren't re-typed per program."""
+    section_label("Browse resources", color="var(--teal)")
+
+    col_s, col_t = st.columns([3, 2])
+    with col_s:
+        search = st.text_input("Search", placeholder="Search by title or description...",
+                                key="lib_search", label_visibility="collapsed")
+    with col_t:
+        all_resources = get_library_resources(org_id)
+        all_tags = sorted({t for r in all_resources for t in (r.get("tags") or [])})
+        tag = st.selectbox("Filter by tag", options=[""] + all_tags,
+                            format_func=lambda t: "All tags" if t == "" else t,
+                            key="lib_tag", label_visibility="collapsed")
+
+    resources = get_library_resources(org_id, search=search, tag=tag)
+
+    if not resources:
+        st.info("No resources here yet." if not (search or tag)
+                 else "No resources match that search/filter.")
+        return
+
+    for r in resources:
+        resource_card(r)
+        if r["source_type"] == "link":
+            st.link_button("Open →", r["url"])
+        else:
+            try:
+                url = get_resource_download_url(r["file_path"])
+                if url:
+                    st.link_button("⬇ Download", url)
+            except Exception:
+                st.caption("Couldn't generate a download link for this file.")
+        st.markdown("<div style='margin-bottom:6px;'></div>", unsafe_allow_html=True)
