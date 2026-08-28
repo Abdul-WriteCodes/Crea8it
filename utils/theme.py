@@ -455,6 +455,20 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 # COMPONENT HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _html_block(html_str: str):
+    """st.markdown(..., unsafe_allow_html=True) for a multi-line HTML
+    string, but strips blank/whitespace-only lines first. Without this,
+    an f-string with an optional line that resolves to "" (e.g. a
+    conditional sub-line that's sometimes empty) leaves a blank line
+    behind — and CommonMark treats a blank line followed by 4+ spaces
+    of indentation as the start of an *indented code block*, so the
+    next real line renders as literal visible text instead of HTML.
+    Blank lines carry no meaning in HTML itself, so stripping them is
+    always safe."""
+    st.markdown("\n".join(l for l in html_str.splitlines() if l.strip()),
+                unsafe_allow_html=True)
+
+
 def kpi_card(label: str, value, sub: str = "",
              positive: bool | None = None, icon: str = ""):
     label, value, sub = _html.escape(str(label)), _html.escape(str(value)), _html.escape(str(sub))
@@ -462,12 +476,12 @@ def kpi_card(label: str, value, sub: str = "",
     if positive is True:  sub_class = "kpi-positive"
     elif positive is False: sub_class = "kpi-negative"
     icon_html = f'<div class="kpi-icon">{icon}</div>' if icon else ""
-    st.markdown(f"""
+    _html_block(f"""
 <div class="kpi-card">
   <div class="kpi-header">{icon_html}<div class="kpi-label">{label}</div></div>
   <div class="kpi-value">{value}</div>
   {f'<div class="kpi-sub {sub_class}">{sub}</div>' if sub else ""}
-</div>""", unsafe_allow_html=True)
+</div>""")
 
 
 def section_label(text: str, color: str = ""):
@@ -491,14 +505,14 @@ def subheading(text: str, color: str = ""):
 
 def page_header(title: str, subtitle: str = ""):
     title, subtitle = _html.escape(title), _html.escape(subtitle)
-    st.markdown(f"""
+    _html_block(f"""
 <div style="margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
   <div style="font-family:var(--font-d);font-size:1.7rem;font-weight:800;
               color:var(--text-1);letter-spacing:-0.04em;line-height:1.1;">
     {title}
   </div>
   {f'<div style="font-size:0.82rem;color:var(--text-3);margin-top:4px;">{subtitle}</div>' if subtitle else ""}
-</div>""", unsafe_allow_html=True)
+</div>""")
 
 
 def week_badge(week_num: int, active_week: int) -> str:
@@ -541,23 +555,23 @@ def task_card(text: str, done: bool):
     """Render a styled task card. Markdown links in text become clickable."""
     rendered = _render_links(text)
     if done:
-        st.markdown(f"""
+        _html_block(f"""
 <div class="task-card done">
   <div class="task-icon complete">&#10003;</div>
   <div class="task-body">
     <div class="task-text muted">{rendered}</div>
     <div class="task-status done-label">Completed</div>
   </div>
-</div>""", unsafe_allow_html=True)
+</div>""")
     else:
-        st.markdown(f"""
+        _html_block(f"""
 <div class="task-card">
   <div class="task-icon pending">&#9675;</div>
   <div class="task-body">
     <div class="task-text">{rendered}</div>
     <div class="task-status pending-label">Pending</div>
   </div>
-</div>""", unsafe_allow_html=True)
+</div>""")
 
 
 def upload_task_card(text: str, status: str, file_name: str = ""):
@@ -581,7 +595,7 @@ def upload_task_card(text: str, status: str, file_name: str = ""):
     file_line = (f'<div class="task-text muted" style="margin-top:2px;">📎 {_html.escape(file_name)}</div>'
                  if file_name else "")
     card_class = "task-card done" if status == "approved" else "task-card"
-    st.markdown(f"""
+    _html_block(f"""
 <div class="{card_class}">
   <div class="task-icon {icon_class}">{icon_glyph}</div>
   <div class="task-body">
@@ -589,7 +603,7 @@ def upload_task_card(text: str, status: str, file_name: str = ""):
     {file_line}
     <div class="task-status {status_class}">{status_text}</div>
   </div>
-</div>""", unsafe_allow_html=True)
+</div>""")
 
 
 def material_card(icon: str, label: str):
