@@ -9,9 +9,10 @@ from utils.db import (
     create_payment_codes, get_org_payment_codes, get_my_organization,
     get_program_engagement,
     get_pending_submissions, get_submission_download_url, review_submission,
+    get_library_resources, create_resource, delete_resource, get_resource_download_url,
 )
 from utils.notify import build_whatsapp_link
-from utils.theme import page_header, subheading
+from utils.theme import page_header, subheading, resource_card
 
 
 def _flash(key: str, kind: str, msg: str):
@@ -73,9 +74,9 @@ def show():
 </div>
 """, unsafe_allow_html=True)
 
-    tab_programs, tab_content, tab_members, tab_engagement, tab_reflections, tab_submissions, tab_codes = st.tabs(
+    tab_programs, tab_content, tab_members, tab_engagement, tab_reflections, tab_submissions, tab_library, tab_codes = st.tabs(
         ["📚 Programs", "📝 Week content", "👥 Members", "📊 Engagement",
-         "💬 Reflections", "📎 Submissions", "🔑 Payment codes"]
+         "💬 Reflections", "📎 Submissions", "🗄 Library", "🔑 Payment codes"]
     )
 
     # ═══════════════════════════════════════════════════════════
@@ -406,6 +407,80 @@ def show():
                                 review_submission(s, "needs_revision", feedback_val)
                                 st.success("Sent back — the participant can re-upload.")
                                 st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Resource library (org-wide, reusable across programs & tasks)
+    # ═══════════════════════════════════════════════════════════
+    with tab_library:
+        subheading("Add a resource")
+        st.caption("Resources live here independently of any single program or week — "
+                   "point to the same resource from multiple programs' materials or task "
+                   "links, and it stays reachable even after you switch the org's active program.")
+
+        title = st.text_input("Title", key="res_title")
+        description = st.text_area("Description (optional)", key="res_desc", height=80)
+        rc1, rc2 = st.columns(2)
+        with rc1:
+            resource_type = st.selectbox(
+                "Type", ["article", "video", "pdf", "doc", "tool", "other"], key="res_type")
+        with rc2:
+            tags_raw = st.text_input("Tags (comma-separated, optional)",
+                                     placeholder="e.g. prompting, week1, beginner", key="res_tags")
+        tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
+
+        source_type = st.radio("Source", ["Link", "Upload file"], horizontal=True, key="res_source")
+
+        url_val, uploaded_file = None, None
+        if source_type == "Link":
+            url_val = st.text_input("URL", placeholder="https://...", key="res_url")
+        else:
+            uploaded_file = st.file_uploader(
+                "File", type=["pdf", "docx", "doc", "png", "jpg", "jpeg", "mp4"], key="res_file")
+
+        if st.button("➕ Add to library", type="primary", key="res_add"):
+            if not title.strip():
+                st.warning("Give the resource a title.")
+            elif source_type == "Link" and not url_val:
+                st.warning("Add a URL, or switch to Upload file.")
+            elif source_type == "Upload file" and uploaded_file is None:
+                st.warning("Choose a file to upload, or switch to Link.")
+            elif source_type == "Upload file" and uploaded_file.size > 200 * 1024 * 1024:
+                st.warning("File too large — 200MB max.")
+            else:
+                create_resource(
+                    org_id, profile["id"], title.strip(), description.strip(),
+                    resource_type, tags,
+                    source_type="link" if source_type == "Link" else "file",
+                    url=url_val.strip() if url_val else None,
+                    file_bytes=uploaded_file.getvalue() if uploaded_file else None,
+                    file_name=uploaded_file.name if uploaded_file else None,
+                    content_type=(uploaded_file.type or "application/octet-stream") if uploaded_file else None,
+                )
+                st.success(f"'{title.strip()}' added to the library.")
+                st.rerun()
+
+        st.divider()
+        subheading("Library")
+        resources = get_library_resources(org_id)
+        if not resources:
+            st.info("No resources added yet.")
+        for r in resources:
+            resource_card(r)
+            col_o, col_d = st.columns([1, 1])
+            with col_o:
+                if r["source_type"] == "link":
+                    st.link_button("Open →", r["url"])
+                else:
+                    try:
+                        dl_url = get_resource_download_url(r["file_path"])
+                        if dl_url:
+                            st.link_button("⬇ Download", dl_url)
+                    except Exception:
+                        st.caption("Download link unavailable.")
+            with col_d:
+                if st.button("🗑 Delete", key=f"del_res_{r['id']}"):
+                    delete_resource(r["id"], r.get("file_path"))
+                    st.rerun()
 
     # ═══════════════════════════════════════════════════════════
     # Payment codes
