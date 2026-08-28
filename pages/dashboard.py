@@ -73,7 +73,7 @@ def show():
         page_header(f"Welcome back, {first_name}", profile.get("email", ""))
     with col2:
         st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
-        if st.button("Log out", type="secondary"):
+        if st.button("Log out", type="primary"):
             logout()
             st.rerun()
 
