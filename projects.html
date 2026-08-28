@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Crea8it — An Ecosystem for Builders, Founders & Future Tech Professionals</title>
+<title>Projects — Crea8it — The Product Shelf</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -699,6 +699,47 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     .cred-item{ transform:none !important; }
 }
 
+/* ── project shelf page ── */
+
+.shelf-hero{ padding:80px 0 20px; }
+
+.shelf-hero h1{
+    font-family:var(--hand);
+    font-size:clamp(2.6rem,5.5vw,4.2rem);
+    line-height:1.05;
+    transform:rotate(-1.5deg);
+    margin:6px 0 20px;
+}
+.shelf-hero h1 span{ color:var(--accent); }
+
+.shelf-hero p.lede{ max-width:620px; color:var(--muted); font-size:1.05rem; }
+
+.grid.projects-grid{ grid-template-columns:1fr; }
+@media(min-width:700px){ .grid.projects-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(min-width:1100px){ .grid.projects-grid{ grid-template-columns:repeat(3,1fr); } }
+
+.stamp.status-live{ color:var(--accent3); border-color:var(--accent3); }
+.stamp.status-building{ color:var(--accent2); border-color:var(--accent2); }
+
+.project-card .card-body{ padding-top:4px; }
+
+.project-card .cred-scatter{ margin:18px 0 4px; gap:10px; }
+.project-card .cred-item{ padding:10px 14px; min-width:auto; box-shadow:0 6px 14px rgba(0,0,0,.28); }
+.project-card .cred-num{ font-size:1.2rem; }
+.project-card .cred-label{ font-size:.62rem; }
+
+.project-card .card-tag.stack{ background:rgba(63,122,104,.12); color:var(--accent3); margin-left:8px; }
+
+.placeholder-note{
+    font-family:var(--mono);
+    font-size:.68rem;
+    color:var(--muted);
+    text-align:center;
+    margin-top:-10px;
+    margin-bottom:40px;
+    opacity:.75;
+}
+
 </style>
 </head>
 <body>
@@ -712,11 +753,11 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 </div>
 
 <div class="nav-links">
-<a href="#programs">Programs 🚀</a>
-<a href="#playbooks">Resources 📚</a>
-<a href="projects.html">Projects 🧰</a>
-<a href="#testimonials">Impact 🏆</a>
-<a href="#submit-request">Submit Request 📩</a>
+<a href="index.html#programs">Programs 🚀</a>
+<a href="index.html#playbooks">Resources 📚</a>
+<a href="projects.html" style="color:var(--accent);">Projects 🧰</a>
+<a href="index.html#testimonials">Impact 🏆</a>
+<a href="index.html#submit-request">Submit Request 📩</a>
 </div>
 
 <a href="https://crea8it.streamlit.app/" class="btn btn-primary">Enter Lab 📟</a>
@@ -724,353 +765,190 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 </div>
 </nav>
 
-<section class="hero">
+<section class="shelf-hero">
 <div class="container hero-grid">
 
-<div>
-<span class="badge">📌 The Hub for Builders, Founders & Tech Aspirants who EXECUTE against all odds</span>
+<div class="hero-content">
+<span class="badge">🧰 The Product Shelf</span>
 
-<h1>
-<span class="l1">BUILD.</span><br>
-<span class="l2">LAUNCH.</span><br>
-<span class="l3">WIN.</span>
-</h1>
+<h1>Real Products.<br><span>Real Users.</span><br>Real Numbers.</h1>
 
 <p class="lede">
-Crea8it Studio encompasses programs and playbooks that equip builders, founders, and future tech professionals with practical strategies, proven frameworks, and real-world lessons to launch careers, build products, and grow startups.
+Every product below is something I'm actively building, running, or have already shipped to real customers — not a mockup or a "coming soon" landing page. Here's what's live in the workshop right now.
 </p>
-
-<div class="hero-buttons">
-<a href="#playbooks" class="btn btn-primary">Resources 📚</a>
-<a href="#programs" class="btn btn-secondary">Programs 🚀</a>
-<a href="https://chat.whatsapp.com/Gbm13AqaNSt24MAxszzkcB" class="btn btn-secondary">Join Us🫂</a>
-<a href="#testimonials" class="btn btn-primary">Impacts 🏆</a>
-</div>
 </div>
 
 <div class="hero-photo-wrap">
-    <div class="hero-sticky hand">10+ apps<br>shipped &amp; live 🚀</div>
-    <div class="polaroid rot--1 flip-polaroid" style="width:260px;" id="heroPolaroid">
+    <div class="hero-sticky hand">Building & <br>shipping in public 🚀</div>
+    <div class="polaroid rot--1 flip-polaroid" style="width:260px;" id="shelfPolaroid">
         <div class="tape tc"></div>
         <div class="pin"></div>
         <div class="flip-inner">
-            <img src="images/Z1.jpg" alt="Abdul-Azeez Olohunjuwon, founder of Crea8it" class="flip-img active">
-            <img src="images/Z2.jpg" alt="Abdul-Azeez Olohunjuwon coding" class="flip-img">
-            <img src="images/Z3.jpg" alt="Abdul-Azeez Olohunjuwon coding" class="flip-img">
+            <img src="assets/D1.jpg" alt="Abdul-Azeez Olohunjuwon, founder of Crea8it" class="flip-img active">
+            <img src="assets/D2.jpg" alt="Abdul-Azeez Olohunjuwon coding" class="flip-img">
+            <img src="assets/D3.jpg" alt="Abdul-Azeez Olohunjuwon coding" class="flip-img">
         </div>
-        <figcaption id="heroCaption">the builder, at work</figcaption>
+        <figcaption id="shelfCaption">Build Solution</figcaption>
     </div>
 </div>
 
 </div>
 </section>
 
-
-<!---Programs--->
-<section id="programs" class="section">
+<section id="project-shelf" class="section" style="padding-top:40px;">
 <div class="container">
 
-<div class="section-head">
-<div class="eyebrow">Ongoing Crea8it Initiatives</div>
-<h2 class="section-title">Core Programs</h2>
-<p class="section-note">Live programs currently on the bench — pinned here as they open.</p>
-</div>
+<div class="grid projects-grid">
 
-<div class="grid programs-grid">
+<!-- BizTrack-OS -->
+<div class="card index-card tilt-card rot--1 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>BizTrack-OS</h3>
+    <p>A business management SaaS built for African SMEs — sales, inventory, debtors, and multi-currency tracking in one dashboard.</p>
+    <span class="card-tag open">SME TOOLS</span>
+    <span class="card-tag stack">Bootstrapped Product</span>
 
-<div class="card index-card tilt-card rot--1" data-launch="2026-07-11T09:00:00">
-    <div class="pin"></div>
-    <div class="card-photo">
-        <img src="assets/Scr1.jpg" alt="AI Career Acceleration">
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">20</div><div class="cred-label">Active Users</div></div>
+        <div class="cred-item"><div class="cred-num">25</div><div class="cred-label">Countries Supported</div></div>
+        <div class="cred-item"><div class="cred-num">22.2%</div><div class="cred-label">FTP Conversion rate</div></div>
     </div>
-    <div class="card-body">
-        <span class="card-tag open">Open Seminar 🎙</span>
-        <h3>AI Career Acceleration</h3>
-        <p>A career launch and acceleration program for ambitious individuals who want to build valuable skills, create opportunities, and thrive in the age of AI.</p>
-        <div class="card-footer">
-            <div class="price program-price">Coming Soon</div>
-            <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F" class="btn-buy" target="_blank" rel="noopener">Register →</a>
-        </div>
-    </div>
-</div>
 
-<div class="card index-card tilt-card rot--2">
-    <div class="pin"></div>
-    <div class="card-photo">
-        <img src="assets/Scr2.jpg" alt="Crea8it Build in Public Challenge">
-    </div>
-    <div class="card-body">
-        <span class="card-tag soon">Waitlist Open</span>
-        <h3>Build in Public Challenge</h3>
-        <p>A hands-on execution program that encourages builders to stop overthinking and start shipping.</p>
-        <div class="card-footer">
-            <div class="price program-price">Coming Soon</div>
-            <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20waitlist%20for%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it." class="btn-buy" target="_blank" rel="noopener">Join Waitlist →</a>
-        </div>
+    <div class="card-footer">
+        <span class="price hand">Total Revenue: NGN 24,000</span>
+        <a href="https://biztrack.streamlit.app/" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
     </div>
 </div>
+</div>
 
-<div class="card index-card tilt-card rot--3" data-launch="2026-07-11T09:00:00">
-    <div class="pin"></div>
-    <div class="card-photo">
-        <img src="assets/Scr3.jpg" alt="Zero to 1 startup validation lab">
+<!-- StaX360 Suite -->
+<div class="card index-card tilt-card rot--2 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>StaX360 Suite</h3>
+    <p>A statistical analysis toolkit — panel data, data synthesis, exploratory factor analysis, and data cleaning, unified under one credit-based platform.</p>
+    <span class="card-tag open">RESEARCH TOOLS</span>
+    <span class="card-tag stack">Bootstrapped Product</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">4</div><div class="cred-label">Tools in Suite</div></div>
+        <div class="cred-item"><div class="cred-num">500+</div><div class="cred-label">Analyses Run</div></div>
+        <div class="cred-item"><div class="cred-num">2</div><div class="cred-label">Active Users</div></div>
     </div>
-    <div class="card-body">
-        <span class="card-tag open">Active</span>
-        <h3>🧪 Zero to 1</h3>
-        <p>An idea validation and startup launch program for aspiring founders and indie hackers who want to build real businesses from scratch. This is not where you just buy course, it is where you EXECUTE to make things work</p>
-        <div class="card-footer">
-            <div class="price program-price">Coming Soon </div>
-            <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it." class="btn-buy" target="_blank" rel="noopener">Register →</a>
-        </div>
-    </div>
-</div>
 
-</div>
-</div>
-</section>
-
-
-<!----Resources--->
-<section id="playbooks" class="section">
-<div class="container">
-
-<div class="section-head">
-<div class="eyebrow">Resources for Everyone</div>
-<h2 class="section-title">Playbooks</h2>
-<p class="section-note">Written and documented the same way I build — no theory without skin in the game.</p>
-</div>
-
-<div class="grid playbook-grid">
-
-<div class="card index-card tilt-card rot--4">
-    <div class="pin"></div>
-    <div class="price-sticker">₦5,000</div>
-    <div class="card-photo playbook-photo">
-        <img src="assets/EntAI.jpg" alt="Enter AI book cover">
-    </div>
-    <div class="card-body">
-        <span class="card-tag open">📘 Playbook</span>
-        <h3>Enter AI</h3>
-        <p>A comprehensive guide for AI career launch. Over 10 downloads 📥 and counting · 20% of active readers 🧑‍🏫 have successfully broken into AI 🚀 · No CS degree is not a barrier · real steps and tested strategies 🧩.</p>
-        <div class="card-footer">
-            <div class="price">₦5,000</div>
-            <a href="https://flutterwave.com/pay/uuzhcwanejde" class="btn-buy">Get Book →</a>
-        </div>
+    <div class="card-footer">
+        <span class="price hand">LTV: 0.00</span>
+        <a href="https://stax360.streamlit.app/" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
     </div>
 </div>
-
-<div class="card index-card tilt-card rot--5">
-    <div class="pin"></div>
-    <div class="price-sticker" style="background:var(--accent3);color:#0c1a15;">Free</div>
-    <div class="card-photo playbook-photo">
-        <img src="assets/T2M.jpeg" alt="Talk to the Machine book cover">
-    </div>
-    <div class="card-body">
-        <span class="card-tag soon">📗 Playbook</span>
-        <h3>Talk to the Machine</h3>
-        <p>A practical field guide to working with AI tools day-to-day — prompts, workflows, and mental models for getting real output instead of generic answers.</p>
-        <div class="card-footer">
-            <div class="price">Free</div>
-            <a href="#" class="btn-buy">Get Book →</a>
-        </div>
-    </div>
 </div>
 
-</div>
 
+<!-- Kopt-OS -->
 <!--
-<div class="card">
-    <div class="card-image">
-        <img src="assets/saas-growth-blueprint.jpg" alt="SaaS Growth Blueprint">
+<div class="card index-card tilt-card rot--3 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>Kopt-OS</h3>
+    <p>Cooperative society management, rebuilt from the ground up — member records, contributions, and loan tracking for coop admins.</p>
+    <span class="card-tag open">COOP TOOLS</span>
+    <span class="card-tag stack">REFLEX</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Coops Onboarded</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Members Tracked</div></div>
     </div>
-    <div class="card-body">
-        <div>
-            <h3>SaaS Growth Blueprint</h3>
-            <p>Validation, launch, traction and growth strategies for SaaS builders. From zero users to sustainable MRR — documented and repeatable.</p>
-        </div>
-        <div class="card-footer">
-            <div class="price">£39</div>
-            <a href="YOUR_PAYMENT_LINK_HERE" class="btn-buy">Get Playbook →</a>
-        </div>
+
+    <div class="card-footer">
+        <span class="price hand">Reflex Cloud</span>
+        <a href="#" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
     </div>
+</div>
 </div>
 -->
+<!-- Crea8it Labs -->
+<div class="card index-card tilt-card rot--4 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>Crea8it Labs</h3>
+    <p>The cohort-based learning platform behind Crea8it itself — where builders execute real projects instead of just consuming courses.</p>
+    <span class="card-tag open">COMMUNITY</span>
+    <span class="card-tag stack">Bootstrapped Product</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">100</div><div class="cred-label">Builders in Lab</div></div>
+        <div class="cred-item"><div class="cred-num">3</div><div class="cred-label">Cohorts Run</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Enter the Lab</span>
+        <a href="https://crea8it.streamlit.app/" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+<!-- CaptAI-->
+<div class="card index-card tilt-card rot--5 project-card">
+<div class="card-body">
+    <span class="stamp status-building">Live 🟩</span>
+    <h3>CaptAI</h3>
+    <p>Machine Learning-powered Intelligent system that analyses sentiment in Text data</p>
+    <span class="card-tag soon">Machine Learning Project</span>
+    <span class="card-tag stack">NLP</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">🚧</div><div class="cred-label">In the Workshop</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Shipped</span>
+        <a href="https://captai.streamlit.app/" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+<!-- EmpiricX -->
+<div class="card index-card tilt-card rot--6 project-card">
+<div class="card-body">
+    <span class="stamp status-live">Live 🟩</span>
+    <h3>EmpiricX</h3>
+    <p>An AI-powered metadata extractor for academic papers — pulls authors, citations, and structured data out of PDFs in seconds.</p>
+    <span class="card-tag open">RESEARCH AI</span>
+    <span class="card-tag stack">GPT-4o</span>
+
+    <div class="cred-scatter">
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Papers Processed</div></div>
+        <div class="cred-item"><div class="cred-num">--</div><div class="cred-label">Active Users</div></div>
+    </div>
+
+    <div class="card-footer">
+        <span class="price hand">Credit-based</span>
+        <a href="#" class="btn-buy" target="_blank" rel="noopener">Visit Product →</a>
+    </div>
+</div>
+</div>
+
+</div>
+
+
 
 </div>
 </section>
-
-
-<section id="testimonials" class="section">
-<div class="container" style="text-align:center;">
-
-<div class="section-head" style="margin-left:auto;margin-right:auto;">
-<div class="eyebrow" style="justify-content:center;">Transformative Effect of Crea8it</div>
-<h2 class="section-title">Impact-Driven Results</h2>
-</div>
-
-<div class="testimonial-wrap">
-<div class="carousel-wrapper">
-
-    <button class="carousel-arrow carousel-prev" aria-label="Previous">&#8592;</button>
-
-    <div class="carousel-track-container">
-        <div class="carousel-track">
-            <div class="carousel-slide">
-                <div class="polaroid testimonial-polaroid">
-                    <div class="tape tc"></div>
-                    <img src="assets/Testx1.png" alt="Reader testimonial 1">
-                    <figcaption class="hand">reader love 💚</figcaption>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <button class="carousel-arrow carousel-next" aria-label="Next">&#8594;</button>
-
-    <div class="carousel-dots">
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-    </div>
-
-</div>
-</div>
-
-</div>
-</section>
-
-
-<section class="section">
-<div class="container why">
-
-<div>
-<div class="eyebrow">the philosophy</div>
-<h2 class="section-title">The Crea8it Way</h2>
-
-<div class="notebook" style="margin-top:24px;">
-<p>
-No fake guru tactics. No clout-chasing content. No theory without skin in the game. Just serious execution with grit and resilience when it gets tough.<br><br>
-While many builder communities focus on courses and theory, we build capacity through action. Every program is built around real launches, real experiments, and real execution in our own dedicated LAB📟. Every framework here was earned through real time, real money, or real failure — turned into practical lessons. 🤸🏻<br>
-</p>
-</div>
-</div>
-
-<div class="graffiti-box">
-    🧩<br>
-→ Choose a problem ⚙️<br>
-→ Research it 🧠<br>
-→ Execute it🚀<br>
-→ Adapt 🤸🏻<br>
-→ Teach 📗<br>
-→ Earn 
-</div>
-
-</div>
-</section>
-
-
-<section class="section">
-<div class="eyebrow container" style="margin-bottom:0;">Still Pulling the Strings</div>
-<div class="container about" style="margin-top:24px;">
-
-<div class="polaroid">
-    <div class="pin"></div>
-    <img src="images/Ab.png" alt="Abdul-Azeez Olohunjuwon">
-    <figcaption> Building Sucks...but Still Building</figcaption>
-</div>
-
-<div class="about-text">
-<h2 class="section-title" style="margin-bottom:20px;">Meet the Builder</h2>
-
-<p class="quote-strip">
-Hello Mate 👋, I'm Abdul<br>
-I build products, systems and people
-</p>
-
-<p>
-I'm actively bootstrapping SaaS products to real customers while doing research on the side. Everything I teach inside Crea8it is something I'm currently doing or have already done and documented.
-</p>
-
-<p class="quote-strip">
-The Crea8it Agenda.
-</p>
-
-<p>
-I started this to help ambitious people build real careers, and real income from tech by solving problems and creating opportunities, not by complaining about the unglamorous work. Here, I'm doing the same thing I'm asking you to do — CREATE, but in a better way with faith, grit, and good spirit.<br><br>
-
-</p>
-
-<p class="quote-strip">
-Progress So far.
-</p>
-<p>Crea8it is the ecosystem I wish had existed when I was starting. Now it does with a growing impact 👇 </p>
-
-<div class="cred-scatter">
-    <div class="cred-item">
-        <div class="cred-num">2×</div>
-        <div class="cred-label">SaaS Idea<br>Taken from zero to 1</div>
-    </div>
-    <div class="cred-item">
-        <div class="cred-num">10+</div>
-        <div class="cred-label">Years counting as a <br>researcher</div>
-    </div>
-    <div class="cred-item">
-        <div class="cred-num">2</div>
-        <div class="cred-label">Published books<br>on AI</div>
-    </div>
-    <div class="cred-item">
-        <div class="cred-num">2</div>
-        <div class="cred-label">People gotten <br> into Tech</div>
-    </div>
-</div>
-    
-<span class="stamp">Indie Hacking 🟨⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️🟩</span>
-
-</div>
-
-</div>
-</section>
-
-
-<section id="submit-request" class="section">
-<div class="eyebrow" style="justify-content:center;">You've got Something to Share🤓</div>
-<div class="container">
-
-<div class="postcard">
-<div class="postmark">SUBMIT<br>YOUR<br>IDEA</div>
-
-<h2>Submit a Request</h2>
-
-<p>
-Got an idea, a project, or something worth addressing? Bring it. Let's have it 🫴🏾
-</p>
-
-<a href="mailto:Abdulwrite77@gmail.com?subject=Subscribe me to The Builder's Dispatch" class="btn btn-primary" style="margin-top:26px;display:inline-block;">Submit via Email</a>
-
-</div>
-
-</div>
-</section>
-
 
 <footer>
 <div class="container footer-inner">
 
-    <div class="footer-logo">Crea8it Studio</div>
+    <div class="footer-logo">Crea8it</div>
 
     <p class="footer-tagline">BUILD⚙️ ° LAUNCH🚀 ° LEARN🤸🏻 ° WIN🏆</p>
 
     <nav class="footer-links">
-        <a href="#playbooks">Resources</a>
+        <a href="index.html#playbooks">Resources</a>
         <span>•</span>
-        <a href="#programs">Programs</a>
+        <a href="index.html#programs">Programs</a>
         <span>•</span>
-        <a href="projects.html">Projects</a>
-        <span>•</span>
-        <a href="#testimonials">Impacts</a>
+        <a href="index.html#testimonials">Impacts</a>
     </nav>
 
     <div class="footer-socials">
@@ -1101,102 +979,15 @@ Got an idea, a project, or something worth addressing? Bring it. Let's have it �
 
 <script>
 (function(){
-    const track    = document.querySelector('.carousel-track');
-    const slides   = document.querySelectorAll('.carousel-slide');
-    const dots     = document.querySelectorAll('.dot');
-    const prev     = document.querySelector('.carousel-prev');
-    const next     = document.querySelector('.carousel-next');
-    const total    = slides.length;
-    let current    = 0;
-
-    function goTo(index){
-        current = (index + total) % total;
-        track.style.transform = `translateX(-${current * 100}%)`;
-        dots.forEach((d,i) => d.classList.toggle('active', i === current));
-    }
-
-    prev.addEventListener('click', () => goTo(current - 1));
-    next.addEventListener('click', () => goTo(current + 1));
-    dots.forEach((d,i) => d.addEventListener('click', () => goTo(i)));
-
-    let startX = 0;
-    track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
-    track.addEventListener('touchend',   e => {
-        const diff = startX - e.changedTouches[0].clientX;
-        if(Math.abs(diff) > 40) goTo(diff > 0 ? current + 1 : current - 1);
-    });
-
-    let mouseStartX = 0, isDragging = false;
-    track.addEventListener('mousedown',  e => { isDragging = true; mouseStartX = e.clientX; });
-    track.addEventListener('mouseup',    e => {
-        if(!isDragging) return;
-        isDragging = false;
-        const diff = mouseStartX - e.clientX;
-        if(Math.abs(diff) > 40) goTo(diff > 0 ? current + 1 : current - 1);
-    });
-    track.addEventListener('mouseleave', () => { isDragging = false; });
-})();
-</script>
-
-<script>
-(function(){
-    function pad(n){ return String(n).padStart(2,'0'); }
-
-    function buildCountdown(el, launchDate){
-        function tick(){
-            const now  = new Date();
-            const diff = launchDate - now;
-
-            if(diff <= 0){
-                el.innerHTML = '<span class="price-open">🟢 Now Open!</span>';
-                return;
-            }
-
-            const days  = Math.floor(diff / (1000*60*60*24));
-            const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-            const mins  = Math.floor((diff % (1000*60*60))    / (1000*60));
-            const secs  = Math.floor((diff % (1000*60))       / 1000);
-
-            el.innerHTML = `
-                <div class="countdown">
-                    <div class="cd-block"><span class="cd-num">${pad(days)}</span><span class="cd-label">Days</span></div>
-                    <span class="cd-sep">:</span>
-                    <div class="cd-block"><span class="cd-num">${pad(hours)}</span><span class="cd-label">Hrs</span></div>
-                    <span class="cd-sep">:</span>
-                    <div class="cd-block"><span class="cd-num">${pad(mins)}</span><span class="cd-label">Min</span></div>
-                    <span class="cd-sep">:</span>
-                    <div class="cd-block"><span class="cd-num">${pad(secs)}</span><span class="cd-label">Sec</span></div>
-                </div>`;
-        }
-
-        tick();
-        setInterval(tick, 1000);
-    }
-
-    document.querySelectorAll('.card[data-launch]').forEach(function(card){
-        const raw = card.getAttribute('data-launch');
-        if(!raw) return;
-
-        const launchDate = new Date(raw);
-        if(isNaN(launchDate)) return;
-
-        const priceEl = card.querySelector('.program-price');
-        if(priceEl) buildCountdown(priceEl, launchDate);
-    });
-})();
-</script>
-
-<script>
-(function(){
-    const wrap = document.getElementById('heroPolaroid');
+    const wrap = document.getElementById('shelfPolaroid');
     if(!wrap) return;
 
     const imgs = wrap.querySelectorAll('.flip-img');
-    const captionEl = document.getElementById('heroCaption');
+    const captionEl = document.getElementById('shelfCaption');
     if(imgs.length < 2) return;
 
     // captions shown per image, in order (edit these to match your photos)
-    const captions = ['the builder, at work', 'serious execution', 'An ecosystem for all'];
+    const captions = ['Build Solution', 'Monetize & Ship', 'From 0 to 1'];
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduceMotion) return; // leave the first image static, no flipping

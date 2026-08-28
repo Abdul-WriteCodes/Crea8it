@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 from utils.db import (
     get_current_profile, logout, get_all_programs, create_program, delete_program,
@@ -6,9 +7,12 @@ from utils.db import (
     get_prompt, set_prompt, get_all_participants, get_last_active_map,
     get_all_reflections, save_feedback, wipe_all_progress,
     create_payment_codes, get_org_payment_codes, get_my_organization,
+    get_program_engagement,
+    get_pending_submissions, get_submission_download_url, review_submission,
+    get_library_resources, create_resource, delete_resource, get_resource_download_url,
 )
 from utils.notify import build_whatsapp_link
-from utils.theme import page_header, subheading
+from utils.theme import page_header, subheading, resource_card
 
 
 def _flash(key: str, kind: str, msg: str):
@@ -30,6 +34,8 @@ def show():
 
     org_id = profile["org_id"]
 
+    org = get_my_organization(org_id)
+
     col1, col2 = st.columns([5, 1])
     with col1:
         page_header("🧩 Cohort admin", f"Logged in as {profile['full_name']}")
@@ -39,7 +45,21 @@ def show():
             logout()
             st.rerun()
 
-    org = get_my_organization(org_id)
+    if not org or not org["is_active"]:
+        st.markdown("""
+<div style="background:rgba(245,166,35,0.08);border:1px solid #F5A623;
+            border-radius:10px;padding:20px;margin:8px 0;">
+  <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;
+              color:#F5A623;margin-bottom:6px;">⏳ Awaiting approval</div>
+  <div style="color:#8BA0B8;font-size:0.88rem;line-height:1.6;">
+    Your organization has been created, but a Crea8it platform admin
+    needs to approve it before you can start building your program or
+    inviting participants. This is usually quick — check back shortly,
+    or reach out if it's been a while.
+  </div>
+</div>""", unsafe_allow_html=True)
+        return
+
     if org:
         st.markdown(f"""
 <div style="background:rgba(0,180,216,0.08);border:1px solid #00B4D8;
@@ -54,8 +74,9 @@ def show():
 </div>
 """, unsafe_allow_html=True)
 
-    tab_programs, tab_content, tab_members, tab_reflections, tab_codes = st.tabs(
-        ["📚 Programs", "📝 Week content", "👥 Members", "💬 Reflections", "🔑 Payment codes"]
+    tab_programs, tab_content, tab_members, tab_engagement, tab_reflections, tab_submissions, tab_library, tab_codes = st.tabs(
+        ["📚 Programs", "📝 Week content", "👥 Members", "📊 Engagement",
+         "💬 Reflections", "📎 Submissions", "🗄 Library", "🔑 Payment codes"]
     )
 
     # ═══════════════════════════════════════════════════════════
@@ -68,11 +89,18 @@ def show():
         subheading("Create a new program", color="var(--teal)")
         with st.form("create_program_form"):
             name = st.text_input("Program name")
-            unit_label = st.text_input("Unit label", value="Week", help="e.g. 'Week', 'Module', 'Sprint'")
+            col_a, col_b = st.columns(2)
+            with col_a:
+                unit_label = st.text_input("Unit label", value="Week", help="e.g. 'Week', 'Module', 'Sprint'")
+            with col_b:
+                duration_weeks = st.number_input(
+                    "Duration", min_value=1, max_value=52, value=4,
+                    help="How many units this program runs for — 1, 2, 6, 12... your call."
+                )
             submitted = st.form_submit_button("Create program")
         if submitted and name.strip():
-            create_program(org_id, name.strip(), unit_label.strip() or "Week")
-            _flash("programs", "success", f"Program '{name}' created.")
+            create_program(org_id, name.strip(), unit_label.strip() or "Week", int(duration_weeks))
+            _flash("programs", "success", f"Program '{name}' created — {int(duration_weeks)} {unit_label or 'Week'}(s).")
             st.rerun()
 
         st.divider()
@@ -81,15 +109,18 @@ def show():
             st.info("No programs yet — create one above.")
         for p in programs:
             with st.expander(f"{'🟢 ' if p['is_active'] else ''}{p['name']} ({p['unit_label']})"):
-                st.write(f"Active week: **{p['active_week']}**")
+                st.write(f"Active week: **{p['active_week']}** of **{p.get('duration_weeks', '—')}**")
                 col_a, col_b, col_c = st.columns(3)
                 with col_a:
                     if not p["is_active"] and st.button("Set as active program", key=f"activate_{p['id']}"):
                         set_active_program(org_id, p["id"])
                         st.rerun()
                 with col_b:
-                    new_week = st.number_input("Set active week", min_value=1, value=p["active_week"],
-                                               key=f"week_input_{p['id']}")
+                    new_week = st.number_input(
+                        "Set active week", min_value=1, max_value=p.get("duration_weeks", 52),
+                        value=min(p["active_week"], p.get("duration_weeks", 52)),
+                        key=f"week_input_{p['id']}"
+                    )
                     if st.button("Update active week", key=f"update_week_{p['id']}"):
                         set_active_week(p["id"], int(new_week))
                         _flash("programs", "success", "Active week updated.")
@@ -109,56 +140,175 @@ def show():
         if not programs:
             st.info("Create a program first.")
         else:
+            MATERIAL_TYPES = ["book", "video", "article", "worksheet", "template",
+                              "portfolio", "assignment", "podcast", "quiz", "slides", "code", "tool"]
+
             program_names = {p["id"]: p["name"] for p in programs}
             selected_pid = st.selectbox("Program", list(program_names.keys()),
                                         format_func=lambda pid: program_names[pid])
+            selected_program = next(p for p in programs if p["id"] == selected_pid)
+            unit_label = selected_program.get("unit_label", "Week")
 
             weeks = get_program_weeks(selected_pid)
             existing_week_nums = sorted(weeks.keys())
-            week_num = st.number_input("Week / unit number", min_value=1,
-                                       value=(max(existing_week_nums) + 1) if existing_week_nums else 1)
+            current_active_week = get_active_week(selected_pid)
+            week_num = int(st.number_input(
+                f"{unit_label} number", min_value=1, max_value=selected_program.get("duration_weeks", 52),
+                value=min((max(existing_week_nums) + 1) if existing_week_nums else 1,
+                         selected_program.get("duration_weeks", 52))
+            ))
 
-            current = weeks.get(int(week_num), {"title": "", "theme": "", "materials": [], "tasks": []})
+            if week_num == current_active_week:
+                st.caption(f"🟢 This is the current active {unit_label.lower()} for {selected_program['name']}.")
+            else:
+                st.caption(f"Current active {unit_label.lower()}: **{current_active_week}**")
 
-            with st.form(f"content_form_{week_num}"):
-                title = st.text_input("Title", value=current["title"])
-                theme = st.text_input("Theme", value=current["theme"])
+            current = weeks.get(week_num, {"title": "", "theme": "", "materials": [], "tasks": []})
 
-                st.caption("Materials (one per line, format: `type|label`, e.g. `video|Intro to prompting`)")
-                materials_raw = st.text_area(
-                    "Materials", height=100,
-                    value="\n".join(f"{m['type']}|{m['label']}" for m in current["materials"])
-                )
+            title = st.text_input("Title", value=current["title"],
+                                  placeholder=f"e.g. {unit_label} {week_num}: Getting Started",
+                                  key=f"title_{week_num}")
+            theme = st.text_input("Subtitle / theme", value=current["theme"],
+                                  placeholder="e.g. Understand the landscape and why it matters",
+                                  key=f"theme_{week_num}")
 
-                st.caption("Tasks (one per line)")
-                tasks_raw = st.text_area("Tasks", height=120, value="\n".join(current["tasks"]))
+            st.markdown("**Materials** (up to 8)")
+            ex_mats = current["materials"]
+            mat_count = st.number_input("How many materials?", min_value=0, max_value=8,
+                                        value=len(ex_mats), key=f"mat_n_{week_num}")
+            materials = []
+            for m in range(int(mat_count)):
+                default_label = ex_mats[m]["label"] if m < len(ex_mats) else ""
+                default_type = ex_mats[m]["type"] if m < len(ex_mats) else "article"
+                mc1, mc2 = st.columns([3, 1])
+                with mc1:
+                    ml = st.text_input(f"Material {m+1}", value=default_label,
+                                       placeholder="e.g. Watch: Intro video", key=f"mat_lbl_{week_num}_{m}")
+                with mc2:
+                    idx = MATERIAL_TYPES.index(default_type) if default_type in MATERIAL_TYPES else 0
+                    mt = st.selectbox("Type", MATERIAL_TYPES, index=idx, key=f"mat_tp_{week_num}_{m}")
+                if ml.strip():
+                    materials.append({"label": ml.strip(), "type": mt})
 
-                prompt_val = st.text_area(
-                    "Reflection prompt (shown once all tasks for this week are done)",
-                    value=get_prompt(selected_pid, int(week_num)), height=80
-                )
+            st.markdown("**Activities / Tasks** (up to 10)")
+            st.caption("Add an optional resource link to any task — it becomes clickable on the dashboard. "
+                       "Check 'Requires file upload' for tasks that need a doc reviewed before they count as done.")
+            ex_tasks = current["tasks"]
+            task_count = st.number_input("How many tasks?", min_value=0, max_value=10,
+                                         value=len(ex_tasks), key=f"task_n_{week_num}")
+            tasks = []
+            for t in range(int(task_count)):
+                raw = ex_tasks[t] if t < len(ex_tasks) else {"text": "", "upload_required": False}
+                raw_text = raw["text"]
+                # Reverse-parse an existing "text [Open →](url)" back into text + url,
+                # so re-opening a saved week pre-fills the Link field correctly.
+                m = re.match(r"^(.*?)\s*\[.*?\]\((https?://[^\)]+)\)\s*$", raw_text)
+                default_text = m.group(1).strip() if m else raw_text
+                default_link = m.group(2).strip() if m else ""
+                tc1, tc2, tc3 = st.columns([3, 2, 1.3])
+                with tc1:
+                    tv = st.text_input(f"Task {t+1}", value=default_text,
+                                       placeholder="e.g. Complete the worksheet", key=f"task_{week_num}_{t}")
+                with tc2:
+                    tl = st.text_input(f"Link {t+1} (optional)", value=default_link,
+                                       placeholder="https://...", key=f"task_link_{week_num}_{t}")
+                with tc3:
+                    st.markdown("<div style='margin-top:1.8rem;'></div>", unsafe_allow_html=True)
+                    upload_req = st.checkbox("Requires file upload", value=raw.get("upload_required", False),
+                                             key=f"task_upload_{week_num}_{t}")
+                if tv.strip():
+                    task_text = f"{tv.strip()} [Open →]({tl.strip()})" if tl.strip() else tv.strip()
+                    tasks.append({"text": task_text, "upload_required": upload_req})
 
-                save_btn = st.form_submit_button("Save week content")
+            prompt_val = st.text_area(
+                "Reflection prompt (shown once all tasks for this week are done)",
+                value=get_prompt(selected_pid, week_num), height=80,
+                key=f"prompt_{week_num}"
+            )
 
-            if save_btn:
-                materials = []
-                for line in materials_raw.splitlines():
-                    if "|" in line:
-                        t, label = line.split("|", 1)
-                        materials.append({"type": t.strip(), "label": label.strip()})
-                tasks = [t.strip() for t in tasks_raw.splitlines() if t.strip()]
+            also_activate = st.checkbox(
+                f"Also make {unit_label} {week_num} the active {unit_label.lower()} for participants",
+                value=False, key=f"also_activate_{week_num}",
+                disabled=(week_num == current_active_week),
+            )
 
-                save_program_week(org_id, selected_pid, int(week_num), title.strip(),
-                                  theme.strip(), materials, tasks)
-                set_prompt(org_id, selected_pid, int(week_num), prompt_val)
-                _flash("content", "success", f"Week {int(week_num)} saved.")
-                st.rerun()
+            save_col, activate_col, delete_col = st.columns(3)
+            with save_col:
+                if st.button(f"💾 Save {unit_label} {week_num}", type="primary", key=f"save_{week_num}"):
+                    if not title.strip():
+                        st.warning("Title is required.")
+                    elif not tasks:
+                        st.warning("Add at least one task before saving.")
+                    else:
+                        save_program_week(org_id, selected_pid, week_num, title.strip(),
+                                          theme.strip(), materials, tasks)
+                        set_prompt(org_id, selected_pid, week_num, prompt_val)
+                        msg = (f"{unit_label} {week_num} — '{title.strip()}' saved. "
+                               f"{len(materials)} material(s), {len(tasks)} task(s).")
+                        if also_activate:
+                            set_active_week(selected_pid, week_num)
+                            msg += f" It's now the active {unit_label.lower()}."
+                        _flash("content", "success", msg)
+                        st.rerun()
 
-            if int(week_num) in weeks:
-                if st.button("Delete this week", type="secondary"):
-                    delete_week_from_program(selected_pid, int(week_num))
-                    _flash("content", "warning", f"Week {int(week_num)} deleted.")
-                    st.rerun()
+            with activate_col:
+                # Only offer to activate a week whose content has already been saved —
+                # activating an empty week would show participants nothing to do.
+                if int(week_num) in weeks and week_num != current_active_week:
+                    if st.button(f"✅ Set as active {unit_label.lower()}", key=f"activate_content_{week_num}"):
+                        set_active_week(selected_pid, week_num)
+                        _flash("content", "success",
+                              f"{unit_label} {week_num} is now the active {unit_label.lower()}.")
+                        st.rerun()
+
+            with delete_col:
+                if int(week_num) in weeks:
+                    if st.button("Delete this week", type="secondary", key=f"delete_{week_num}"):
+                        delete_week_from_program(selected_pid, int(week_num))
+                        _flash("content", "warning", f"Week {int(week_num)} deleted.")
+                        st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Engagement
+    # ═══════════════════════════════════════════════════════════
+    with tab_engagement:
+        programs = get_all_programs(org_id)
+        if not programs:
+            st.info("Create a program first.")
+        else:
+            program_names = {p["id"]: p["name"] for p in programs}
+            eng_pid = st.selectbox("Program", list(program_names.keys()),
+                                   format_func=lambda pid: program_names[pid], key="engagement_program_select")
+
+            engagement = get_program_engagement(org_id, eng_pid)
+
+            if not engagement:
+                st.info("No participants yet for this program.")
+            else:
+                total = len(engagement)
+                fully_engaged = sum(1 for e in engagement if e["pct"] >= 80)
+                avg_pct = round(sum(e["pct"] for e in engagement) / total) if total else 0
+
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Participants", total)
+                col2.metric("Avg. completion", f"{avg_pct}%")
+                col3.metric("Highly engaged (80%+)", fully_engaged)
+
+                st.divider()
+                for e in engagement:
+                    with st.container(border=True):
+                        col_a, col_b = st.columns([3, 2])
+                        with col_a:
+                            st.write(f"**{e['full_name']}**")
+                            st.caption(f"{e['email']} · {e['whatsapp']}")
+                            st.caption(f"Last active: {e['last_active']}")
+                        with col_b:
+                            st.progress(e["pct"] / 100,
+                                       text=f"{e['tasks_done']}/{e['tasks_total']} tasks ({e['pct']}%)")
+                            st.caption(
+                                f"{e['weeks_completed']}/{e['weeks_total']} weeks fully done · "
+                                f"{e['reflections_submitted']} reflection(s) submitted"
+                            )
 
     # ═══════════════════════════════════════════════════════════
     # Members
@@ -218,6 +368,119 @@ def show():
                         save_feedback(r["id"], feedback_val)
                         st.success("Feedback saved.")
                         st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Task submissions (upload-required tasks awaiting review)
+    # ═══════════════════════════════════════════════════════════
+    with tab_submissions:
+        active_program = get_active_program(org_id)
+        if not active_program:
+            st.info("No active program set.")
+        else:
+            pending = get_pending_submissions(org_id, active_program["id"])
+            if not pending:
+                st.info("No submissions waiting for review. 🎉")
+            for s in pending:
+                person = s.get("profiles") or {}
+                with st.expander(f"Week {s['week']}, Task {s['task_index'] + 1} — {person.get('full_name', 'Unknown')}"):
+                    st.write(f"**File:** {s['file_name']}")
+                    try:
+                        url = get_submission_download_url(s["file_path"])
+                        if url:
+                            st.link_button("⬇ Download / view file", url)
+                    except Exception as e:
+                        st.warning(f"Couldn't generate a download link: {e}")
+
+                    fb_key = f"sub_fb_{s['id']}"
+                    feedback_val = st.text_area("Feedback (shown to the participant)", key=fb_key)
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        if st.button("✅ Approve", key=f"approve_{s['id']}", type="primary"):
+                            review_submission(s, "approved", feedback_val)
+                            st.success("Approved — this task now counts toward their progress.")
+                            st.rerun()
+                    with col_b:
+                        if st.button("↩ Send back for revision", key=f"revise_{s['id']}"):
+                            if not feedback_val.strip():
+                                st.warning("Add a note explaining what needs fixing before sending back.")
+                            else:
+                                review_submission(s, "needs_revision", feedback_val)
+                                st.success("Sent back — the participant can re-upload.")
+                                st.rerun()
+
+    # ═══════════════════════════════════════════════════════════
+    # Resource library (org-wide, reusable across programs & tasks)
+    # ═══════════════════════════════════════════════════════════
+    with tab_library:
+        subheading("Add a resource")
+        st.caption("Resources live here independently of any single program or week — "
+                   "point to the same resource from multiple programs' materials or task "
+                   "links, and it stays reachable even after you switch the org's active program.")
+
+        title = st.text_input("Title", key="res_title")
+        description = st.text_area("Description (optional)", key="res_desc", height=80)
+        rc1, rc2 = st.columns(2)
+        with rc1:
+            resource_type = st.selectbox(
+                "Type", ["article", "video", "pdf", "doc", "tool", "other"], key="res_type")
+        with rc2:
+            tags_raw = st.text_input("Tags (comma-separated, optional)",
+                                     placeholder="e.g. prompting, week1, beginner", key="res_tags")
+        tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
+
+        source_type = st.radio("Source", ["Link", "Upload file"], horizontal=True, key="res_source")
+
+        url_val, uploaded_file = None, None
+        if source_type == "Link":
+            url_val = st.text_input("URL", placeholder="https://...", key="res_url")
+        else:
+            uploaded_file = st.file_uploader(
+                "File", type=["pdf", "docx", "doc", "png", "jpg", "jpeg", "mp4"], key="res_file")
+
+        if st.button("➕ Add to library", type="primary", key="res_add"):
+            if not title.strip():
+                st.warning("Give the resource a title.")
+            elif source_type == "Link" and not url_val:
+                st.warning("Add a URL, or switch to Upload file.")
+            elif source_type == "Upload file" and uploaded_file is None:
+                st.warning("Choose a file to upload, or switch to Link.")
+            elif source_type == "Upload file" and uploaded_file.size > 200 * 1024 * 1024:
+                st.warning("File too large — 200MB max.")
+            else:
+                create_resource(
+                    org_id, profile["id"], title.strip(), description.strip(),
+                    resource_type, tags,
+                    source_type="link" if source_type == "Link" else "file",
+                    url=url_val.strip() if url_val else None,
+                    file_bytes=uploaded_file.getvalue() if uploaded_file else None,
+                    file_name=uploaded_file.name if uploaded_file else None,
+                    content_type=(uploaded_file.type or "application/octet-stream") if uploaded_file else None,
+                )
+                st.success(f"'{title.strip()}' added to the library.")
+                st.rerun()
+
+        st.divider()
+        subheading("Library")
+        resources = get_library_resources(org_id)
+        if not resources:
+            st.info("No resources added yet.")
+        for r in resources:
+            resource_card(r)
+            col_o, col_d = st.columns([1, 1])
+            with col_o:
+                if r["source_type"] == "link":
+                    st.link_button("Open →", r["url"])
+                else:
+                    try:
+                        dl_url = get_resource_download_url(r["file_path"])
+                        if dl_url:
+                            st.link_button("⬇ Download", dl_url)
+                    except Exception:
+                        st.caption("Download link unavailable.")
+            with col_d:
+                if st.button("🗑 Delete", key=f"del_res_{r['id']}"):
+                    delete_resource(r["id"], r.get("file_path"))
+                    st.rerun()
 
     # ═══════════════════════════════════════════════════════════
     # Payment codes

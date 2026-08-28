@@ -25,7 +25,37 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- ── Step 1 of org signup: create the org + org_admin profile ───
+-- ── Approve a task submission (writes `progress` on the participant's
+-- behalf) ──────────────────────────────────────────────────────
+-- Called by review_submission() in utils/db.py. An org_admin's own
+-- session can never satisfy "progress" RLS (participant_id = auth.uid())
+-- for someone else's row, by design — this function is the sanctioned
+-- bypass, gated on the caller actually being the org_admin for this
+-- submission's org before it touches anything.
+create or replace function approve_task_submission(
+  p_submission_id uuid,
+  p_feedback text default ''
+) returns void as $$
+declare
+  sub record;
+begin
+  select * into sub from task_submissions where id = p_submission_id;
+  if sub is null then
+    raise exception 'Submission not found';
+  end if;
+  if sub.org_id != auth_org_id() or auth_role() != 'org_admin' then
+    raise exception 'Not authorized to review this submission';
+  end if;
+
+  update task_submissions
+  set status = 'approved', reviewer_feedback = p_feedback, reviewed_at = now()
+  where id = p_submission_id;
+
+  insert into progress (org_id, participant_id, program_id, week, task_index)
+  values (sub.org_id, sub.participant_id, sub.program_id, sub.week, sub.task_index)
+  on conflict (participant_id, program_id, week, task_index) do nothing;
+end;
+$$ language plpgsql security definer;
 -- Called right after auth.sign_up() succeeds, using the new user's id.
 create or replace function create_organization_and_admin(
   p_user_id uuid,

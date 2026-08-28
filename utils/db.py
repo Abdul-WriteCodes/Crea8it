@@ -11,6 +11,8 @@ so bypasses every RLS policy in schema.sql.
 """
 
 from __future__ import annotations
+import re as _re
+import uuid as _uuid
 import streamlit as st
 from supabase import create_client, Client
 
@@ -189,10 +191,11 @@ def get_all_programs(org_id: str) -> list[dict]:
     return res.data
 
 
-def create_program(org_id: str, name: str, unit_label: str = "Week") -> dict:
+def create_program(org_id: str, name: str, unit_label: str = "Week", duration_weeks: int = 4) -> dict:
     client = get_client()
     res = client.table("programs").insert({
         "org_id": org_id, "name": name, "unit_label": unit_label,
+        "duration_weeks": duration_weeks,
     }).execute()
     return res.data[0]
 
@@ -252,12 +255,16 @@ def get_program_weeks(program_id: str) -> dict:
         elif rtype == "material":
             weeks[w]["materials"].append({"type": extra or "article", "label": value})
         elif rtype == "task":
-            weeks[w]["tasks"].append(value)
+            # extra == "upload" marks a task that requires a reviewed file
+            # instead of a plain self-check — see admin.py task editor and
+            # dashboard.py's upload-task branch.
+            weeks[w]["tasks"].append({"text": value, "upload_required": extra == "upload"})
     return weeks
 
 
 def save_program_week(org_id: str, program_id: str, week: int, title: str, theme: str,
-                       materials: list[dict], tasks: list[str]):
+                       materials: list[dict], tasks: list[dict]):
+    """tasks: list of {"text": str, "upload_required": bool}."""
     client = get_client()
     (client.table("program_content").delete()
      .eq("program_id", program_id).eq("week", week)
@@ -272,7 +279,8 @@ def save_program_week(org_id: str, program_id: str, week: int, title: str, theme
                      "value": mat.get("label", ""), "extra": mat.get("type", "article"), "order_index": idx})
     for idx, task in enumerate(tasks):
         rows.append({"org_id": org_id, "program_id": program_id, "week": week, "type": "task",
-                     "value": task, "order_index": idx})
+                     "value": task["text"], "extra": "upload" if task.get("upload_required") else "",
+                     "order_index": idx})
 
     client.table("program_content").insert(rows).execute()
 
@@ -344,6 +352,201 @@ def get_week_completion_stats(program_id: str, week: int, task_count: int) -> tu
     finished = sum(1 for c in counts.values() if c >= task_count)
     total = len(counts)
     return finished, total
+
+
+def get_program_engagement(org_id: str, program_id: str) -> list[dict]:
+    """Full per-participant engagement breakdown across every week of a
+    program — task completion counts, reflection status, and last active
+    time. This is the data behind the admin 'Engagement' tab."""
+    client = get_client()
+
+    participants = get_all_participants(org_id)
+    weeks_data = get_program_weeks(program_id)
+    task_counts_by_week = {w: len(v["tasks"]) for w, v in weeks_data.items()}
+
+    progress_rows = (client.table("progress").select("participant_id, week, task_index")
+                      .eq("program_id", program_id).execute()).data
+    reflection_rows = (client.table("reflections").select("participant_id, week")
+                        .eq("program_id", program_id).execute()).data
+    last_active = get_last_active_map(org_id)
+
+    done_by_participant: dict = {}
+    for row in progress_rows:
+        pid, wk = row["participant_id"], row["week"]
+        done_by_participant.setdefault(pid, {}).setdefault(wk, set()).add(row["task_index"])
+
+    reflected_by_participant: dict = {}
+    for row in reflection_rows:
+        reflected_by_participant.setdefault(row["participant_id"], set()).add(row["week"])
+
+    total_tasks_overall = sum(task_counts_by_week.values()) or 1
+    week_keys = sorted(task_counts_by_week.keys())
+
+    out = []
+    for p in participants:
+        pid = p["id"]
+        per_week = done_by_participant.get(pid, {})
+        total_done = sum(len(v) for v in per_week.values())
+        weeks_fully_done = sum(
+            1 for w in week_keys
+            if len(per_week.get(w, set())) >= task_counts_by_week.get(w, 0) and task_counts_by_week.get(w, 0) > 0
+        )
+        out.append({
+            "participant_id": pid,
+            "full_name": p["full_name"],
+            "whatsapp": p.get("whatsapp", ""),
+            "email": p.get("email", ""),
+            "tasks_done": total_done,
+            "tasks_total": total_tasks_overall,
+            "pct": round(100 * total_done / total_tasks_overall) if total_tasks_overall else 0,
+            "weeks_completed": weeks_fully_done,
+            "weeks_total": len(week_keys),
+            "reflections_submitted": len(reflected_by_participant.get(pid, set())),
+            "last_active": last_active.get(pid, "never"),
+        })
+
+    out.sort(key=lambda r: r["pct"], reverse=True)
+    return out
+
+
+# ═══════════════════════════════════════════════════════════════
+# Task submissions (file-upload tasks that need admin review)
+# ═══════════════════════════════════════════════════════════════
+
+_SUBMISSIONS_BUCKET = "task-submissions"
+
+
+def get_task_submissions(participant_id: str, program_id: str) -> dict:
+    """Returns {(week, task_index): submission_row} for this participant/program."""
+    client = get_client()
+    res = (client.table("task_submissions").select("*")
+           .eq("participant_id", participant_id).eq("program_id", program_id).execute())
+    return {(row["week"], row["task_index"]): row for row in res.data}
+
+
+def submit_task_file(org_id: str, participant_id: str, program_id: str,
+                      week: int, task_index: int, file_bytes: bytes,
+                      file_name: str, content_type: str = "application/octet-stream"):
+    """Uploads the file to the private bucket, then upserts the tracking
+    row. Re-submission (e.g. after 'needs_revision') overwrites the
+    stored file and resets status back to pending."""
+    client = get_client()
+    safe_name = _re.sub(r"[^A-Za-z0-9._-]", "_", file_name)
+    file_path = f"{org_id}/{participant_id}/{program_id}_{week}_{task_index}_{safe_name}"
+
+    client.storage.from_(_SUBMISSIONS_BUCKET).upload(
+        file_path, file_bytes,
+        {"content-type": content_type, "upsert": "true"},
+    )
+    client.table("task_submissions").upsert({
+        "org_id": org_id, "participant_id": participant_id, "program_id": program_id,
+        "week": week, "task_index": task_index,
+        "file_path": file_path, "file_name": file_name,
+        "status": "pending", "reviewer_feedback": "", "reviewed_at": None,
+    }, on_conflict="participant_id,program_id,week,task_index").execute()
+
+
+def get_submission_download_url(file_path: str, expires_in: int = 3600) -> str:
+    client = get_client()
+    res = client.storage.from_(_SUBMISSIONS_BUCKET).create_signed_url(file_path, expires_in)
+    return res.get("signedURL") or res.get("signed_url") or ""
+
+
+def get_pending_submissions(org_id: str, program_id: str) -> list[dict]:
+    client = get_client()
+    res = (client.table("task_submissions").select("*, profiles(full_name, email)")
+           .eq("org_id", org_id).eq("program_id", program_id).eq("status", "pending")
+           .order("submitted_at").execute())
+    return res.data
+
+
+def review_submission(submission: dict, status: str, feedback: str = ""):
+    """status: 'approved' or 'needs_revision'. `submission` is a row as
+    returned by get_pending_submissions() — needs org_id/participant_id/
+    program_id/week/task_index/id.
+
+    Approval goes through the approve_task_submission RPC (see
+    rpc_functions.sql) rather than a direct client update: writing to
+    `progress` on the participant's behalf can't satisfy that table's
+    RLS policy (participant_id = auth.uid()) from the admin's own
+    session, so the RPC does both writes as a security-definer function,
+    re-checking the caller is actually this org's admin first. This is
+    what makes an upload task count toward week completion / unlocking
+    the next week, and keeps every existing stats function
+    (get_week_completion_stats, get_program_engagement, ...) working
+    without having to special-case task_submissions everywhere.
+
+    needs_revision doesn't touch `progress`, so it stays a plain client
+    update under the existing "org_admin reviews org submissions" policy."""
+    client = get_client()
+    if status == "approved":
+        client.rpc("approve_task_submission", {
+            "p_submission_id": submission["id"], "p_feedback": feedback,
+        }).execute()
+    else:
+        client.table("task_submissions").update({
+            "status": status, "reviewer_feedback": feedback,
+            "reviewed_at": "now()",
+        }).eq("id", submission["id"]).execute()
+
+
+# ═══════════════════════════════════════════════════════════════
+# Resource library (org-wide, reusable across programs & tasks)
+# ═══════════════════════════════════════════════════════════════
+
+_RESOURCES_BUCKET = "org-resources"
+
+
+def get_library_resources(org_id: str, search: str = "", tag: str = "") -> list[dict]:
+    client = get_client()
+    q = client.table("resources").select("*").eq("org_id", org_id)
+    if search.strip():
+        q = q.or_(f"title.ilike.%{search.strip()}%,description.ilike.%{search.strip()}%")
+    if tag:
+        q = q.contains("tags", [tag])
+    res = q.order("created_at", desc=True).execute()
+    return res.data
+
+
+def create_resource(org_id: str, created_by: str, title: str, description: str,
+                     resource_type: str, tags: list[str], source_type: str,
+                     url: str = None, file_bytes: bytes = None, file_name: str = None,
+                     content_type: str = "application/octet-stream"):
+    client = get_client()
+    row = {
+        "org_id": org_id, "created_by": created_by, "title": title,
+        "description": description, "resource_type": resource_type,
+        "source_type": source_type, "tags": tags,
+    }
+    if source_type == "link":
+        row["url"] = url
+    else:
+        resource_id = str(_uuid.uuid4())
+        safe_name = _re.sub(r"[^A-Za-z0-9._-]", "_", file_name)
+        file_path = f"{org_id}/{resource_id}_{safe_name}"
+        client.storage.from_(_RESOURCES_BUCKET).upload(
+            file_path, file_bytes, {"content-type": content_type, "upsert": "true"},
+        )
+        row["id"] = resource_id
+        row["file_path"] = file_path
+        row["file_name"] = file_name
+    client.table("resources").insert(row).execute()
+
+
+def delete_resource(resource_id: str, file_path: str = None):
+    client = get_client()
+    if file_path:
+        try:
+            client.storage.from_(_RESOURCES_BUCKET).remove([file_path])
+        except Exception:
+            pass  # row delete should still proceed even if the file's already gone
+    client.table("resources").delete().eq("id", resource_id).execute()
+
+
+def get_resource_download_url(file_path: str, expires_in: int = 3600) -> str:
+    client = get_client()
+    res = client.storage.from_(_RESOURCES_BUCKET).create_signed_url(file_path, expires_in)
+    return res.get("signedURL") or res.get("signed_url") or ""
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -448,3 +651,13 @@ def get_my_organization(org_id: str) -> dict | None:
 def suspend_organization(org_id: str, active: bool):
     client = get_client()
     client.table("organizations").update({"is_active": active}).eq("id", org_id).execute()
+
+
+def delete_organization(org_id: str):
+    """Permanently deletes an organization and everything scoped to it
+    (members, programs, content, progress, reflections, payment codes,
+    heartbeats) via the delete_organization_cascade RPC — irreversible.
+    The RPC re-checks that the caller is super_admin server-side, so
+    this can't be abused even if a route guard is ever bypassed."""
+    client = get_client()
+    client.rpc("delete_organization_cascade", {"p_org_id": org_id}).execute()

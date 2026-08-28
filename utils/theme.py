@@ -313,6 +313,18 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 }
 .task-status.done-label { color: var(--jade); }
 .task-status.pending-label { color: var(--text-3); }
+.task-status.review-label { color: var(--gold); }
+.task-status.revision-label { color: var(--ruby); }
+.task-icon.review {
+  background: rgba(245,166,35,0.15);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+}
+.task-icon.revision {
+  background: rgba(230,70,70,0.12);
+  border: 1.5px solid var(--ruby);
+  color: var(--ruby);
+}
 
 /* Material card */
 .mat-card {
@@ -324,6 +336,21 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 }
 .mat-card:hover { border-color: var(--border2); color: var(--text-1); }
 .mat-icon { font-size: 1.1rem; }
+
+/* Library resource card */
+.resource-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+}
+.resource-header { display: flex; align-items: flex-start; gap: 10px; }
+.resource-icon { font-size: 1.3rem; line-height: 1.3; }
+.resource-title { font-size: 0.95rem; font-weight: 700; color: var(--text-1); }
+.resource-desc { font-size: 0.82rem; color: var(--text-3); margin-top: 3px; }
+.resource-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.resource-tag {
+  font-size: 0.72rem; color: var(--teal); background: rgba(0,200,150,0.10);
+  border: 1px solid rgba(0,200,150,0.25); border-radius: 999px; padding: 2px 9px;
+}
 
 /* Section label */
 .section-label {
@@ -443,18 +470,33 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 # COMPONENT HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _html_block(html_str: str):
+    """st.markdown(..., unsafe_allow_html=True) for a multi-line HTML
+    string, but strips blank/whitespace-only lines first. Without this,
+    an f-string with an optional line that resolves to "" (e.g. a
+    conditional sub-line that's sometimes empty) leaves a blank line
+    behind — and CommonMark treats a blank line followed by 4+ spaces
+    of indentation as the start of an *indented code block*, so the
+    next real line renders as literal visible text instead of HTML.
+    Blank lines carry no meaning in HTML itself, so stripping them is
+    always safe."""
+    st.markdown("\n".join(l for l in html_str.splitlines() if l.strip()),
+                unsafe_allow_html=True)
+
+
 def kpi_card(label: str, value, sub: str = "",
              positive: bool | None = None, icon: str = ""):
+    label, value, sub = _html.escape(str(label)), _html.escape(str(value)), _html.escape(str(sub))
     sub_class = ""
     if positive is True:  sub_class = "kpi-positive"
     elif positive is False: sub_class = "kpi-negative"
     icon_html = f'<div class="kpi-icon">{icon}</div>' if icon else ""
-    st.markdown(f"""
+    _html_block(f"""
 <div class="kpi-card">
   <div class="kpi-header">{icon_html}<div class="kpi-label">{label}</div></div>
   <div class="kpi-value">{value}</div>
   {f'<div class="kpi-sub {sub_class}">{sub}</div>' if sub else ""}
-</div>""", unsafe_allow_html=True)
+</div>""")
 
 
 def section_label(text: str, color: str = ""):
@@ -477,14 +519,15 @@ def subheading(text: str, color: str = ""):
 
 
 def page_header(title: str, subtitle: str = ""):
-    st.markdown(f"""
+    title, subtitle = _html.escape(title), _html.escape(subtitle)
+    _html_block(f"""
 <div style="margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border);">
   <div style="font-family:var(--font-d);font-size:1.7rem;font-weight:800;
               color:var(--text-1);letter-spacing:-0.04em;line-height:1.1;">
     {title}
   </div>
   {f'<div style="font-size:0.82rem;color:var(--text-3);margin-top:4px;">{subtitle}</div>' if subtitle else ""}
-</div>""", unsafe_allow_html=True)
+</div>""")
 
 
 def week_badge(week_num: int, active_week: int) -> str:
@@ -497,51 +540,85 @@ def week_badge(week_num: int, active_week: int) -> str:
 
 
 import re as _re
+import html as _html
 
 
 def _render_links(text: str) -> str:
     """Convert markdown [label](url) and bare URLs into clickable <a> tags.
-    Safe to call on plain text — returns it unchanged if no links found.
-    """
+    Everything else is HTML-escaped, so stray <, >, &, or " characters in
+    admin- or participant-authored text (task names, resource links) can
+    never break the surrounding card markup — safe to call on any text."""
     ls = "color:var(--teal);text-decoration:underline;"
-    # [label](url) pattern
-    text = _re.sub(
-        r'\[([^\]]+)\]\((https?://[^\)]+)\)',
-        lambda m: '<a href="{u}" target="_blank" rel="noopener" style="{s}">{l}</a>'.format(
-            u=m.group(2), l=m.group(1), s=ls),
-        text
-    )
-    # bare URLs not already inside href="..."
-    text = _re.sub(
-        r'(?<!href=")(https?://\S+)',
-        lambda m: '<a href="{u}" target="_blank" rel="noopener" style="{s}">{u}</a>'.format(
-            u=m.group(1), s=ls),
-        text
-    )
-    return text
+    pattern = _re.compile(r'\[([^\]]+)\]\((https?://[^\s\)]+)\)|(https?://\S+)')
+    parts = []
+    last = 0
+    for m in pattern.finditer(text):
+        parts.append(_html.escape(text[last:m.start()]))
+        if m.group(1) is not None:
+            label, url = m.group(1), m.group(2)
+        else:
+            label = url = m.group(3)
+        url = url.rstrip('.,;:!?)')  # trim trailing punctuation \S+ tends to sweep up
+        parts.append('<a href="{u}" target="_blank" rel="noopener" style="{s}">{l}</a>'.format(
+            u=_html.escape(url, quote=True), l=_html.escape(label), s=ls))
+        last = m.end()
+    parts.append(_html.escape(text[last:]))
+    return "".join(parts)
 
 
 def task_card(text: str, done: bool):
     """Render a styled task card. Markdown links in text become clickable."""
     rendered = _render_links(text)
     if done:
-        st.markdown(f"""
+        _html_block(f"""
 <div class="task-card done">
   <div class="task-icon complete">&#10003;</div>
   <div class="task-body">
     <div class="task-text muted">{rendered}</div>
     <div class="task-status done-label">Completed</div>
   </div>
-</div>""", unsafe_allow_html=True)
+</div>""")
     else:
-        st.markdown(f"""
+        _html_block(f"""
 <div class="task-card">
   <div class="task-icon pending">&#9675;</div>
   <div class="task-body">
     <div class="task-text">{rendered}</div>
     <div class="task-status pending-label">Pending</div>
   </div>
-</div>""", unsafe_allow_html=True)
+</div>""")
+
+
+def upload_task_card(text: str, status: str, file_name: str = ""):
+    """Render an upload-required task in its current review state.
+    status: 'not_submitted' | 'pending' | 'approved' | 'needs_revision'."""
+    rendered = _render_links(text)
+    icon_map = {
+        "not_submitted": ("pending", "&#9675;"),
+        "pending": ("review", "&#128196;"),
+        "approved": ("complete", "&#10003;"),
+        "needs_revision": ("revision", "&#9888;"),
+    }
+    label_map = {
+        "not_submitted": ("pending-label", "Awaiting upload"),
+        "pending": ("review-label", "Submitted — awaiting review"),
+        "approved": ("done-label", "Approved"),
+        "needs_revision": ("revision-label", "Needs revision"),
+    }
+    icon_class, icon_glyph = icon_map[status]
+    status_class, status_text = label_map[status]
+    file_line = (f'<div class="task-text muted" style="margin-top:2px;">📎 {_html.escape(file_name)}</div>'
+                 if file_name else "")
+    card_class = "task-card done" if status == "approved" else "task-card"
+    _html_block(f"""
+<div class="{card_class}">
+  <div class="task-icon {icon_class}">{icon_glyph}</div>
+  <div class="task-body">
+    <div class="task-text">{rendered}</div>
+    {file_line}
+    <div class="task-status {status_class}">{status_text}</div>
+  </div>
+</div>""")
 
 
 def material_card(icon: str, label: str):
@@ -555,10 +632,40 @@ def material_card(icon: str, label: str):
 
 
 def reflection_box(prompt: str):
-    st.markdown(f'<div class="reflection-prompt">{prompt}</div>',
+    st.markdown(f'<div class="reflection-prompt">{_html.escape(prompt)}</div>',
                 unsafe_allow_html=True)
 
 
 def feedback_box(text: str):
-    st.markdown(f'<div class="feedback-box">{text}</div>',
+    st.markdown(f'<div class="feedback-box">{_html.escape(text)}</div>',
                 unsafe_allow_html=True)
+
+
+_RESOURCE_ICONS = {"article": "📄", "video": "🎬", "pdf": "📕", "doc": "📝", "tool": "🛠", "other": "🔗"}
+
+
+def resource_card(resource: dict):
+    """Render a library resource's info block (title, description, tags).
+    Doesn't render the Open/Download action — real Streamlit buttons
+    can't live inside a raw HTML block, so the caller places an
+    st.link_button or download link right after calling this."""
+    icon = _RESOURCE_ICONS.get(resource.get("resource_type", "other"), "🔗")
+    title = _html.escape(resource.get("title", ""))
+    desc = resource.get("description") or ""
+    desc_line = f'<div class="resource-desc">{_html.escape(desc)}</div>' if desc else ""
+    tags = resource.get("tags") or []
+    tags_line = ""
+    if tags:
+        chips = "".join(f'<span class="resource-tag">{_html.escape(t)}</span>' for t in tags)
+        tags_line = f'<div class="resource-tags">{chips}</div>'
+    _html_block(f"""
+<div class="resource-card">
+  <div class="resource-header">
+    <div class="resource-icon">{icon}</div>
+    <div>
+      <div class="resource-title">{title}</div>
+      {desc_line}
+    </div>
+  </div>
+  {tags_line}
+</div>""")
