@@ -12,6 +12,7 @@ so bypasses every RLS policy in schema.sql.
 
 from __future__ import annotations
 import re as _re
+import uuid as _uuid
 import streamlit as st
 from supabase import create_client, Client
 
@@ -487,6 +488,65 @@ def review_submission(submission: dict, status: str, feedback: str = ""):
             "status": status, "reviewer_feedback": feedback,
             "reviewed_at": "now()",
         }).eq("id", submission["id"]).execute()
+
+
+# ═══════════════════════════════════════════════════════════════
+# Resource library (org-wide, reusable across programs & tasks)
+# ═══════════════════════════════════════════════════════════════
+
+_RESOURCES_BUCKET = "org-resources"
+
+
+def get_library_resources(org_id: str, search: str = "", tag: str = "") -> list[dict]:
+    client = get_client()
+    q = client.table("resources").select("*").eq("org_id", org_id)
+    if search.strip():
+        q = q.or_(f"title.ilike.%{search.strip()}%,description.ilike.%{search.strip()}%")
+    if tag:
+        q = q.contains("tags", [tag])
+    res = q.order("created_at", desc=True).execute()
+    return res.data
+
+
+def create_resource(org_id: str, created_by: str, title: str, description: str,
+                     resource_type: str, tags: list[str], source_type: str,
+                     url: str = None, file_bytes: bytes = None, file_name: str = None,
+                     content_type: str = "application/octet-stream"):
+    client = get_client()
+    row = {
+        "org_id": org_id, "created_by": created_by, "title": title,
+        "description": description, "resource_type": resource_type,
+        "source_type": source_type, "tags": tags,
+    }
+    if source_type == "link":
+        row["url"] = url
+    else:
+        resource_id = str(_uuid.uuid4())
+        safe_name = _re.sub(r"[^A-Za-z0-9._-]", "_", file_name)
+        file_path = f"{org_id}/{resource_id}_{safe_name}"
+        client.storage.from_(_RESOURCES_BUCKET).upload(
+            file_path, file_bytes, {"content-type": content_type, "upsert": "true"},
+        )
+        row["id"] = resource_id
+        row["file_path"] = file_path
+        row["file_name"] = file_name
+    client.table("resources").insert(row).execute()
+
+
+def delete_resource(resource_id: str, file_path: str = None):
+    client = get_client()
+    if file_path:
+        try:
+            client.storage.from_(_RESOURCES_BUCKET).remove([file_path])
+        except Exception:
+            pass  # row delete should still proceed even if the file's already gone
+    client.table("resources").delete().eq("id", resource_id).execute()
+
+
+def get_resource_download_url(file_path: str, expires_in: int = 3600) -> str:
+    client = get_client()
+    res = client.storage.from_(_RESOURCES_BUCKET).create_signed_url(file_path, expires_in)
+    return res.get("signedURL") or res.get("signed_url") or ""
 
 
 # ═══════════════════════════════════════════════════════════════
