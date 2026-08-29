@@ -13,7 +13,7 @@ from utils.db import (
     get_library_resources, create_resource, delete_resource, get_resource_download_url,
 )
 from utils.notify import build_whatsapp_link
-from utils.theme import page_header, subheading, resource_card
+from utils.theme import page_header, subheading, resource_card, sidebar_account
 
 
 def _flash(key: str, kind: str, msg: str):
@@ -36,15 +36,17 @@ def show():
     org_id = profile["org_id"]
 
     org = get_my_organization(org_id)
+    active_program = get_active_program(org_id)
 
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        page_header("🧩 Cohort admin", f"Logged in as {profile['full_name']}")
-    with col2:
-        st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
-        if st.button("Log out"):
-            logout()
-            st.rerun()
+    sidebar_account(
+        role_label="Cohort admin",
+        name=profile["full_name"],
+        subtitle=org["name"] if org else "",
+        status_lines=[f"Active program: {active_program['name']}"] if active_program else ["No active program set"],
+        on_logout=lambda: (logout(), st.rerun()),
+    )
+
+    page_header("🧩 Cohort admin", f"Logged in as {profile['full_name']}")
 
     if not org or not org["is_active"]:
         st.markdown("""
