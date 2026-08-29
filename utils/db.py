@@ -556,6 +556,11 @@ def create_resource(org_id: str, created_by: str, title: str, description: str,
     client.table("resources").insert(row).execute()
 
 
+def update_resource_tags(resource_id: str, tags: list[str]):
+    client = get_client()
+    client.table("resources").update({"tags": tags}).eq("id", resource_id).execute()
+
+
 def delete_resource(resource_id: str, file_path: str = None):
     client = get_client()
     if file_path:
