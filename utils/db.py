@@ -342,6 +342,16 @@ def wipe_all_progress(org_id: str, program_id: str):
     client.table("progress").delete().eq("org_id", org_id).eq("program_id", program_id).execute()
     client.table("reflections").delete().eq("org_id", org_id).eq("program_id", program_id).execute()
 
+    # Task-submission uploads aren't covered by progress/reflections —
+    # they're a separate table (and separate storage bucket), so a wipe
+    # has to clear them explicitly or a submitted task stays "done".
+    subs = (client.table("task_submissions").select("file_path")
+            .eq("org_id", org_id).eq("program_id", program_id).execute())
+    file_paths = [row["file_path"] for row in subs.data if row.get("file_path")]
+    if file_paths:
+        client.storage.from_(_SUBMISSIONS_BUCKET).remove(file_paths)
+    client.table("task_submissions").delete().eq("org_id", org_id).eq("program_id", program_id).execute()
+
 
 def get_week_completion_stats(program_id: str, week: int, task_count: int) -> tuple[int, int]:
     client = get_client()
