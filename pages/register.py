@@ -218,13 +218,22 @@ def _avatar_strip_html() -> str:
     avatar_files = [f"user{i}.jpeg" for i in range(1, 7)]
     imgs_html = ""
     base_dir = os.path.dirname(os.path.dirname(__file__))  # project root
-    for fname in avatar_files:
+    for i, fname in enumerate(avatar_files):
         path = os.path.join(base_dir, "assets", "avatars", fname)
         if os.path.exists(path):
             with open(path, "rb") as f:
                 encoded = base64.b64encode(f.read()).decode()
+                # Inline width/height/style (not just the .sp-avatar class)
+                # so the browser sizes these correctly the instant the tag
+                # arrives, instead of briefly painting the raw full-size
+                # image and reflowing once the separate CSS block loads.
+                margin = "0" if i == 0 else "-10px"
                 imgs_html += (
                     f'<img src="data:image/jpeg;base64,{encoded}" '
+                    f'width="38" height="38" '
+                    f'style="width:38px;height:38px;border-radius:50%;object-fit:cover;'
+                    f'border:2px solid #0A1628;margin-left:{margin};'
+                    f'box-shadow:0 0 0 2px #00B4D8;display:inline-block;vertical-align:middle;" '
                     f'class="sp-avatar" alt="cohort member" />'
                 )
     return imgs_html
@@ -369,7 +378,7 @@ def _login_tab():
     with st.form("login_form"):
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Log in →", width='stretch', type='primary')
+        submitted = st.form_submit_button("Log in →", width='stretch')
 
     if submitted:
         if not email or not password:
@@ -394,26 +403,8 @@ def show():
     st.markdown(LAB_CSS, unsafe_allow_html=True)
     st.html(LAB_SVG_INJECTOR)
 
-    st.markdown("""
-    <div class="lp-hero">
-      <div class="lp-wordmark">
-        <span style="color:#FFD700;">Crea8it </span><br><span style="color:#00B4D8;">Lab</span>
-      </div>
-      <div class="lp-tagline">
-        Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
-      </div>
-      <div class="lp-badge">
-        <span class="lp-badge-dot">●</span> Multi-cohort platform
-        <span class="lp-badge-dot">●</span> Open now
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown(ICON_STRIP_HTML, unsafe_allow_html=True)
-
     imgs_html = _avatar_strip_html()
-    if imgs_html:
-        st.markdown(f"""
+    avatar_block = f"""
         <div class="sp-section">
           <div class="sp-wrap">
             <div class="sp-avatars">{imgs_html}</div>
@@ -427,7 +418,27 @@ def show():
             — from scratch, with grit and resilience, in the most creative way.
           </p>
         </div>
-        """, unsafe_allow_html=True)
+        """ if imgs_html else ""
+
+    # CSS + hero + icon strip + avatar strip go out as ONE markdown call
+    # (one wire message) instead of several, so the browser never has a
+    # gap between "images arrived" and "their CSS arrived" to paint in.
+    st.markdown(f"""
+    <div class="lp-hero">
+      <div class="lp-wordmark">
+        <span style="color:#FFD700;">Crea8it </span><br><span style="color:#00B4D8;">Lab</span>
+      </div>
+      <div class="lp-tagline">
+        Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
+      </div>
+      <div class="lp-badge">
+        <span class="lp-badge-dot">●</span> Multi-cohort platform
+        <span class="lp-badge-dot">●</span> Open now
+      </div>
+    </div>
+    {ICON_STRIP_HTML}
+    {avatar_block}
+    """, unsafe_allow_html=True)
 
     with st.expander("Get Started Here👇: Registration & Login 🔐", expanded=False):
         tab_join, tab_start, tab_login = st.tabs(
