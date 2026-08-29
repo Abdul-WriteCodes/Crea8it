@@ -200,6 +200,19 @@ def create_program(org_id: str, name: str, unit_label: str = "Week", duration_we
     return res.data[0]
 
 
+def update_program_duration(program_id: str, duration_weeks: int, current_active_week: int):
+    """Adjusts a program's total week count. Existing content for weeks
+    beyond the new duration is left in place (not deleted) — it just
+    becomes unreachable in the admin UI unless duration is raised again.
+    If active_week would now point past the new duration, it's clamped
+    down so participants aren't left on a week that no longer exists."""
+    client = get_client()
+    updates = {"duration_weeks": duration_weeks}
+    if current_active_week > duration_weeks:
+        updates["active_week"] = duration_weeks
+    client.table("programs").update(updates).eq("id", program_id).execute()
+
+
 def delete_program(program_id: str):
     client = get_client()
     client.table("programs").delete().eq("id", program_id).execute()
