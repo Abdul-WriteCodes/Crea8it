@@ -93,13 +93,11 @@ html, body, [class*="css"], .stApp {
 }
 [data-testid="stSidebarContent"] { padding: 0.5rem 0.75rem; }
 
-/* Sidebar collapse button — keep visible, don't touch */
-[data-testid="stSidebarCollapseButton"],
-[data-testid="collapsedControl"] {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+/* No forced-visible override here: Streamlit's default behavior — show
+   the toggle only when a page actually populates st.sidebar — is what
+   we want. admin.py/dashboard.py/super_admin.py call sidebar_account(),
+   so the toggle appears there; register.py never touches st.sidebar,
+   so it correctly stays hidden on the pre-login landing page. */
 
 [data-testid="stHeader"] {
     background: #080B0F !important;
