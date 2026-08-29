@@ -9,7 +9,7 @@ from utils.db import (
 from utils.theme import (
     apply_css, page_header, section_label, week_badge,
     task_card, upload_task_card, material_card, reflection_box, feedback_box, kpi_card,
-    resource_card,
+    resource_card, sidebar_account,
 )
 import time
 
@@ -51,6 +51,15 @@ def show():
 
     active_program = get_active_program(org_id)
 
+    sidebar_account(
+        role_label="Participant",
+        name=first_name,
+        subtitle=profile.get("email", ""),
+        status_lines=[f"{active_program['unit_label']}: {active_program.get('name','')}"] if active_program
+                     else ["No active program yet"],
+        on_logout=lambda: (logout(), st.rerun()),
+    )
+
     touch_last_active(org_id, participant_id)
 
     # ── Celebration handler ────────────────────────────────────
@@ -68,14 +77,7 @@ def show():
         st.toast("Task marked complete!", icon="✅")
 
     # ── Header ────────────────────────────────────────────────
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        page_header(f"Welcome back, {first_name}", profile.get("email", ""))
-    with col2:
-        st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
-        if st.button("Log out", type="primary"):
-            logout()
-            st.rerun()
+    page_header(f"Welcome back, {first_name}", profile.get("email", ""))
 
     top_program, top_library = st.tabs(["🗓 My Program", "📚 Library"])
 
