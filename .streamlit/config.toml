@@ -1,0 +1,10 @@
+[client]
+# The pages/ folder is used here only as a Python package for
+# organization — app.py does its own manual, role-based routing
+# (register / dashboard / admin / super_admin), not Streamlit's
+# native multipage navigation. Without this, Streamlit still
+# auto-detects pages/ and structurally injects a sidebar nav
+# scaffold (and its toggle) on EVERY page regardless of whether
+# that page's code ever calls st.sidebar — including the pre-login
+# landing page, which should never show a sidebar at all.
+showSidebarNavigation = false
