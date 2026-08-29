@@ -2,6 +2,7 @@ import re
 import streamlit as st
 from utils.db import (
     get_current_profile, logout, get_all_programs, create_program, delete_program,
+    update_program_duration,
     set_active_program, get_active_program, get_active_week, set_active_week,
     get_program_weeks, save_program_week, delete_week_from_program,
     get_prompt, set_prompt, get_all_participants, get_last_active_map,
@@ -110,6 +111,30 @@ def show():
         for p in programs:
             with st.expander(f"{'🟢 ' if p['is_active'] else ''}{p['name']} ({p['unit_label']})"):
                 st.write(f"Active week: **{p['active_week']}** of **{p.get('duration_weeks', '—')}**")
+
+                new_duration = st.number_input(
+                    f"Total {p['unit_label'].lower()}s", min_value=1, max_value=52,
+                    value=p.get("duration_weeks", 4), key=f"duration_{p['id']}"
+                )
+                if st.button(f"Update total {p['unit_label'].lower()}s", key=f"update_duration_{p['id']}"):
+                    if int(new_duration) < p.get("duration_weeks", 4):
+                        st.session_state[f"_confirm_shrink_{p['id']}"] = int(new_duration)
+                    else:
+                        update_program_duration(p["id"], int(new_duration), p["active_week"])
+                        _flash("programs", "success", f"Duration updated to {int(new_duration)} {p['unit_label'].lower()}(s).")
+                        st.rerun()
+                if st.session_state.get(f"_confirm_shrink_{p['id']}"):
+                    target = st.session_state[f"_confirm_shrink_{p['id']}"]
+                    st.warning(
+                        f"Any {p['unit_label'].lower()}s beyond {target} keep their saved content but "
+                        f"won't be reachable in the editor unless you raise the duration again."
+                    )
+                    if st.button("Confirm shrink", key=f"confirm_shrink_{p['id']}"):
+                        update_program_duration(p["id"], target, p["active_week"])
+                        st.session_state.pop(f"_confirm_shrink_{p['id']}", None)
+                        _flash("programs", "success", f"Duration updated to {target} {p['unit_label'].lower()}(s).")
+                        st.rerun()
+
                 col_a, col_b, col_c = st.columns(3)
                 with col_a:
                     if not p["is_active"] and st.button("Set as active program", key=f"activate_{p['id']}"):
