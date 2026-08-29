@@ -2,7 +2,7 @@ import re
 import streamlit as st
 from utils.db import (
     get_current_profile, logout, get_all_programs, create_program, delete_program,
-    update_program_duration,
+    update_program_duration, update_resource_tags,
     set_active_program, get_active_program, get_active_week, set_active_week,
     get_program_weeks, save_program_week, delete_week_from_program,
     get_prompt, set_prompt, get_all_participants, get_last_active_map,
@@ -491,7 +491,12 @@ def show():
             st.info("No resources added yet.")
         for r in resources:
             resource_card(r)
-            col_o, col_d = st.columns([1, 1])
+            existing_tags = ", ".join(r.get("tags") or [])
+            new_tags_raw = st.text_input(
+                "Tags", value=existing_tags, placeholder="e.g. prompting, week1, beginner",
+                key=f"edit_tags_{r['id']}", label_visibility="collapsed"
+            )
+            col_o, col_s, col_d = st.columns([1, 1, 1])
             with col_o:
                 if r["source_type"] == "link":
                     st.link_button("Open →", r["url"])
@@ -502,6 +507,12 @@ def show():
                             st.link_button("⬇ Download", dl_url)
                     except Exception:
                         st.caption("Download link unavailable.")
+            with col_s:
+                if st.button("💾 Save tags", key=f"save_tags_{r['id']}"):
+                    new_tags = [t.strip() for t in new_tags_raw.split(",") if t.strip()]
+                    update_resource_tags(r["id"], new_tags)
+                    st.success("Tags updated.")
+                    st.rerun()
             with col_d:
                 if st.button("🗑 Delete", key=f"del_res_{r['id']}"):
                     delete_resource(r["id"], r.get("file_path"))
