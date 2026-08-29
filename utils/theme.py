@@ -20,6 +20,32 @@ from __future__ import annotations
 import streamlit as st
 
 
+def sidebar_account(role_label: str, name: str, subtitle: str = "",
+                     status_lines: list[str] | None = None, on_logout=None):
+    """Persistent identity block in the sidebar — who's logged in, and
+    (optionally) quick status like the org's active program — plus a
+    Log out button that stays reachable without scrolling back to the
+    top of a long page. status_lines is a list of plain strings."""
+    with st.sidebar:
+        st.markdown(
+            f"<div style='padding:4px 0 2px 0;'>"
+            f"<div style='font-family:var(--font-display);font-size:0.72rem;"
+            f"letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;'>{role_label}</div>"
+            f"<div style='font-size:1.05rem;font-weight:600;color:var(--text);margin-top:2px;'>{name}</div>"
+            + (f"<div style='font-size:0.82rem;color:var(--muted);margin-top:1px;'>{subtitle}</div>"
+               if subtitle else "")
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+        if status_lines:
+            st.divider()
+            for line in status_lines:
+                st.caption(line)
+        st.divider()
+        if st.button("Log out", key="sidebar_logout", width='stretch') and on_logout:
+            on_logout()
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # CSS
 # ══════════════════════════════════════════════════════════════════════════════
