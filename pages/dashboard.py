@@ -314,15 +314,46 @@ def show_library(org_id: str):
                  else "No resources match that search/filter.")
         return
 
+    def _render_resource(r):
+        with st.container(border=True):
+            resource_card(r)
+            if r["source_type"] == "link":
+                st.link_button("Open →", r["url"], width='stretch')
+            else:
+                try:
+                    url = get_resource_download_url(r["file_path"])
+                    if url:
+                        st.link_button("⬇ Download", url, width='stretch')
+                except Exception:
+                    st.caption("Couldn't generate a download link for this file.")
+
+    # Once a specific tag filter or search is applied, results are
+    # already narrow — show them as a flat list. Otherwise, group by
+    # tag so the library stays browsable as it grows past a handful
+    # of items. Untagged resources get their own group at the end.
+    if tag or search:
+        for r in resources:
+            _render_resource(r)
+        return
+
+    grouped: dict[str, list] = {t: [] for t in all_tags}
+    untagged = []
     for r in resources:
-        resource_card(r)
-        if r["source_type"] == "link":
-            st.link_button("Open →", r["url"])
-        else:
-            try:
-                url = get_resource_download_url(r["file_path"])
-                if url:
-                    st.link_button("⬇ Download", url)
-            except Exception:
-                st.caption("Couldn't generate a download link for this file.")
-        st.markdown("<div style='margin-bottom:6px;'></div>", unsafe_allow_html=True)
+        r_tags = r.get("tags") or []
+        if not r_tags:
+            untagged.append(r)
+        for t in r_tags:
+            grouped.setdefault(t, []).append(r)
+
+    for t in all_tags:
+        items = grouped.get(t) or []
+        if not items:
+            continue
+        with st.expander(f"{t} ({len(items)})", expanded=(t == all_tags[0])):
+            for r in items:
+                _render_resource(r)
+
+    if untagged:
+        with st.expander(f"Untagged ({len(untagged)})", expanded=not all_tags):
+            for r in untagged:
+                _render_resource(r)
