@@ -398,13 +398,23 @@ def _login_tab():
 # hero + icon strip + avatar strip once, then one expander with tabs
 # ═══════════════════════════════════════════════════════════════
 
+def _flatten(html: str) -> str:
+    """Strip leading whitespace from every line of an HTML fragment.
+    Needed because these fragments get built from indented Python
+    triple-quoted strings and then combined together — if any line
+    still carries 4+ literal leading spaces when it reaches st.markdown,
+    Markdown's own rules treat it as an indented code block and render
+    it as literal text instead of parsing it as HTML."""
+    return "\n".join(line.lstrip() for line in html.strip("\n").split("\n"))
+
+
 def show():
     apply_css()
     st.markdown(LAB_CSS, unsafe_allow_html=True)
     st.html(LAB_SVG_INJECTOR)
 
     imgs_html = _avatar_strip_html()
-    avatar_block = f"""
+    avatar_block = _flatten(f"""
         <div class="sp-section">
           <div class="sp-wrap">
             <div class="sp-avatars">{imgs_html}</div>
@@ -418,12 +428,15 @@ def show():
             — from scratch, with grit and resilience, in the most creative way.
           </p>
         </div>
-        """ if imgs_html else ""
+        """) if imgs_html else ""
 
     # CSS + hero + icon strip + avatar strip go out as ONE markdown call
     # (one wire message) instead of several, so the browser never has a
     # gap between "images arrived" and "their CSS arrived" to paint in.
-    st.markdown(f"""
+    # _flatten() strips every line down to zero leading whitespace so
+    # nesting avatar_block/ICON_STRIP_HTML here can't trigger Markdown's
+    # indented-code-block rule.
+    st.markdown(_flatten(f"""
     <div class="lp-hero">
       <div class="lp-wordmark">
         <span style="color:#FFD700;">Crea8it </span><br><span style="color:#00B4D8;">Lab</span>
@@ -436,9 +449,9 @@ def show():
         <span class="lp-badge-dot">●</span> Open now
       </div>
     </div>
-    {ICON_STRIP_HTML}
+    {_flatten(ICON_STRIP_HTML)}
     {avatar_block}
-    """, unsafe_allow_html=True)
+    """), unsafe_allow_html=True)
 
     with st.expander("Get Started Here👇: Registration & Login 🔐", expanded=False):
         tab_join, tab_start, tab_login = st.tabs(
