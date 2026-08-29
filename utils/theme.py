@@ -339,8 +339,7 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 
 /* Library resource card */
 .resource-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+  padding: 2px 2px 4px 2px;
 }
 .resource-header { display: flex; align-items: flex-start; gap: 10px; }
 .resource-icon { font-size: 1.3rem; line-height: 1.3; }
@@ -647,8 +646,10 @@ _RESOURCE_ICONS = {"article": "📄", "video": "🎬", "pdf": "📕", "doc": "�
 def resource_card(resource: dict):
     """Render a library resource's info block (title, description, tags).
     Doesn't render the Open/Download action — real Streamlit buttons
-    can't live inside a raw HTML block, so the caller places an
-    st.link_button or download link right after calling this."""
+    can't live inside a raw HTML block. Call this INSIDE an
+    st.container(border=True) and place the button right after it in
+    the same container, so the card and its button render as one
+    visually unified block instead of two separate boxes."""
     icon = _RESOURCE_ICONS.get(resource.get("resource_type", "other"), "🔗")
     title = _html.escape(resource.get("title", ""))
     desc = resource.get("description") or ""
