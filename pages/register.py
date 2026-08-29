@@ -369,7 +369,7 @@ def _login_tab():
     with st.form("login_form"):
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Log in →", width='stretch')
+        submitted = st.form_submit_button("Log in →", width='stretch', type='primary')
 
     if submitted:
         if not email or not password:
