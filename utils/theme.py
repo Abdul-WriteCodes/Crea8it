@@ -20,6 +20,32 @@ from __future__ import annotations
 import streamlit as st
 
 
+def sidebar_account(role_label: str, name: str, subtitle: str = "",
+                     status_lines: list[str] | None = None, on_logout=None):
+    """Persistent identity block in the sidebar — who's logged in, and
+    (optionally) quick status like the org's active program — plus a
+    Log out button that stays reachable without scrolling back to the
+    top of a long page. status_lines is a list of plain strings."""
+    with st.sidebar:
+        st.markdown(
+            f"<div style='padding:4px 0 2px 0;'>"
+            f"<div style='font-family:var(--font-display);font-size:0.72rem;"
+            f"letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;'>{role_label}</div>"
+            f"<div style='font-size:1.05rem;font-weight:600;color:var(--text);margin-top:2px;'>{name}</div>"
+            + (f"<div style='font-size:0.82rem;color:var(--muted);margin-top:1px;'>{subtitle}</div>"
+               if subtitle else "")
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+        if status_lines:
+            st.divider()
+            for line in status_lines:
+                st.caption(line)
+        st.divider()
+        if st.button("Log out", key="sidebar_logout", width='stretch') and on_logout:
+            on_logout()
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # CSS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -67,13 +93,11 @@ html, body, [class*="css"], .stApp {
 }
 [data-testid="stSidebarContent"] { padding: 0.5rem 0.75rem; }
 
-/* Sidebar collapse button — keep visible, don't touch */
-[data-testid="stSidebarCollapseButton"],
-[data-testid="collapsedControl"] {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+/* No forced-visible override here: Streamlit's default behavior — show
+   the toggle only when a page actually populates st.sidebar — is what
+   we want. admin.py/dashboard.py/super_admin.py call sidebar_account(),
+   so the toggle appears there; register.py never touches st.sidebar,
+   so it correctly stays hidden on the pre-login landing page. */
 
 [data-testid="stHeader"] {
     background: #080B0F !important;
@@ -339,8 +363,7 @@ hr { border-color: var(--border) !important; margin: 1.25rem 0 !important; }
 
 /* Library resource card */
 .resource-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+  padding: 2px 2px 4px 2px;
 }
 .resource-header { display: flex; align-items: flex-start; gap: 10px; }
 .resource-icon { font-size: 1.3rem; line-height: 1.3; }
@@ -647,8 +670,10 @@ _RESOURCE_ICONS = {"article": "📄", "video": "🎬", "pdf": "📕", "doc": "�
 def resource_card(resource: dict):
     """Render a library resource's info block (title, description, tags).
     Doesn't render the Open/Download action — real Streamlit buttons
-    can't live inside a raw HTML block, so the caller places an
-    st.link_button or download link right after calling this."""
+    can't live inside a raw HTML block. Call this INSIDE an
+    st.container(border=True) and place the button right after it in
+    the same container, so the card and its button render as one
+    visually unified block instead of two separate boxes."""
     icon = _RESOURCE_ICONS.get(resource.get("resource_type", "other"), "🔗")
     title = _html.escape(resource.get("title", ""))
     desc = resource.get("description") or ""

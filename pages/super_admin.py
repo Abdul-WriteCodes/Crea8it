@@ -12,20 +12,19 @@ from utils.db import (
     require_role, get_all_organizations, get_org_stats,
     suspend_organization, delete_organization, logout,
 )
-from utils.theme import page_header
+from utils.theme import page_header, sidebar_account
 
 
 def show():
     require_role("super_admin")
 
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        page_header("Platform overview", "Every organization running a program on Crea8it.")
-    with col2:
-        st.markdown("<div style='margin-top:1rem;'></div>", unsafe_allow_html=True)
-        if st.button("Log out"):
-            logout()
-            st.rerun()
+    sidebar_account(
+        role_label="Platform owner",
+        name="Super admin",
+        on_logout=lambda: (logout(), st.rerun()),
+    )
+
+    page_header("Platform overview", "Every organization running a program on Crea8it.")
 
     orgs = get_all_organizations()
 

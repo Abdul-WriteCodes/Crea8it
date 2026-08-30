@@ -9,7 +9,7 @@ from utils.db import (
 from utils.theme import (
     apply_css, page_header, section_label, week_badge,
     task_card, upload_task_card, material_card, reflection_box, feedback_box, kpi_card,
-    resource_card,
+    resource_card, sidebar_account,
 )
 import time
 
@@ -51,6 +51,15 @@ def show():
 
     active_program = get_active_program(org_id)
 
+    sidebar_account(
+        role_label="Participant",
+        name=first_name,
+        subtitle=profile.get("email", ""),
+        status_lines=[f"{active_program['unit_label']}: {active_program.get('name','')}"] if active_program
+                     else ["No active program yet"],
+        on_logout=lambda: (logout(), st.rerun()),
+    )
+
     touch_last_active(org_id, participant_id)
 
     # ── Celebration handler ────────────────────────────────────
@@ -68,14 +77,7 @@ def show():
         st.toast("Task marked complete!", icon="✅")
 
     # ── Header ────────────────────────────────────────────────
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        page_header(f"Welcome back, {first_name}", profile.get("email", ""))
-    with col2:
-        st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
-        if st.button("Log out", type="secondary"):
-            logout()
-            st.rerun()
+    page_header(f"Welcome back, {first_name}", profile.get("email", ""))
 
     top_program, top_library = st.tabs(["🗓 My Program", "📚 Library"])
 
@@ -314,15 +316,46 @@ def show_library(org_id: str):
                  else "No resources match that search/filter.")
         return
 
+    def _render_resource(r):
+        with st.container(border=True):
+            resource_card(r)
+            if r["source_type"] == "link":
+                st.link_button("Open →", r["url"], width='stretch')
+            else:
+                try:
+                    url = get_resource_download_url(r["file_path"])
+                    if url:
+                        st.link_button("⬇ Download", url, width='stretch')
+                except Exception:
+                    st.caption("Couldn't generate a download link for this file.")
+
+    # Once a specific tag filter or search is applied, results are
+    # already narrow — show them as a flat list. Otherwise, group by
+    # tag so the library stays browsable as it grows past a handful
+    # of items. Untagged resources get their own group at the end.
+    if tag or search:
+        for r in resources:
+            _render_resource(r)
+        return
+
+    grouped: dict[str, list] = {t: [] for t in all_tags}
+    untagged = []
     for r in resources:
-        resource_card(r)
-        if r["source_type"] == "link":
-            st.link_button("Open →", r["url"])
-        else:
-            try:
-                url = get_resource_download_url(r["file_path"])
-                if url:
-                    st.link_button("⬇ Download", url)
-            except Exception:
-                st.caption("Couldn't generate a download link for this file.")
-        st.markdown("<div style='margin-bottom:6px;'></div>", unsafe_allow_html=True)
+        r_tags = r.get("tags") or []
+        if not r_tags:
+            untagged.append(r)
+        for t in r_tags:
+            grouped.setdefault(t, []).append(r)
+
+    for t in all_tags:
+        items = grouped.get(t) or []
+        if not items:
+            continue
+        with st.expander(f"{t} ({len(items)})", expanded=(t == all_tags[0])):
+            for r in items:
+                _render_resource(r)
+
+    if untagged:
+        with st.expander(f"Untagged ({len(untagged)})", expanded=not all_tags):
+            for r in untagged:
+                _render_resource(r)

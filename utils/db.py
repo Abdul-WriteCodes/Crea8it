@@ -200,6 +200,19 @@ def create_program(org_id: str, name: str, unit_label: str = "Week", duration_we
     return res.data[0]
 
 
+def update_program_duration(program_id: str, duration_weeks: int, current_active_week: int):
+    """Adjusts a program's total week count. Existing content for weeks
+    beyond the new duration is left in place (not deleted) — it just
+    becomes unreachable in the admin UI unless duration is raised again.
+    If active_week would now point past the new duration, it's clamped
+    down so participants aren't left on a week that no longer exists."""
+    client = get_client()
+    updates = {"duration_weeks": duration_weeks}
+    if current_active_week > duration_weeks:
+        updates["active_week"] = duration_weeks
+    client.table("programs").update(updates).eq("id", program_id).execute()
+
+
 def delete_program(program_id: str):
     client = get_client()
     client.table("programs").delete().eq("id", program_id).execute()
@@ -341,6 +354,16 @@ def wipe_all_progress(org_id: str, program_id: str):
     client = get_client()
     client.table("progress").delete().eq("org_id", org_id).eq("program_id", program_id).execute()
     client.table("reflections").delete().eq("org_id", org_id).eq("program_id", program_id).execute()
+
+    # Task-submission uploads aren't covered by progress/reflections —
+    # they're a separate table (and separate storage bucket), so a wipe
+    # has to clear them explicitly or a submitted task stays "done".
+    subs = (client.table("task_submissions").select("file_path")
+            .eq("org_id", org_id).eq("program_id", program_id).execute())
+    file_paths = [row["file_path"] for row in subs.data if row.get("file_path")]
+    if file_paths:
+        client.storage.from_(_SUBMISSIONS_BUCKET).remove(file_paths)
+    client.table("task_submissions").delete().eq("org_id", org_id).eq("program_id", program_id).execute()
 
 
 def get_week_completion_stats(program_id: str, week: int, task_count: int) -> tuple[int, int]:
@@ -531,6 +554,11 @@ def create_resource(org_id: str, created_by: str, title: str, description: str,
         row["file_path"] = file_path
         row["file_name"] = file_name
     client.table("resources").insert(row).execute()
+
+
+def update_resource_tags(resource_id: str, tags: list[str]):
+    client = get_client()
+    client.table("resources").update({"tags": tags}).eq("id", resource_id).execute()
 
 
 def delete_resource(resource_id: str, file_path: str = None):
