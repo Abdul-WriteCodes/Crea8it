@@ -13,28 +13,12 @@ from utils.theme import (
 )
 import time
 
-
-def get_progress_cached(participant_id: str, program_id: str) -> dict:
-    key = f"progress_{program_id}"
-    if key not in st.session_state or st.session_state.get(f"{key}_pid") != participant_id:
-        st.session_state[key] = get_progress(participant_id, program_id)
-        st.session_state[f"{key}_pid"] = participant_id
-    return st.session_state[key]
-
-
-def get_reflection_cached(participant_id: str, program_id: str, week: int) -> dict | None:
-    key = f"reflection_{program_id}_{week}"
-    if key not in st.session_state:
-        st.session_state[key] = get_reflection(participant_id, program_id, week)
-    return st.session_state[key]
-
-
-def get_submissions_cached(participant_id: str, program_id: str) -> dict:
-    key = f"submissions_{program_id}"
-    if key not in st.session_state or st.session_state.get(f"{key}_pid") != participant_id:
-        st.session_state[key] = get_task_submissions(participant_id, program_id)
-        st.session_state[f"{key}_pid"] = participant_id
-    return st.session_state[key]
+# get_progress / get_reflection / get_task_submissions are cached and
+# invalidated inside utils/db.py itself now (short ttl + .clear() on every
+# write), so there's no need to duplicate that caching here in session
+# state. Calling them directly also means a rerun after mark_task_done()
+# etc. sees the fresh value immediately, since the write already cleared
+# the underlying cache — no more manual st.session_state.pop(...) dance.
 
 
 def show():
@@ -98,8 +82,8 @@ def show_program(profile, active_program, org_id, participant_id, first_name, un
     PROGRAM_WEEKS = get_program_weeks(program_id)
     week_keys = sorted(PROGRAM_WEEKS.keys())
 
-    progress = get_progress_cached(participant_id, program_id)
-    submissions = get_submissions_cached(participant_id, program_id)
+    progress = get_progress(participant_id, program_id)
+    submissions = get_task_submissions(participant_id, program_id)
 
     total_tasks = sum(len(PROGRAM_WEEKS[w]["tasks"]) for w in week_keys if w <= active_week)
     completed_tasks = sum(len(v) for v in progress.values())
@@ -190,7 +174,6 @@ def show_program(profile, active_program, org_id, participant_id, first_name, un
                                 st.session_state["celebrate_week"] = week_num
                             else:
                                 st.session_state["celebrate"] = "task_single"
-                            st.session_state.pop(f"progress_{program_id}", None)
                             st.rerun()
                     continue
 
@@ -218,13 +201,12 @@ def show_program(profile, active_program, org_id, participant_id, first_name, un
                             )
                             touch_last_active(org_id, participant_id)
                             st.session_state["celebrate"] = "task_single"
-                            st.session_state.pop(f"submissions_{program_id}", None)
                             st.rerun()
 
             st.divider()
 
             all_tasks_done = len(week_done) == len(week_data["tasks"])
-            reflection = get_reflection_cached(participant_id, program_id, week_num)
+            reflection = get_reflection(participant_id, program_id, week_num)
 
             if not all_tasks_done:
                 remaining = len(week_data["tasks"]) - len(week_done)
@@ -269,7 +251,6 @@ def show_program(profile, active_program, org_id, participant_id, first_name, un
                             touch_last_active(org_id, participant_id)
                             st.session_state["celebrate"] = "reflection"
                             st.session_state["celebrate_week"] = week_num
-                            st.session_state.pop(f"reflection_{program_id}_{week_num}", None)
                             st.rerun()
                         else:
                             st.warning("Please write something before submitting.")
@@ -284,11 +265,14 @@ def show_program(profile, active_program, org_id, participant_id, first_name, un
     col_r1, col_r2 = st.columns(2)
     with col_r1:
         if st.button("🔄 Refresh progress", width='stretch', type="secondary"):
-            st.session_state.pop(f"progress_{program_id}", None)
+            # Manual override — the cache would self-heal within its ttl
+            # anyway, but a button labeled "Refresh" should act on the spot.
+            get_progress.clear()
             st.rerun()
     with col_r2:
         if st.button("🔄 Check for new weeks", width='stretch', type="secondary"):
-            st.session_state.pop("profile", None)  # forces active_program re-fetch too
+            st.session_state.pop("profile", None)  # forces profile re-fetch
+            get_active_program.clear()  # forces active_program re-fetch too
             st.rerun()
 
 
