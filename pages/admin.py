@@ -79,7 +79,7 @@ def show():
 
     tab_programs, tab_content, tab_members, tab_engagement, tab_reflections, tab_submissions, tab_library, tab_codes = st.tabs(
         ["📚 Programs", "📝 Week content", "👥 Members", "📊 Engagement",
-         "💬 Reflections", "📎 Submissions", "🗄 Library", "🔑 Payment codes"]
+         "💬 Reflections", "🗂 Submissions", "🗃 Library", "🔑 Payment codes"]
     )
 
     # ═══════════════════════════════════════════════════════════
