@@ -8,10 +8,34 @@ mostly import swaps + threading org_id/program_id through.
 IMPORTANT: uses the ANON key + a per-session authenticated client
 (sign_in_with_password). Never use the SERVICE_ROLE key here — doing
 so bypasses every RLS policy in schema.sql.
+
+CACHING
+═══════
+Every read function below is wrapped in @st.cache_data. Streamlit
+re-runs the whole script top-to-bottom on every widget interaction,
+and st.tabs() renders every tab's body on every re-run (not just the
+visible one) — so without caching, a single checkbox click can fire
+15-30+ sequential Supabase round trips. @st.cache_data turns repeat
+calls with the same arguments into free in-memory hits.
+
+The cache is process-wide, not per-user — but every cached function
+takes the relevant org_id/program_id/participant_id as an argument,
+and Supabase RLS already scopes what each argument is allowed to see,
+so caching by those arguments can't leak data across tenants.
+
+Two safety nets keep cached data correct:
+  1. A short ttl on every cached read, so even a missed invalidation
+     self-heals within seconds.
+  2. Explicit `<fn>.clear()` calls in every mutation that touches the
+     same data, so writes are reflected immediately rather than
+     waiting out the ttl.
+If you add a new read function here, cache it. If you add a new
+write, clear every cached read whose result it changes.
 """
 
 from __future__ import annotations
 import re as _re
+import time as _time
 import uuid as _uuid
 import streamlit as st
 from supabase import create_client, Client
@@ -126,6 +150,8 @@ def register_organization(org_name: str, admin_name: str, admin_whatsapp: str,
         sign_out()
         raise
     st.session_state.pop("profile", None)
+    get_all_organizations.clear()
+    get_all_org_stats.clear()
     row = res.data[0]
     return {"org_id": row["org_id"], "org_code": row["org_code"]}
 
@@ -133,7 +159,9 @@ def register_organization(org_name: str, admin_name: str, admin_whatsapp: str,
 def is_valid_org_code(org_code: str) -> bool:
     """Uses the check_org_code_valid RPC — a direct table query here would
     always return zero rows for anonymous (not-yet-signed-up) visitors,
-    since RLS correctly blocks anon reads of the organizations table."""
+    since RLS correctly blocks anon reads of the organizations table.
+    Not cached: called rarely (once per signup attempt) and needs to
+    reflect an org being suspended/reactivated immediately."""
     client = get_client()
     res = client.rpc("check_org_code_valid", {"p_org_code": org_code.strip()}).execute()
     return bool(res.data)
@@ -156,6 +184,8 @@ def join_organization(org_code: str, full_name: str, whatsapp: str, email: str,
         sign_out()
         raise
     st.session_state.pop("profile", None)
+    get_all_participants.clear()
+    get_all_org_stats.clear()
     return res.data
 
 
@@ -172,8 +202,10 @@ def create_payment_codes(org_id: str, codes: list[str]):
         # would otherwise hit the (org_id, code) unique constraint and
         # raise an uncaught error.
         client.table("payment_codes").upsert(rows, on_conflict="org_id,code").execute()
+    get_org_payment_codes.clear()
 
 
+@st.cache_data(ttl=60)
 def get_org_payment_codes(org_id: str) -> list[dict]:
     client = get_client()
     res = client.table("payment_codes").select("*").eq("org_id", org_id).execute()
@@ -184,6 +216,7 @@ def get_org_payment_codes(org_id: str) -> list[dict]:
 # Programs
 # ═══════════════════════════════════════════════════════════════
 
+@st.cache_data(ttl=60)
 def get_all_programs(org_id: str) -> list[dict]:
     client = get_client()
     res = (client.table("programs").select("*").eq("org_id", org_id)
@@ -197,6 +230,8 @@ def create_program(org_id: str, name: str, unit_label: str = "Week", duration_we
         "org_id": org_id, "name": name, "unit_label": unit_label,
         "duration_weeks": duration_weeks,
     }).execute()
+    get_all_programs.clear()
+    get_all_org_stats.clear()
     return res.data[0]
 
 
@@ -211,11 +246,17 @@ def update_program_duration(program_id: str, duration_weeks: int, current_active
     if current_active_week > duration_weeks:
         updates["active_week"] = duration_weeks
     client.table("programs").update(updates).eq("id", program_id).execute()
+    get_all_programs.clear()
+    get_active_program.clear()
+    get_active_week.clear()
 
 
 def delete_program(program_id: str):
     client = get_client()
     client.table("programs").delete().eq("id", program_id).execute()
+    get_all_programs.clear()
+    get_active_program.clear()
+    get_all_org_stats.clear()
 
 
 def set_active_program(org_id: str, program_id: str):
@@ -223,8 +264,11 @@ def set_active_program(org_id: str, program_id: str):
     client = get_client()
     client.table("programs").update({"is_active": False}).eq("org_id", org_id).execute()
     client.table("programs").update({"is_active": True}).eq("id", program_id).execute()
+    get_active_program.clear()
+    get_all_programs.clear()
 
 
+@st.cache_data(ttl=30)
 def get_active_program(org_id: str) -> dict | None:
     client = get_client()
     res = (client.table("programs").select("*")
@@ -233,6 +277,7 @@ def get_active_program(org_id: str) -> dict | None:
     return res.data[0] if res.data else None
 
 
+@st.cache_data(ttl=30)
 def get_active_week(program_id: str) -> int:
     client = get_client()
     res = client.table("programs").select("active_week").eq("id", program_id).single().execute()
@@ -242,12 +287,15 @@ def get_active_week(program_id: str) -> int:
 def set_active_week(program_id: str, week: int):
     client = get_client()
     client.table("programs").update({"active_week": week}).eq("id", program_id).execute()
+    get_active_week.clear()
+    get_active_program.clear()
 
 
 # ═══════════════════════════════════════════════════════════════
 # Program content (title / theme / materials / tasks / prompt)
 # ═══════════════════════════════════════════════════════════════
 
+@st.cache_data(ttl=60)
 def get_program_weeks(program_id: str) -> dict:
     """Same shape as the old sheets.py: {week: {title, theme, materials[], tasks[]}}"""
     client = get_client()
@@ -296,13 +344,18 @@ def save_program_week(org_id: str, program_id: str, week: int, title: str, theme
                      "order_index": idx})
 
     client.table("program_content").insert(rows).execute()
+    get_program_weeks.clear()
+    get_program_engagement.clear()
 
 
 def delete_week_from_program(program_id: str, week: int):
     client = get_client()
     client.table("program_content").delete().eq("program_id", program_id).eq("week", week).execute()
+    get_program_weeks.clear()
+    get_program_engagement.clear()
 
 
+@st.cache_data(ttl=60)
 def get_prompt(program_id: str, week: int) -> str:
     client = get_client()
     res = (client.table("program_content").select("value")
@@ -319,12 +372,14 @@ def set_prompt(org_id: str, program_id: str, week: int, prompt: str):
             "org_id": org_id, "program_id": program_id, "week": week,
             "type": "prompt", "value": prompt.strip(),
         }).execute()
+    get_prompt.clear()
 
 
 # ═══════════════════════════════════════════════════════════════
 # Progress
 # ═══════════════════════════════════════════════════════════════
 
+@st.cache_data(ttl=20)
 def get_progress(participant_id: str, program_id: str) -> dict:
     """Returns {week: [task_index, ...]} for this participant/program."""
     client = get_client()
@@ -342,6 +397,9 @@ def mark_task_done(org_id: str, participant_id: str, program_id: str, week: int,
         "org_id": org_id, "participant_id": participant_id, "program_id": program_id,
         "week": week, "task_index": task_index,
     }, on_conflict="participant_id,program_id,week,task_index").execute()
+    get_progress.clear()
+    get_week_completion_stats.clear()
+    get_program_engagement.clear()
 
 
 def get_all_progress(org_id: str) -> list[dict]:
@@ -365,7 +423,15 @@ def wipe_all_progress(org_id: str, program_id: str):
         client.storage.from_(_SUBMISSIONS_BUCKET).remove(file_paths)
     client.table("task_submissions").delete().eq("org_id", org_id).eq("program_id", program_id).execute()
 
+    get_progress.clear()
+    get_reflection.clear()
+    get_all_reflections.clear()
+    get_task_submissions.clear()
+    get_week_completion_stats.clear()
+    get_program_engagement.clear()
 
+
+@st.cache_data(ttl=20)
 def get_week_completion_stats(program_id: str, week: int, task_count: int) -> tuple[int, int]:
     client = get_client()
     res = client.table("progress").select("participant_id").eq("program_id", program_id).eq("week", week).execute()
@@ -377,59 +443,26 @@ def get_week_completion_stats(program_id: str, week: int, task_count: int) -> tu
     return finished, total
 
 
+@st.cache_data(ttl=30)
 def get_program_engagement(org_id: str, program_id: str) -> list[dict]:
     """Full per-participant engagement breakdown across every week of a
     program — task completion counts, reflection status, and last active
-    time. This is the data behind the admin 'Engagement' tab."""
+    time. This is the data behind the admin 'Engagement' tab.
+
+    Aggregated server-side via the get_program_engagement Postgres
+    function (rpc_functions.sql) — one round trip instead of the ~5
+    sequential queries (participants, program content, progress rows,
+    reflection rows, last-active) the old Python implementation made,
+    with the counting itself also done in Postgres instead of pandas-
+    free Python loops over every row in the program."""
     client = get_client()
-
-    participants = get_all_participants(org_id)
-    weeks_data = get_program_weeks(program_id)
-    task_counts_by_week = {w: len(v["tasks"]) for w, v in weeks_data.items()}
-
-    progress_rows = (client.table("progress").select("participant_id, week, task_index")
-                      .eq("program_id", program_id).execute()).data
-    reflection_rows = (client.table("reflections").select("participant_id, week")
-                        .eq("program_id", program_id).execute()).data
-    last_active = get_last_active_map(org_id)
-
-    done_by_participant: dict = {}
-    for row in progress_rows:
-        pid, wk = row["participant_id"], row["week"]
-        done_by_participant.setdefault(pid, {}).setdefault(wk, set()).add(row["task_index"])
-
-    reflected_by_participant: dict = {}
-    for row in reflection_rows:
-        reflected_by_participant.setdefault(row["participant_id"], set()).add(row["week"])
-
-    total_tasks_overall = sum(task_counts_by_week.values()) or 1
-    week_keys = sorted(task_counts_by_week.keys())
-
-    out = []
-    for p in participants:
-        pid = p["id"]
-        per_week = done_by_participant.get(pid, {})
-        total_done = sum(len(v) for v in per_week.values())
-        weeks_fully_done = sum(
-            1 for w in week_keys
-            if len(per_week.get(w, set())) >= task_counts_by_week.get(w, 0) and task_counts_by_week.get(w, 0) > 0
-        )
-        out.append({
-            "participant_id": pid,
-            "full_name": p["full_name"],
-            "whatsapp": p.get("whatsapp", ""),
-            "email": p.get("email", ""),
-            "tasks_done": total_done,
-            "tasks_total": total_tasks_overall,
-            "pct": round(100 * total_done / total_tasks_overall) if total_tasks_overall else 0,
-            "weeks_completed": weeks_fully_done,
-            "weeks_total": len(week_keys),
-            "reflections_submitted": len(reflected_by_participant.get(pid, set())),
-            "last_active": last_active.get(pid, "never"),
-        })
-
-    out.sort(key=lambda r: r["pct"], reverse=True)
-    return out
+    res = client.rpc("get_program_engagement", {
+        "p_org_id": org_id, "p_program_id": program_id,
+    }).execute()
+    return [
+        {**row, "last_active": row.get("last_active") or "never"}
+        for row in res.data
+    ]
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -439,6 +472,7 @@ def get_program_engagement(org_id: str, program_id: str) -> list[dict]:
 _SUBMISSIONS_BUCKET = "task-submissions"
 
 
+@st.cache_data(ttl=20)
 def get_task_submissions(participant_id: str, program_id: str) -> dict:
     """Returns {(week, task_index): submission_row} for this participant/program."""
     client = get_client()
@@ -467,6 +501,8 @@ def submit_task_file(org_id: str, participant_id: str, program_id: str,
         "file_path": file_path, "file_name": file_name,
         "status": "pending", "reviewer_feedback": "", "reviewed_at": None,
     }, on_conflict="participant_id,program_id,week,task_index").execute()
+    get_task_submissions.clear()
+    get_pending_submissions.clear()
 
 
 def get_submission_download_url(file_path: str, expires_in: int = 3600) -> str:
@@ -475,6 +511,7 @@ def get_submission_download_url(file_path: str, expires_in: int = 3600) -> str:
     return res.get("signedURL") or res.get("signed_url") or ""
 
 
+@st.cache_data(ttl=20)
 def get_pending_submissions(org_id: str, program_id: str) -> list[dict]:
     client = get_client()
     res = (client.table("task_submissions").select("*, profiles(full_name, email)")
@@ -506,11 +543,16 @@ def review_submission(submission: dict, status: str, feedback: str = ""):
         client.rpc("approve_task_submission", {
             "p_submission_id": submission["id"], "p_feedback": feedback,
         }).execute()
+        get_progress.clear()
+        get_week_completion_stats.clear()
+        get_program_engagement.clear()
     else:
         client.table("task_submissions").update({
             "status": status, "reviewer_feedback": feedback,
             "reviewed_at": "now()",
         }).eq("id", submission["id"]).execute()
+    get_task_submissions.clear()
+    get_pending_submissions.clear()
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -520,6 +562,7 @@ def review_submission(submission: dict, status: str, feedback: str = ""):
 _RESOURCES_BUCKET = "org-resources"
 
 
+@st.cache_data(ttl=60)
 def get_library_resources(org_id: str, search: str = "", tag: str = "") -> list[dict]:
     client = get_client()
     q = client.table("resources").select("*").eq("org_id", org_id)
@@ -554,11 +597,13 @@ def create_resource(org_id: str, created_by: str, title: str, description: str,
         row["file_path"] = file_path
         row["file_name"] = file_name
     client.table("resources").insert(row).execute()
+    get_library_resources.clear()
 
 
 def update_resource_tags(resource_id: str, tags: list[str]):
     client = get_client()
     client.table("resources").update({"tags": tags}).eq("id", resource_id).execute()
+    get_library_resources.clear()
 
 
 def delete_resource(resource_id: str, file_path: str = None):
@@ -569,6 +614,7 @@ def delete_resource(resource_id: str, file_path: str = None):
         except Exception:
             pass  # row delete should still proceed even if the file's already gone
     client.table("resources").delete().eq("id", resource_id).execute()
+    get_library_resources.clear()
 
 
 def get_resource_download_url(file_path: str, expires_in: int = 3600) -> str:
@@ -581,6 +627,7 @@ def get_resource_download_url(file_path: str, expires_in: int = 3600) -> str:
 # Reflections & feedback
 # ═══════════════════════════════════════════════════════════════
 
+@st.cache_data(ttl=20)
 def get_reflection(participant_id: str, program_id: str, week: int) -> dict | None:
     client = get_client()
     res = (client.table("reflections").select("*")
@@ -595,6 +642,9 @@ def submit_reflection(org_id: str, participant_id: str, program_id: str, week: i
         "org_id": org_id, "participant_id": participant_id, "program_id": program_id,
         "week": week, "response": response,
     }, on_conflict="participant_id,program_id,week").execute()
+    get_reflection.clear()
+    get_all_reflections.clear()
+    get_program_engagement.clear()
 
 
 def get_feedback(participant_id: str, program_id: str, week: int) -> str:
@@ -605,8 +655,11 @@ def get_feedback(participant_id: str, program_id: str, week: int) -> str:
 def save_feedback(reflection_id: str, feedback: str):
     client = get_client()
     client.table("reflections").update({"feedback": feedback}).eq("id", reflection_id).execute()
+    get_reflection.clear()
+    get_all_reflections.clear()
 
 
+@st.cache_data(ttl=20)
 def get_all_reflections(org_id: str, program_id: str) -> list[dict]:
     client = get_client()
     res = (client.table("reflections").select("*, profiles(full_name, whatsapp, email)")
@@ -618,6 +671,7 @@ def get_all_reflections(org_id: str, program_id: str) -> list[dict]:
 # Participants / members
 # ═══════════════════════════════════════════════════════════════
 
+@st.cache_data(ttl=60)
 def get_all_participants(org_id: str) -> list[dict]:
     client = get_client()
     res = client.table("profiles").select("*").eq("org_id", org_id).eq("role", "participant").execute()
@@ -632,19 +686,36 @@ def get_org_members(org_id: str) -> list[dict]:
 # Last active (heartbeat)
 # ═══════════════════════════════════════════════════════════════
 
+_LAST_ACTIVE_THROTTLE_SECONDS = 60
+
+
 def touch_last_active(org_id: str, participant_id: str):
     """Best-effort heartbeat — never let this crash the page it's called
     from. Losing a last-active timestamp is harmless; crashing someone's
-    whole dashboard over it is not."""
+    whole dashboard over it is not.
+
+    Throttled to one actual write per _LAST_ACTIVE_THROTTLE_SECONDS per
+    session: this is called on every dashboard page load AND again after
+    every task/upload/reflection action, so without throttling a single
+    burst of activity (e.g. checking off 3 tasks in a row) was firing 4
+    extra writes on top of the writes that actually mattered. The cached
+    get_last_active_map() read isn't cleared here — a heartbeat being up
+    to a minute stale on the admin's Members/Engagement view is harmless,
+    and clearing on every call would defeat the point of caching it."""
+    last = st.session_state.get("_last_active_sent_at", 0)
+    if _time.time() - last < _LAST_ACTIVE_THROTTLE_SECONDS:
+        return
     try:
         client = get_client()
         client.table("last_active").upsert({
             "org_id": org_id, "participant_id": participant_id,
         }, on_conflict="participant_id").execute()
+        st.session_state["_last_active_sent_at"] = _time.time()
     except Exception:
         pass
 
 
+@st.cache_data(ttl=20)
 def get_last_active_map(org_id: str) -> dict:
     client = get_client()
     res = client.table("last_active").select("participant_id, last_active_at").eq("org_id", org_id).execute()
@@ -655,19 +726,44 @@ def get_last_active_map(org_id: str) -> dict:
 # Super admin oversight
 # ═══════════════════════════════════════════════════════════════
 
+@st.cache_data(ttl=30)
 def get_all_organizations() -> list[dict]:
     client = get_client()
     res = client.table("organizations").select("*").execute()
     return res.data
 
 
-def get_org_stats(org_id: str) -> dict:
+@st.cache_data(ttl=30)
+def get_all_org_stats() -> dict[str, dict]:
+    """Member/program counts for every organization, in 2 queries total
+    instead of 2-per-org. get_org_stats() below just indexes into this.
+    (The old per-org get_org_stats() was called once per org in a loop
+    in super_admin.py — an N+1 pattern that made the platform-overview
+    page's round-trip count scale with the number of orgs on the
+    platform.)"""
     client = get_client()
-    members = client.table("profiles").select("id", count="exact").eq("org_id", org_id).eq("role", "participant").execute()
-    programs = client.table("programs").select("id", count="exact").eq("org_id", org_id).execute()
-    return {"member_count": members.count, "program_count": programs.count}
+    members = client.table("profiles").select("org_id").eq("role", "participant").execute()
+    programs = client.table("programs").select("org_id").execute()
+
+    member_counts: dict = {}
+    for row in members.data:
+        member_counts[row["org_id"]] = member_counts.get(row["org_id"], 0) + 1
+    program_counts: dict = {}
+    for row in programs.data:
+        program_counts[row["org_id"]] = program_counts.get(row["org_id"], 0) + 1
+
+    org_ids = set(member_counts) | set(program_counts)
+    return {
+        oid: {"member_count": member_counts.get(oid, 0), "program_count": program_counts.get(oid, 0)}
+        for oid in org_ids
+    }
 
 
+def get_org_stats(org_id: str) -> dict:
+    return get_all_org_stats().get(org_id, {"member_count": 0, "program_count": 0})
+
+
+@st.cache_data(ttl=60)
 def get_my_organization(org_id: str) -> dict | None:
     """org_admin's own org record — backed by the 'org members see own org'
     RLS policy, so this only ever returns the caller's own organization."""
@@ -679,6 +775,8 @@ def get_my_organization(org_id: str) -> dict | None:
 def suspend_organization(org_id: str, active: bool):
     client = get_client()
     client.table("organizations").update({"is_active": active}).eq("id", org_id).execute()
+    get_all_organizations.clear()
+    get_my_organization.clear()
 
 
 def delete_organization(org_id: str):
@@ -689,3 +787,8 @@ def delete_organization(org_id: str):
     this can't be abused even if a route guard is ever bypassed."""
     client = get_client()
     client.rpc("delete_organization_cascade", {"p_org_id": org_id}).execute()
+    get_all_organizations.clear()
+    get_all_org_stats.clear()
+    get_my_organization.clear()
+    get_all_programs.clear()
+    get_all_participants.clear()
