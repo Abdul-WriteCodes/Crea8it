@@ -13,7 +13,7 @@ LAB_CSS = """
 .lp-hero { padding: 24px 0 16px; text-align: center; }
 .lp-wordmark {
   font-family: 'Syne', sans-serif;
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1.05;
