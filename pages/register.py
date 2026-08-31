@@ -10,10 +10,10 @@ from config import PROGRAM_NAME
 
 LAB_CSS = """
 <style>
-.lp-hero { padding: 18px 0 16px; text-align: center; }
+.lp-hero { padding: 24px 0 16px; text-align: center; }
 .lp-wordmark {
   font-family: 'Syne', sans-serif;
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1.05;
@@ -439,7 +439,7 @@ def show():
     st.markdown(_flatten(f"""
     <div class="lp-hero">
       <div class="lp-wordmark">
-        <span style="color:#FFD700;">📟 </span><br><span style="color:#00B4D8;">Crea8Lab</span>
+        <span style="color:#FFD700;">Crea8it </span><br><span style="color:#00B4D8;">Lab</span>
       </div>
       <div class="lp-tagline">
         Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
