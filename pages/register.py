@@ -10,7 +10,7 @@ from config import PROGRAM_NAME
 
 LAB_CSS = """
 <style>
-.lp-hero { padding: 24px 0 16px; text-align: center; }
+.lp-hero { padding: 18px 0 16px; text-align: center; }
 .lp-wordmark {
   font-family: 'Syne', sans-serif;
   font-size: 2.5rem;
