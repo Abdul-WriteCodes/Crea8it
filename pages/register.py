@@ -439,7 +439,7 @@ def show():
     st.markdown(_flatten(f"""
     <div class="lp-hero">
       <div class="lp-wordmark">
-        <span style="color:#FFD700;">Crea8it </span><br><span style="color:#00B4D8;">Lab</span>
+        <span style="color:#FFD700;">📟 </span><br><span style="color:#00B4D8;">Crea8Lab</span>
       </div>
       <div class="lp-tagline">
         Build ⚙️ &nbsp;●&nbsp; Launch 🚀 &nbsp;●&nbsp; Learn 🤸🏻 &nbsp;●&nbsp; Win 🏆
