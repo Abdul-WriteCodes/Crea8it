@@ -412,7 +412,7 @@ def show():
                 with st.expander(f"Week {s['week']}, Task {s['task_index'] + 1} — {person.get('full_name', 'Unknown')}"):
                     st.write(f"**File:** {s['file_name']}")
                     try:
-                        url = get_submission_download_url(s["file_path"])
+                        url = get_submission_download_url(s["file_path"], file_name=s["file_name"])
                         if url:
                             st.link_button("⬇ Download / view file", url)
                     except Exception as e:
@@ -504,7 +504,7 @@ def show():
                     st.link_button("Open →", r["url"])
                 else:
                     try:
-                        dl_url = get_resource_download_url(r["file_path"])
+                        dl_url = get_resource_download_url(r["file_path"], file_name=r.get("file_name"))
                         if dl_url:
                             st.link_button("⬇ Download", dl_url)
                     except Exception:

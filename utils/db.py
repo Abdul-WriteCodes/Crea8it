@@ -505,9 +505,13 @@ def submit_task_file(org_id: str, participant_id: str, program_id: str,
     get_pending_submissions.clear()
 
 
-def get_submission_download_url(file_path: str, expires_in: int = 3600) -> str:
+def get_submission_download_url(file_path: str, expires_in: int = 3600, file_name: str = None) -> str:
+    """`file_name`, when given, sets Content-Disposition: attachment on the
+    signed URL so the browser saves the file instead of opening/rendering
+    it inline (the default Supabase Storage behavior with no options)."""
     client = get_client()
-    res = client.storage.from_(_SUBMISSIONS_BUCKET).create_signed_url(file_path, expires_in)
+    options = {"download": file_name} if file_name else {}
+    res = client.storage.from_(_SUBMISSIONS_BUCKET).create_signed_url(file_path, expires_in, options)
     return res.get("signedURL") or res.get("signed_url") or ""
 
 
@@ -617,9 +621,14 @@ def delete_resource(resource_id: str, file_path: str = None):
     get_library_resources.clear()
 
 
-def get_resource_download_url(file_path: str, expires_in: int = 3600) -> str:
+def get_resource_download_url(file_path: str, expires_in: int = 3600, file_name: str = None) -> str:
+    """`file_name`, when given, sets Content-Disposition: attachment on the
+    signed URL so the browser saves the file instead of opening/rendering
+    it inline (the default Supabase Storage behavior with no options) —
+    this is why clicking 'Download' was just opening files in-tab."""
     client = get_client()
-    res = client.storage.from_(_RESOURCES_BUCKET).create_signed_url(file_path, expires_in)
+    options = {"download": file_name} if file_name else {}
+    res = client.storage.from_(_RESOURCES_BUCKET).create_signed_url(file_path, expires_in, options)
     return res.get("signedURL") or res.get("signed_url") or ""
 
 

@@ -307,7 +307,7 @@ def show_library(org_id: str):
                 st.link_button("Open →", r["url"], width='stretch')
             else:
                 try:
-                    url = get_resource_download_url(r["file_path"])
+                    url = get_resource_download_url(r["file_path"], file_name=r.get("file_name"))
                     if url:
                         st.link_button("⬇ Download", url, width='stretch')
                 except Exception:
