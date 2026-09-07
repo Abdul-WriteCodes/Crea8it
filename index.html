@@ -316,6 +316,9 @@ nav{
     border-radius:3px;
     box-shadow:0 14px 30px rgba(0,0,0,.45);
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height:100%;
 }
 .index-card::after{
     content:"";
@@ -376,6 +379,9 @@ nav{
 .card-body{
     padding:20px 22px 24px;
     color:var(--ink-dark);
+    display:flex;
+    flex-direction:column;
+    flex:1;
 }
 
 .card-body h3{
@@ -393,6 +399,7 @@ nav{
 
 .card-tag{
     display:inline-block;
+    align-self:flex-start;
     font-family:var(--mono);
     font-size:.7rem;
     font-weight:700;
@@ -413,7 +420,7 @@ nav{
     flex-wrap:wrap;
     border-top:1px dashed rgba(0,0,0,.18);
     padding-top:14px;
-    margin-top:6px;
+    margin-top:auto;
 }
 
 .price{
@@ -697,6 +704,9 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     .postmark{ position:static; margin:0 auto 18px; }
     [class^="rot--"]{ transform:rotate(0deg) !important; }
     .cred-item{ transform:none !important; }
+    .card-photo{ height:130px; }
+    .card-body{ padding:16px 18px 20px; }
+    .card-body p{ font-size:.88rem; margin-bottom:12px; }
 }
 
 </style>
@@ -786,7 +796,7 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
     <div class="card-body">
         <span class="card-tag open">Open Seminar 🎙</span>
         <h3>AI Career Acceleration</h3>
-        <p>A career launch and acceleration program for ambitious individuals who want to build valuable skills, create opportunities, and thrive in the age of AI.</p>
+        <p>A career launch program for ambitious builders ready to gain valuable AI-era skills and real opportunities.</p>
         <div class="card-footer">
             <div class="price program-price">Coming Soon</div>
             <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F" class="btn-buy" target="_blank" rel="noopener">Register →</a>
@@ -818,7 +828,7 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
     <div class="card-body">
         <span class="card-tag open">Active</span>
         <h3>🧪 Zero to 1</h3>
-        <p>An idea validation and startup launch program for aspiring founders and indie hackers who want to build real businesses from scratch. This is not where you just buy course, it is where you EXECUTE to make things work</p>
+        <p>An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.</p>
         <div class="card-footer">
             <div class="price program-price">Coming Soon </div>
             <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it." class="btn-buy" target="_blank" rel="noopener">Register →</a>
@@ -1212,4 +1222,4 @@ Got an idea, a project, or something worth addressing? Bring it. Let's have it �
 </script>
 
 </body>
-</html>
+    </html>
