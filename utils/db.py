@@ -125,18 +125,31 @@ def logout():
 
 def logout_and_redirect(url: str = "https://www.crea8it.com"):
     """Sign out, then bounce the *browser* (not just the Streamlit
-    session) back to the marketing site. A plain st.rerun() can't do
-    this — it only re-executes the script inside the Streamlit app's
-    own domain. Streamlit renders components in a sandboxed iframe,
-    so the script targets window.top (the real browser tab) rather
-    than window.self, which would only redirect the iframe.
+    session) back to the marketing site.
+
+    st.rerun() can't do this — it only replays the script inside the
+    Streamlit app's own page.
+
+    A JS redirect via st.components.v1.html() also doesn't work here:
+    Streamlit renders components inside a sandboxed iframe that has
+    allow-scripts + allow-same-origin but NOT allow-top-navigation,
+    so the browser silently blocks any attempt from inside it to
+    navigate window.top.
+
+    Instead, inject a <meta http-equiv="refresh"> tag directly into
+    the TOP-level document via st.markdown(unsafe_allow_html=True) —
+    no iframe involved, so no sandbox restriction applies. Per the
+    HTML spec, a meta-refresh tag's redirect logic runs whenever the
+    element is inserted into the document, not only during the
+    initial parse, so this still fires even though Streamlit adds it
+    after the page has already loaded.
     """
-    import streamlit.components.v1 as components
     sign_out()
-    components.html(
-        f"<script>window.top.location.href = {url!r};</script>",
-        height=0,
+    st.markdown(
+        f'<meta http-equiv="refresh" content="0; url={url}">',
+        unsafe_allow_html=True,
     )
+    st.write(f"Logging you out… [click here]({url}) if you aren't redirected automatically.")
     st.stop()
 
 
