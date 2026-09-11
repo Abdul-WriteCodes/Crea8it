@@ -23,6 +23,7 @@ if is_logged_in():
         st.error("We couldn't load your account. Please try logging in again.")
         from utils.db import logout
         logout()
+        st.rerun()
 
     elif profile["role"] == "super_admin":
         import pages.super_admin as super_admin
