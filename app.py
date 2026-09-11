@@ -21,9 +21,8 @@ if is_logged_in():
     if profile is None:
         # session exists but profile row is missing/still propagating
         st.error("We couldn't load your account. Please try logging in again.")
-        from utils.db import logout
-        logout()
-        st.rerun()
+        from utils.db import logout_and_redirect
+        logout_and_redirect()
 
     elif profile["role"] == "super_admin":
         import pages.super_admin as super_admin
