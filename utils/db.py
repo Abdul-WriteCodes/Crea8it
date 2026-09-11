@@ -119,23 +119,8 @@ def require_role(*allowed_roles: str) -> dict:
     return profile
 
 
-MARKETING_SITE_URL = "https://www.crea8it.com"
-
-
 def logout():
-    """Clear the session and send the browser back to the marketing site.
-
-    Uses a client-side redirect (Streamlit can't issue an HTTP redirect
-    itself) and st.stop() so the rerun never falls through to render
-    app.py's own login/register page first.
-    """
     sign_out()
-    st.markdown(
-        f'<meta http-equiv="refresh" content="0; url={MARKETING_SITE_URL}">'
-        f'<script>window.location.replace("{MARKETING_SITE_URL}");</script>',
-        unsafe_allow_html=True,
-    )
-    st.stop()
 
 
 def get_current_participant() -> dict | None:
