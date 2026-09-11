@@ -60,6 +60,16 @@ a{ color:inherit; }
 
 .hand{ font-family:var(--hand); }
 
+/* ── icon system (replaces UI emoji; color follows text via currentColor) ── */
+.icon{
+    display:inline-block;
+    width:1em; height:1em;
+    vertical-align:-0.15em;
+    flex-shrink:0;
+}
+.icon-lead{ margin-right:7px; }
+.icon-trail{ margin-left:6px; }
+
 .tape{
     position:absolute;
     width:76px; height:28px;
@@ -744,6 +754,50 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 </head>
 <body>
 
+<svg style="display:none" aria-hidden="true">
+<symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2c3 2 4 6 4 10 0 2-1 4-4 6-3-2-4-4-4-6 0-4 1-8 4-10z"/>
+    <circle cx="12" cy="9" r="1.6"/>
+    <path d="M8 15l-2 5 4-2"/>
+    <path d="M16 15l2 5-4-2"/>
+</symbol>
+<symbol id="icon-book-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 6c-1.5-1.2-3.6-2-6-2v13c2.4 0 4.5.8 6 2 1.5-1.2 3.6-2 6-2V4c-2.4 0-4.5.8-6 2z"/>
+    <path d="M12 6v13"/>
+</symbol>
+<symbol id="icon-toolbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="9" width="18" height="10" rx="1.5"/>
+    <path d="M8 9V6a4 4 0 0 1 8 0v3"/>
+    <path d="M3 13h18"/>
+</symbol>
+<symbol id="icon-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 4h12v3a6 6 0 0 1-12 0V4z"/>
+    <path d="M12 13v4"/>
+    <path d="M8 20h8"/>
+</symbol>
+<symbol id="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11l18-8-8 18-2-8-8-2z"/>
+</symbol>
+<symbol id="icon-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <path d="M7 9l3 3-3 3"/>
+    <path d="M13 15h4"/>
+</symbol>
+<symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>
+</symbol>
+<symbol id="icon-adapt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 4v5h5"/>
+    <path d="M20 20v-5h-5"/>
+    <path d="M5 15a7 7 0 0 0 12 3l3-3"/>
+    <path d="M19 9a7 7 0 0 0-12-3L4 9"/>
+</symbol>
+<symbol id="icon-dot" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+    <circle cx="12" cy="12" r="7"/>
+</symbol>
+</svg>
+
 <nav>
 <div class="container nav-wrapper">
 
@@ -753,14 +807,14 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 </div>
 
 <div class="nav-links">
-<a href="index.html#programs">Programs 🚀</a>
-<a href="index.html#playbooks">Resources 📚</a>
-<a href="projects.html" style="color:var(--accent);">Projects 🧰</a>
-<a href="index.html#testimonials">Impact 🏆</a>
-<a href="index.html#submit-request">Submit Request 📩</a>
+<a href="index.html#programs">Programs<svg class="icon icon-trail"><use href="#icon-rocket"/></svg></a>
+<a href="index.html#playbooks">Resources<svg class="icon icon-trail"><use href="#icon-book-open"/></svg></a>
+<a href="projects.html" style="color:var(--accent);">Projects<svg class="icon icon-trail"><use href="#icon-toolbox"/></svg></a>
+<a href="index.html#testimonials">Impact<svg class="icon icon-trail"><use href="#icon-trophy"/></svg></a>
+<a href="index.html#submit-request">Submit Request<svg class="icon icon-trail"><use href="#icon-send"/></svg></a>
 </div>
 
-<a href="https://crea8it.streamlit.app/" class="btn btn-primary">Enter Lab 📟</a>
+<a href="https://crea8it.streamlit.app/" class="btn btn-primary">Enter Lab<svg class="icon icon-trail"><use href="#icon-terminal"/></svg></a>
 
 </div>
 </nav>
@@ -769,7 +823,7 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 <div class="container hero-grid">
 
 <div class="hero-content">
-<span class="badge">🧰 The Product Shelf</span>
+<span class="badge"><svg class="icon icon-lead"><use href="#icon-toolbox"/></svg>The Product Shelf</span>
 
 <h1>Real Products.<br><span>Real Users.</span><br>Real Numbers.</h1>
 
@@ -803,7 +857,7 @@ Every product below is something I'm actively building, running, or have already
 <!-- BizTrack-OS -->
 <div class="card index-card tilt-card rot--1 project-card">
 <div class="card-body">
-    <span class="stamp status-live">Live 🟩</span>
+    <span class="stamp status-live"><svg class="icon icon-lead"><use href="#icon-dot"/></svg>Live</span>
     <h3>BizTrack-OS</h3>
     <p>A Smart business app built for SMEs to monitor and grow their business.</p>
     <span class="card-tag open">SME TOOLS</span>
@@ -825,7 +879,7 @@ Every product below is something I'm actively building, running, or have already
 <!-- StaX360 Suite -->
 <div class="card index-card tilt-card rot--2 project-card">
 <div class="card-body">
-    <span class="stamp status-live">Live 🟩</span>
+    <span class="stamp status-live"><svg class="icon icon-lead"><use href="#icon-dot"/></svg>Live</span>
     <h3>StaX360 Suite</h3>
     <p>A statistical analysis toolkit — panel data, data synthesis, exploratory factor analysis, and data cleaning, unified under one credit-based platform.</p>
     <span class="card-tag open">RESEARCH TOOLS</span>
@@ -849,7 +903,7 @@ Every product below is something I'm actively building, running, or have already
 <!--
 <div class="card index-card tilt-card rot--3 project-card">
 <div class="card-body">
-    <span class="stamp status-live">Live 🟩</span>
+    <span class="stamp status-live"><svg class="icon icon-lead"><use href="#icon-dot"/></svg>Live</span>
     <h3>Kopt-OS</h3>
     <p>Cooperative society management, rebuilt from the ground up — member records, contributions, and loan tracking for coop admins.</p>
     <span class="card-tag open">COOP TOOLS</span>
@@ -870,7 +924,7 @@ Every product below is something I'm actively building, running, or have already
 <!-- Crea8Lab -->
 <div class="card index-card tilt-card rot--4 project-card">
 <div class="card-body">
-    <span class="stamp status-live">Live 🟩</span>
+    <span class="stamp status-live"><svg class="icon icon-lead"><use href="#icon-dot"/></svg>Live</span>
     <h3>Crea8Lab</h3>
     <p>The cohort-based learning platform behind Crea8it itself — where builders execute real projects instead of just consuming courses.</p>
     <span class="card-tag open">EdTech</span>
@@ -893,7 +947,7 @@ Every product below is something I'm actively building, running, or have already
 <!---
 <div class="card index-card tilt-card rot--5 project-card">
 <div class="card-body">
-    <span class="stamp status-building">Live 🟩</span>
+    <span class="stamp status-building"><svg class="icon icon-lead"><use href="#icon-dot"/></svg>Live</span>
     <h3>CaptAI</h3>
     <p>Machine Learning-powered Intelligent system that analyses sentiment in Text data</p>
     <span class="card-tag soon">Machine Learning Project</span>
@@ -913,7 +967,7 @@ Every product below is something I'm actively building, running, or have already
 <!-- EmpiricX -->
 <div class="card index-card tilt-card rot--6 project-card">
 <div class="card-body">
-    <span class="stamp status-live">Live 🟩</span>
+    <span class="stamp status-live"><svg class="icon icon-lead"><use href="#icon-dot"/></svg>Live</span>
     <h3>EmpiricX</h3>
     <p>An AI-powered metadata extractor for academic papers — pulls authors, citations, and structured data out of PDFs in seconds.</p>
     <span class="card-tag open">RESEARCH AI</span>
@@ -943,7 +997,7 @@ Every product below is something I'm actively building, running, or have already
 
     <div class="footer-logo">Crea8it</div>
 
-    <p class="footer-tagline">BUILD⚙️ ° LAUNCH🚀 ° LEARN🤸🏻 ° WIN🏆</p>
+    <p class="footer-tagline">BUILD<svg class="icon icon-trail"><use href="#icon-gear"/></svg> ° LAUNCH<svg class="icon icon-trail"><use href="#icon-rocket"/></svg> ° LEARN<svg class="icon icon-trail"><use href="#icon-adapt"/></svg> ° WIN<svg class="icon icon-trail"><use href="#icon-trophy"/></svg></p>
 
     <nav class="footer-links">
         <a href="index.html#playbooks">Resources</a>
@@ -1005,4 +1059,4 @@ Every product below is something I'm actively building, running, or have already
 </script>
 
 </body>
-</html>
+                                   </html>
