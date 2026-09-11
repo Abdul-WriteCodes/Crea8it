@@ -21,7 +21,7 @@ def show():
     sidebar_account(
         role_label="Platform owner",
         name="Super admin",
-        on_logout=lambda: (logout(), st.rerun()),
+        on_logout=logout,
     )
 
     page_header("Platform overview", "Every organization running a program on Crea8it.")
