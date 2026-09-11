@@ -43,7 +43,7 @@ def show():
         name=profile["full_name"],
         subtitle=org["name"] if org else "",
         status_lines=[f"Active program: {active_program['name']}"] if active_program else ["No active program set"],
-        on_logout=logout,
+        on_logout=lambda: (logout(), st.rerun()),
     )
 
     page_header("🧩 Cohort admin", f"Logged in as {profile['full_name']}")

@@ -41,7 +41,7 @@ def show():
         subtitle=profile.get("email", ""),
         status_lines=[f"{active_program['unit_label']}: {active_program.get('name','')}"] if active_program
                      else ["No active program yet"],
-        on_logout=logout,
+        on_logout=lambda: (logout(), st.rerun()),
     )
 
     touch_last_active(org_id, participant_id)
