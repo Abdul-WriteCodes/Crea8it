@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.db import (
-    get_current_profile, logout, get_active_program, get_active_week,
+    get_current_profile, logout_and_redirect, get_active_program, get_active_week,
     get_program_weeks, get_progress, mark_task_done, get_reflection,
     submit_reflection, get_prompt, touch_last_active, get_week_completion_stats,
     get_task_submissions, submit_task_file,
@@ -41,7 +41,7 @@ def show():
         subtitle=profile.get("email", ""),
         status_lines=[f"{active_program['unit_label']}: {active_program.get('name','')}"] if active_program
                      else ["No active program yet"],
-        on_logout=lambda: (logout(), st.rerun()),
+        on_logout=logout_and_redirect,
     )
 
     touch_last_active(org_id, participant_id)
