@@ -123,6 +123,23 @@ def logout():
     sign_out()
 
 
+def logout_and_redirect(url: str = "https://www.crea8it.com"):
+    """Sign out, then bounce the *browser* (not just the Streamlit
+    session) back to the marketing site. A plain st.rerun() can't do
+    this — it only re-executes the script inside the Streamlit app's
+    own domain. Streamlit renders components in a sandboxed iframe,
+    so the script targets window.top (the real browser tab) rather
+    than window.self, which would only redirect the iframe.
+    """
+    import streamlit.components.v1 as components
+    sign_out()
+    components.html(
+        f"<script>window.top.location.href = {url!r};</script>",
+        height=0,
+    )
+    st.stop()
+
+
 def get_current_participant() -> dict | None:
     """Alias kept for parity with the old sheets.py-based auth.py."""
     return get_current_profile()
