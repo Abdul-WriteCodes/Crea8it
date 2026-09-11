@@ -124,32 +124,25 @@ def logout():
 
 
 def logout_and_redirect(url: str = "https://www.crea8it.com"):
-    """Sign out, then bounce the *browser* (not just the Streamlit
-    session) back to the marketing site.
+    """Sign out, then offer a one-tap link back to the marketing site.
 
-    st.rerun() can't do this — it only replays the script inside the
-    Streamlit app's own page.
-
-    A JS redirect via st.components.v1.html() also doesn't work here:
-    Streamlit renders components inside a sandboxed iframe that has
-    allow-scripts + allow-same-origin but NOT allow-top-navigation,
-    so the browser silently blocks any attempt from inside it to
-    navigate window.top.
-
-    Instead, inject a <meta http-equiv="refresh"> tag directly into
-    the TOP-level document via st.markdown(unsafe_allow_html=True) —
-    no iframe involved, so no sandbox restriction applies. Per the
-    HTML spec, a meta-refresh tag's redirect logic runs whenever the
-    element is inserted into the document, not only during the
-    initial parse, so this still fires even though Streamlit adds it
-    after the page has already loaded.
+    A true zero-click, same-tab redirect off crea8it.streamlit.app is
+    not achievable through Streamlit's public APIs — this is a
+    deliberate Streamlit guardrail, hit from three angles:
+      - components.html() renders in an iframe sandboxed WITHOUT
+        allow-top-navigation, so it can't navigate window.top.
+      - st.markdown()/st.html() run everything through DOMPurify,
+        which strips <script> and <meta> tags unconditionally, even
+        with unsafe_allow_html=True.
+      - Even a plain st.markdown link or st.link_button always
+        renders with target="_blank" — Streamlit never lets a link
+        replace its own tab.
+    So instead of fighting the sandbox further, show a clear
+    logged-out state with a single real link back to the site.
     """
     sign_out()
-    st.markdown(
-        f'<meta http-equiv="refresh" content="0; url={url}">',
-        unsafe_allow_html=True,
-    )
-    st.write(f"Logging you out… [click here]({url}) if you aren't redirected automatically.")
+    st.success("You've been logged out.")
+    st.link_button(f"Return to {url.replace('https://', '')}", url, type="primary")
     st.stop()
 
 
