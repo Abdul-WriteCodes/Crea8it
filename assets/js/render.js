@@ -7,10 +7,9 @@
 
 function programCardHTML(p) {
     const iconSpan = p.icon ? `<svg class="icon icon-lead"><use href="#${p.icon}"/></svg>` : "";
-    const launchAttr = p.launchDate ? `data-launch="${p.launchDate}"` : "";
-    const priceInner = p.launchDate ? "Coming Soon" : (p.priceLabel || "Coming Soon");
+    const priceInner = p.priceLabel || "Coming Soon";
     return `
-<div class="card index-card tilt-card ${p.rot || ""}" ${launchAttr}>
+<div class="card index-card tilt-card ${p.rot || ""}">
     <div class="pin"></div>
     <div class="card-photo">
         <img src="${p.img}" alt="${p.title}">
@@ -219,4 +218,4 @@ function initFlipPolaroid(wrapId, captionId, captions) {
         imgs[current].classList.add("active");
         if (captionEl && captions[current]) captionEl.textContent = captions[current];
     }, 4000);
-}
+      }
