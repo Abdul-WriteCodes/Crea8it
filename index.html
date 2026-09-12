@@ -142,19 +142,59 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
 </section>
 
 
-<!----Resources--->
-<section id="playbooks" class="section">
+<!----Explore the Ecosystem--->
+<section id="ecosystem" class="section">
 <div class="container">
 
 <div class="section-head">
-<div class="eyebrow">Resources for Everyone</div>
-<h2 class="section-title">Playbooks</h2>
-<p class="section-note">Written and documented the same way I build — no theory without skin in the game.</p>
+<div class="eyebrow">Find Your Way In</div>
+<h2 class="section-title">Explore the Ecosystem</h2>
+<p class="section-note">Everything Crea8it is building, sorted into four rooms. Pick one.</p>
 </div>
 
-<div class="grid playbook-grid" id="resources-featured"></div>
+<div class="grid ecosystem-grid">
 
-<p class="placeholder-note"><a href="resources.html" class="hand" style="color:var(--accent);">See all resources →</a></p>
+<a href="projects.html" class="card index-card tilt-card rot--1 ecosystem-card">
+    <div class="pin"></div>
+    <div class="card-body">
+        <svg class="icon eco-icon"><use href="#icon-toolbox"/></svg>
+        <h3>Products</h3>
+        <p>Live SaaS tools I'm bootstrapping in public — from idea to real, paying users.</p>
+        <span class="eco-link">See the products →</span>
+    </div>
+</a>
+
+<a href="programs.html" class="card index-card tilt-card rot--2 ecosystem-card">
+    <div class="pin"></div>
+    <div class="card-body">
+        <svg class="icon eco-icon"><use href="#icon-rocket"/></svg>
+        <h3>Programs</h3>
+        <p>Skills programs for builders who want to execute, not just watch tutorials.</p>
+        <span class="eco-link">Browse programs →</span>
+    </div>
+</a>
+
+<a href="resources.html" class="card index-card tilt-card rot--3 ecosystem-card">
+    <div class="pin"></div>
+    <div class="card-body">
+        <svg class="icon eco-icon"><use href="#icon-book-open"/></svg>
+        <h3>Resources</h3>
+        <p>Books and templates — free and paid — documenting exactly how I build.</p>
+        <span class="eco-link">Browse resources →</span>
+    </div>
+</a>
+
+<a href="impact.html" class="card index-card tilt-card rot--4 ecosystem-card">
+    <div class="pin"></div>
+    <div class="card-body">
+        <svg class="icon eco-icon"><use href="#icon-trophy"/></svg>
+        <h3>Impact</h3>
+        <p>Real stories and shout-outs from builders who came through Crea8it.</p>
+        <span class="eco-link">See the impact →</span>
+    </div>
+</a>
+
+</div>
 
 </div>
 </section>
@@ -320,9 +360,8 @@ Got an idea, a project, or something worth addressing? Bring it. Let's have it �
 <script src="assets/js/site-data.js"></script>
 <script src="assets/js/render.js"></script>
 <script>
-    renderResources('resources-featured', 2);
     initFlipPolaroid('heroPolaroid', 'heroCaption', ['the builder, at work', 'serious execution', 'An ecosystem for all']);
 </script>
 
 </body>
-    </html>
+</html>
