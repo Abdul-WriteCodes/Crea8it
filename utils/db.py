@@ -123,6 +123,40 @@ def logout():
     sign_out()
 
 
+def logout_and_redirect(url: str = "https://www.crea8it.com"):
+    """Sign out, then flag the app to show a clean, full-page
+    logged-out screen on the next run.
+
+    This is called from inside sidebar_account()'s `with st.sidebar:`
+    block (theme.py), so anything drawn here directly — as the first
+    version of this function did — renders INSIDE the sidebar panel,
+    not the main page. That's the cramped, bled-together look you
+    saw: the account info, "Log out" button, and our message all
+    stacked in the same narrow sidebar column.
+
+    Setting a flag and rerunning lets app.py check it at the very
+    top of the NEXT run, before any sidebar or page content is
+    built, so the logged-out screen gets the whole page to itself.
+
+    A true zero-click, same-tab redirect off crea8it.streamlit.app
+    still isn't achievable through Streamlit's public APIs — that's
+    a deliberate Streamlit guardrail, hit from three angles:
+      - components.html() renders in an iframe sandboxed WITHOUT
+        allow-top-navigation, so it can't navigate window.top.
+      - st.markdown()/st.html() run everything through DOMPurify,
+        which strips <script> and <meta> tags unconditionally, even
+        with unsafe_allow_html=True.
+      - Even a plain st.markdown link or st.link_button always
+        renders with target="_blank" — Streamlit never lets a link
+        replace its own tab.
+    So this still shows a one-tap link back to the site rather than
+    an automatic redirect — just now on a clean page of its own.
+    """
+    sign_out()
+    st.session_state["logged_out_redirect_url"] = url
+    st.rerun()
+
+
 def get_current_participant() -> dict | None:
     """Alias kept for parity with the old sheets.py-based auth.py."""
     return get_current_profile()

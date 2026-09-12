@@ -60,6 +60,16 @@ a{ color:inherit; }
 
 .hand{ font-family:var(--hand); }
 
+/* ── icon system (replaces UI emoji; color follows text via currentColor) ── */
+.icon{
+    display:inline-block;
+    width:1em; height:1em;
+    vertical-align:-0.15em;
+    flex-shrink:0;
+}
+.icon-lead{ margin-right:7px; }
+.icon-trail{ margin-left:6px; }
+
 .tape{
     position:absolute;
     width:76px; height:28px;
@@ -316,6 +326,9 @@ nav{
     border-radius:3px;
     box-shadow:0 14px 30px rgba(0,0,0,.45);
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height:100%;
 }
 .index-card::after{
     content:"";
@@ -376,6 +389,9 @@ nav{
 .card-body{
     padding:20px 22px 24px;
     color:var(--ink-dark);
+    display:flex;
+    flex-direction:column;
+    flex:1;
 }
 
 .card-body h3{
@@ -393,6 +409,7 @@ nav{
 
 .card-tag{
     display:inline-block;
+    align-self:flex-start;
     font-family:var(--mono);
     font-size:.7rem;
     font-weight:700;
@@ -413,7 +430,7 @@ nav{
     flex-wrap:wrap;
     border-top:1px dashed rgba(0,0,0,.18);
     padding-top:14px;
-    margin-top:6px;
+    margin-top:auto;
 }
 
 .price{
@@ -697,11 +714,77 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     .postmark{ position:static; margin:0 auto 18px; }
     [class^="rot--"]{ transform:rotate(0deg) !important; }
     .cred-item{ transform:none !important; }
+    .card-photo{ height:130px; }
+    .card-body{ padding:16px 18px 20px; }
+    .card-body p{ font-size:.88rem; margin-bottom:12px; }
 }
 
 </style>
 </head>
 <body>
+
+<svg style="display:none" aria-hidden="true">
+<symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2c3 2 4 6 4 10 0 2-1 4-4 6-3-2-4-4-4-6 0-4 1-8 4-10z"/>
+    <circle cx="12" cy="9" r="1.6"/>
+    <path d="M8 15l-2 5 4-2"/>
+    <path d="M16 15l2 5-4-2"/>
+</symbol>
+<symbol id="icon-book-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 6c-1.5-1.2-3.6-2-6-2v13c2.4 0 4.5.8 6 2 1.5-1.2 3.6-2 6-2V4c-2.4 0-4.5.8-6 2z"/>
+    <path d="M12 6v13"/>
+</symbol>
+<symbol id="icon-toolbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="9" width="18" height="10" rx="1.5"/>
+    <path d="M8 9V6a4 4 0 0 1 8 0v3"/>
+    <path d="M3 13h18"/>
+</symbol>
+<symbol id="icon-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 4h12v3a6 6 0 0 1-12 0V4z"/>
+    <path d="M12 13v4"/>
+    <path d="M8 20h8"/>
+</symbol>
+<symbol id="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11l18-8-8 18-2-8-8-2z"/>
+</symbol>
+<symbol id="icon-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <path d="M7 9l3 3-3 3"/>
+    <path d="M13 15h4"/>
+</symbol>
+<symbol id="icon-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2a5 5 0 0 0-5 5c0 3 2 4 3 7l2 6 2-6c1-3 3-4 3-7a5 5 0 0 0-5-5z"/>
+    <circle cx="12" cy="7" r="1.6"/>
+</symbol>
+<symbol id="icon-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="3" width="6" height="11" rx="3"/>
+    <path d="M5 11a7 7 0 0 0 14 0"/>
+    <path d="M12 18v3"/>
+    <path d="M9 21h6"/>
+</symbol>
+<symbol id="icon-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 3h6"/>
+    <path d="M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/>
+    <path d="M7 15h10"/>
+</symbol>
+<symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 5a2 2 0 0 1 2-2h9v17H6a2 2 0 0 0-2 2V5z"/>
+    <path d="M15 3h3a2 2 0 0 1 2 2v15h-5"/>
+</symbol>
+<symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>
+</symbol>
+<symbol id="icon-adapt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 4v5h5"/>
+    <path d="M20 20v-5h-5"/>
+    <path d="M5 15a7 7 0 0 0 12 3l3-3"/>
+    <path d="M19 9a7 7 0 0 0-12-3L4 9"/>
+</symbol>
+<symbol id="icon-dot" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+    <circle cx="12" cy="12" r="7"/>
+</symbol>
+</svg>
 
 <nav>
 <div class="container nav-wrapper">
@@ -712,14 +795,14 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 </div>
 
 <div class="nav-links">
-<a href="#programs">Programs 🚀</a>
-<a href="#playbooks">Resources 📚</a>
-<a href="projects.html">Projects 🧰</a>
-<a href="#testimonials">Impact 🏆</a>
-<a href="#submit-request">Submit Request 📩</a>
+<a href="#programs">Programs<svg class="icon icon-trail"><use href="#icon-rocket"/></svg></a>
+<a href="#playbooks">Resources<svg class="icon icon-trail"><use href="#icon-book-open"/></svg></a>
+<a href="projects.html">Projects<svg class="icon icon-trail"><use href="#icon-toolbox"/></svg></a>
+<a href="#testimonials">Impact<svg class="icon icon-trail"><use href="#icon-trophy"/></svg></a>
+<a href="#submit-request">Submit Request<svg class="icon icon-trail"><use href="#icon-send"/></svg></a>
 </div>
 
-<a href="https://crea8it.streamlit.app/" class="btn btn-primary">Enter Lab 📟</a>
+<a href="https://crea8it.streamlit.app/" class="btn btn-primary">Enter Lab<svg class="icon icon-trail"><use href="#icon-terminal"/></svg></a>
 
 </div>
 </nav>
@@ -728,7 +811,7 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 <div class="container hero-grid">
 
 <div>
-<span class="badge">📌 The Hub for Builders, Founders & Tech Aspirants who EXECUTE against all odds</span>
+<span class="badge"><svg class="icon icon-lead"><use href="#icon-pin"/></svg>The Hub for Builders, Founders & Tech Aspirants who EXECUTE against all odds</span>
 
 <h1>
 <span class="l1">BUILD.</span><br>
@@ -741,10 +824,10 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
 </p>
 
 <div class="hero-buttons">
-<a href="#playbooks" class="btn btn-primary">Resources 📚</a>
-<a href="#programs" class="btn btn-secondary">Programs 🚀</a>
+<a href="#playbooks" class="btn btn-primary">Resources<svg class="icon icon-trail"><use href="#icon-book-open"/></svg></a>
+<a href="#programs" class="btn btn-secondary">Programs<svg class="icon icon-trail"><use href="#icon-rocket"/></svg></a>
 <a href="https://chat.whatsapp.com/Gbm13AqaNSt24MAxszzkcB" class="btn btn-secondary">Join Us🫂</a>
-<a href="#testimonials" class="btn btn-primary">Impacts 🏆</a>
+<a href="#testimonials" class="btn btn-primary">Impacts<svg class="icon icon-trail"><use href="#icon-trophy"/></svg></a>
 </div>
 </div>
 
@@ -784,9 +867,9 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
         <img src="assets/Scr1.jpg" alt="AI Career Acceleration">
     </div>
     <div class="card-body">
-        <span class="card-tag open">Open Seminar 🎙</span>
-        <h3>AI Career Acceleration</h3>
-        <p>A career launch and acceleration program for ambitious individuals who want to build valuable skills, create opportunities, and thrive in the age of AI.</p>
+        <span class="card-tag open"><svg class="icon icon-lead"><use href="#icon-mic"/></svg>Open Seminar</span>
+        <h3> Career Acceleration</h3>
+        <p>A career launch program for ambitious builders ready to gain valuable AI-era skills and real opportunities.</p>
         <div class="card-footer">
             <div class="price program-price">Coming Soon</div>
             <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F" class="btn-buy" target="_blank" rel="noopener">Register →</a>
@@ -794,7 +877,8 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
     </div>
 </div>
 
-<div class="card index-card tilt-card rot--2">
+   
+<div class="card index-card tilt-card rot--2" data-launch="2026-07-11T09:00:00">
     <div class="pin"></div>
     <div class="card-photo">
         <img src="assets/Scr2.jpg" alt="Crea8it Build in Public Challenge">
@@ -805,7 +889,7 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
         <p>A hands-on execution program that encourages builders to stop overthinking and start shipping.</p>
         <div class="card-footer">
             <div class="price program-price">Coming Soon</div>
-            <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20waitlist%20for%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it." class="btn-buy" target="_blank" rel="noopener">Join Waitlist →</a>
+            <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it." class="btn-buy" target="_blank" rel="noopener">Join Challenge →</a>
         </div>
     </div>
 </div>
@@ -817,8 +901,8 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
     </div>
     <div class="card-body">
         <span class="card-tag open">Active</span>
-        <h3>🧪 Zero to 1</h3>
-        <p>An idea validation and startup launch program for aspiring founders and indie hackers who want to build real businesses from scratch. This is not where you just buy course, it is where you EXECUTE to make things work</p>
+        <h3><svg class="icon icon-lead"><use href="#icon-flask"/></svg>Zero to 1</h3>
+        <p>An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.</p>
         <div class="card-footer">
             <div class="price program-price">Coming Soon </div>
             <a href="https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it." class="btn-buy" target="_blank" rel="noopener">Register →</a>
@@ -850,7 +934,7 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
         <img src="assets/EntAI.jpg" alt="Enter AI book cover">
     </div>
     <div class="card-body">
-        <span class="card-tag open">📘 Playbook</span>
+        <span class="card-tag open"><svg class="icon icon-lead"><use href="#icon-book"/></svg>Playbook</span>
         <h3>Enter AI</h3>
         <p>A comprehensive guide for AI career launch. Over 10 downloads 📥 and counting · 20% of active readers 🧑‍🏫 have successfully broken into AI 🚀 · No CS degree is not a barrier · real steps and tested strategies 🧩.</p>
         <div class="card-footer">
@@ -867,12 +951,12 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
         <img src="assets/T2M.jpeg" alt="Talk to the Machine book cover">
     </div>
     <div class="card-body">
-        <span class="card-tag soon">📗 Playbook</span>
+        <span class="card-tag soon"><svg class="icon icon-lead"><use href="#icon-book"/></svg>Playbook</span>
         <h3>Talk to the Machine</h3>
         <p>A practical field guide to working with AI tools day-to-day — prompts, workflows, and mental models for getting real output instead of generic answers.</p>
         <div class="card-footer">
             <div class="price">Free</div>
-            <a href="#" class="btn-buy">Get Book →</a>
+            <a href="https://app.box.com/s/qluhjskz4smsz0158nij9qmz4a28al6d" class="btn-buy">Get Book →</a>
         </div>
     </div>
 </div>
@@ -957,7 +1041,8 @@ While many builder communities focus on courses and theory, we build capacity th
 </p>
 </div>
 </div>
-
+    
+<!---
 <div class="graffiti-box">
     🧩<br>
 → Choose a problem ⚙️<br>
@@ -967,7 +1052,7 @@ While many builder communities focus on courses and theory, we build capacity th
 → Teach 📗<br>
 → Earn 
 </div>
-
+--->
 </div>
 </section>
 
@@ -1027,7 +1112,7 @@ Progress So far.
     </div>
 </div>
     
-<span class="stamp">Indie Hacking 🟨⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️🟩</span>
+<span class="stamp">🧗‍♂️ Bootstrapping from ₦0 → ₦1M🪂</span>
 
 </div>
 
@@ -1061,7 +1146,7 @@ Got an idea, a project, or something worth addressing? Bring it. Let's have it �
 
     <div class="footer-logo">Crea8it Studio</div>
 
-    <p class="footer-tagline">BUILD⚙️ ° LAUNCH🚀 ° LEARN🤸🏻 ° WIN🏆</p>
+    <p class="footer-tagline">BUILD<svg class="icon icon-trail"><use href="#icon-gear"/></svg> ° LAUNCH<svg class="icon icon-trail"><use href="#icon-rocket"/></svg> ° LEARN<svg class="icon icon-trail"><use href="#icon-adapt"/></svg> ° WIN<svg class="icon icon-trail"><use href="#icon-trophy"/></svg></p>
 
     <nav class="footer-links">
         <a href="#playbooks">Resources</a>
@@ -1148,7 +1233,7 @@ Got an idea, a project, or something worth addressing? Bring it. Let's have it �
             const diff = launchDate - now;
 
             if(diff <= 0){
-                el.innerHTML = '<span class="price-open">🟢 Now Open!</span>';
+                el.innerHTML = '<span class="price-open"><svg class="icon icon-lead"><use href="#icon-dot"/></svg>Now Open!</span>';
                 return;
             }
 
@@ -1212,4 +1297,4 @@ Got an idea, a project, or something worth addressing? Bring it. Let's have it �
 </script>
 
 </body>
-</html>
+    </html>

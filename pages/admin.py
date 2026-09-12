@@ -1,7 +1,7 @@
 import re
 import streamlit as st
 from utils.db import (
-    get_current_profile, logout, get_all_programs, create_program, delete_program,
+    get_current_profile, logout_and_redirect, get_all_programs, create_program, delete_program,
     update_program_duration, update_resource_tags,
     set_active_program, get_active_program, get_active_week, set_active_week,
     get_program_weeks, save_program_week, delete_week_from_program,
@@ -43,7 +43,7 @@ def show():
         name=profile["full_name"],
         subtitle=org["name"] if org else "",
         status_lines=[f"Active program: {active_program['name']}"] if active_program else ["No active program set"],
-        on_logout=lambda: (logout(), st.rerun()),
+        on_logout=logout_and_redirect,
     )
 
     page_header("🧩 Cohort admin", f"Logged in as {profile['full_name']}")

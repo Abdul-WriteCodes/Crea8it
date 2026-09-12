@@ -41,7 +41,7 @@ if st.session_state.get("logged_out_redirect_url"):
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.link_button(
-            "Return to Crea8it",
+            f"Return to {url.replace('https://', '')}",
             url,
             type="primary",
             width="stretch",

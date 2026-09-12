@@ -10,7 +10,7 @@ a routing mistake here can't leak another org's data to the wrong role.
 import streamlit as st
 from utils.db import (
     require_role, get_all_organizations, get_org_stats,
-    suspend_organization, delete_organization, logout,
+    suspend_organization, delete_organization, logout_and_redirect,
 )
 from utils.theme import page_header, sidebar_account
 
@@ -21,7 +21,7 @@ def show():
     sidebar_account(
         role_label="Platform owner",
         name="Super admin",
-        on_logout=lambda: (logout(), st.rerun()),
+        on_logout=logout_and_redirect,
     )
 
     page_header("Platform overview", "Every organization running a program on Crea8it.")
