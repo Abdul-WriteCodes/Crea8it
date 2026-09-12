@@ -218,4 +218,4 @@ function initFlipPolaroid(wrapId, captionId, captions) {
         imgs[current].classList.add("active");
         if (captionEl && captions[current]) captionEl.textContent = captions[current];
     }, 4000);
-      }
+          }
