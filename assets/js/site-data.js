@@ -20,7 +20,7 @@ const PROGRAMS = [
         rot: "rot--1",
         description: "A career launch program for ambitious builders ready to gain valuable AI-era skills and real opportunities.",
         launchDate: "2026-07-11T09:00:00",
-        ctaText: "Regiter →",
+        ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
     {
