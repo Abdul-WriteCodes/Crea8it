@@ -82,10 +82,10 @@
 <nav>
 <div class="container nav-wrapper">
 
-<div class="logo-block">
+<a href="index.html" class="logo-block" style="text-decoration:none;cursor:pointer;">
     <div class="logo">Crea8it Studio</div>
     <div class="logo-sub"></div>
-</div>
+</a>
 
 <div class="nav-links">
 <a href="programs.html">Programs<svg class="icon icon-trail"><use href="#icon-rocket"/></svg></a>
@@ -142,24 +142,6 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
 </section>
 
 
-<!---Programs--->
-<section id="programs" class="section">
-<div class="container">
-
-<div class="section-head">
-<div class="eyebrow">Ongoing Crea8it Initiatives</div>
-<h2 class="section-title">Core Programs</h2>
-<p class="section-note">Live programs currently on the bench — pinned here as they open.</p>
-</div>
-
-<div class="grid programs-grid" id="programs-featured"></div>
-
-<p class="placeholder-note"><a href="programs.html" class="hand" style="color:var(--accent);">See all programs →</a></p>
-
-</div>
-</section>
-
-
 <!----Resources--->
 <section id="playbooks" class="section">
 <div class="container">
@@ -173,36 +155,6 @@ Crea8it Studio encompasses programs and playbooks that equip builders, founders,
 <div class="grid playbook-grid" id="resources-featured"></div>
 
 <p class="placeholder-note"><a href="resources.html" class="hand" style="color:var(--accent);">See all resources →</a></p>
-
-</div>
-</section>
-
-
-<section id="testimonials" class="section">
-<div class="container" style="text-align:center;">
-
-<div class="section-head" style="margin-left:auto;margin-right:auto;">
-<div class="eyebrow" style="justify-content:center;">Transformative Effect of Crea8it</div>
-<h2 class="section-title">Impact-Driven Results</h2>
-</div>
-
-<div class="testimonial-wrap">
-<div class="carousel-wrapper">
-
-    <button class="carousel-arrow carousel-prev" aria-label="Previous">&#8592;</button>
-
-    <div class="carousel-track-container">
-        <div class="carousel-track"></div>
-    </div>
-
-    <button class="carousel-arrow carousel-next" aria-label="Next">&#8594;</button>
-
-    <div class="carousel-dots"></div>
-
-</div>
-</div>
-
-<p class="placeholder-note"><a href="impact.html" class="hand" style="color:var(--accent);">See all impact stories →</a></p>
 
 </div>
 </section>
@@ -368,10 +320,7 @@ Got an idea, a project, or something worth addressing? Bring it. Let's have it �
 <script src="assets/js/site-data.js"></script>
 <script src="assets/js/render.js"></script>
 <script>
-    renderPrograms('programs-featured', 3);
     renderResources('resources-featured', 2);
-    renderPhotoCarousel('.testimonial-wrap');
-    initCountdowns();
     initFlipPolaroid('heroPolaroid', 'heroCaption', ['the builder, at work', 'serious execution', 'An ecosystem for all']);
 </script>
 
