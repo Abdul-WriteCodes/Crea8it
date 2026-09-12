@@ -65,7 +65,7 @@ const RESOURCES = [
         stickerStyle: "",
         description: "A comprehensive guide for AI career launch. Over 10 downloads 📥 and counting · 20% of active readers 🧑‍🏫 have successfully broken into AI 🚀 · No CS degree is not a barrier · real steps and tested strategies 🧩.",
         ctaText: "Get Book →",
-        ctaLink: "https://flutterwave.com/pay/uuzhcwanejde"
+        ctaLink: "https://flutterwave.com/pay/uuzhcwanejde?dl=1"
     },
     {
         id: "talk-to-the-machine",
