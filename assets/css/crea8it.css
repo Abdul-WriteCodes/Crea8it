@@ -808,9 +808,13 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 
 /* ── homepage stat cards ("The Numbers So Far") — pinned cred-item-style scrap cards, 2 columns ── */
 
-.grid.sticky-grid{ grid-template-columns:1fr; gap:24px; }
+.grid.sticky-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+}
 @media(min-width:560px){
-    .grid.sticky-grid{ grid-template-columns:repeat(2,1fr); }
+    .grid.sticky-grid{ gap:20px; }
 }
 
 .stat-card{
@@ -819,14 +823,14 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     text-decoration:none;
     background:var(--paper);
     color:var(--ink-dark);
-    border-radius:6px;
-    padding:26px 22px 20px;
-    box-shadow:0 10px 22px rgba(0,0,0,.4);
+    border-radius:4px;
+    padding:16px 14px 12px;
+    box-shadow:0 8px 18px rgba(0,0,0,.4);
     transition:transform .3s ease, box-shadow .3s ease;
 }
 .stat-card:hover{
     transform:rotate(0deg) translateY(-5px);
-    box-shadow:0 16px 30px rgba(0,0,0,.48);
+    box-shadow:0 14px 26px rgba(0,0,0,.48);
 }
 
 .grid.sticky-grid .stat-card:nth-child(1){ transform:rotate(-3deg); }
@@ -837,27 +841,27 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 .stat-num{
     display:block;
     font-family:var(--hand);
-    font-size:2.2rem;
+    font-size:1.6rem;
     color:var(--accent2);
     line-height:1;
-    margin-bottom:8px;
+    margin-bottom:6px;
 }
 
 .stat-label{
     display:block;
     font-family:var(--mono);
-    font-size:.78rem;
+    font-size:.66rem;
     font-weight:700;
     color:#5a4d33;
-    line-height:1.5;
+    line-height:1.4;
     text-transform:uppercase;
-    margin-bottom:14px;
+    margin-bottom:10px;
 }
 
 .stat-card .eco-link{
     display:inline-block;
     font-family:var(--mono);
-    font-size:.7rem;
+    font-size:.62rem;
     font-weight:700;
     letter-spacing:.4px;
     text-transform:none;
