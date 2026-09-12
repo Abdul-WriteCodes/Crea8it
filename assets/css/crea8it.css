@@ -702,6 +702,43 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     .card-photo{ height:130px; }
     .card-body{ padding:16px 18px 20px; }
     .card-body p{ font-size:.88rem; margin-bottom:12px; }
+
+    /* ── compact program & project cards (leaner, less scroll-heavy on phones) ── */
+    .grid.projects-grid,
+    .grid.programs-full-grid{ gap:18px; }
+
+    .projects-grid .card,
+    .programs-full-grid .card{ padding-top:14px; }
+
+    .programs-full-grid .card-photo{ height:110px; }
+
+    .projects-grid .card-body,
+    .programs-full-grid .card-body{ padding:14px 16px 16px; }
+
+    .projects-grid .card-body h3,
+    .programs-full-grid .card-body h3{ font-size:1.05rem; margin-bottom:6px; }
+
+    .projects-grid .card-body p,
+    .programs-full-grid .card-body p{ font-size:.85rem; margin-bottom:10px; line-height:1.45; }
+
+    .projects-grid .stamp{ font-size:.62rem; padding:3px 8px; margin-bottom:8px; }
+
+    .projects-grid .card-tag,
+    .programs-full-grid .card-tag{ font-size:.62rem; padding:3px 7px; margin-bottom:8px; }
+
+    .projects-grid .card-footer,
+    .programs-full-grid .card-footer{ padding-top:10px; gap:10px; }
+
+    .projects-grid .price,
+    .programs-full-grid .price{ font-size:.9rem; }
+
+    .projects-grid .btn-buy,
+    .programs-full-grid .btn-buy{ padding:8px 14px; font-size:.76rem; }
+
+    .project-card .cred-scatter{ margin:10px 0 2px; gap:8px; }
+    .project-card .cred-item{ padding:7px 10px; }
+    .project-card .cred-num{ font-size:1.02rem; }
+    .project-card .cred-label{ font-size:.58rem; }
 }
 
 
