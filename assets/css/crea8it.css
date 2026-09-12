@@ -806,23 +806,21 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 }
 .ecosystem-card:hover .eco-link{ transform:translateX(4px); }
 
-/* ── homepage stat cards ("The Numbers So Far") — matches the cred-item look, scaled up ── */
+/* ── homepage stat cards ("The Numbers So Far") — pinned cred-item-style scrap cards, 2 columns ── */
 
-.grid.sticky-grid{ grid-template-columns:1fr; gap:20px; }
-@media(min-width:620px){
+.grid.sticky-grid{ grid-template-columns:1fr; gap:24px; }
+@media(min-width:560px){
     .grid.sticky-grid{ grid-template-columns:repeat(2,1fr); }
-}
-@media(min-width:1100px){
-    .grid.sticky-grid{ grid-template-columns:repeat(4,1fr); }
 }
 
 .stat-card{
     display:block;
+    position:relative;
     text-decoration:none;
     background:var(--paper);
     color:var(--ink-dark);
     border-radius:6px;
-    padding:26px 22px 22px;
+    padding:26px 22px 20px;
     box-shadow:0 10px 22px rgba(0,0,0,.4);
     transition:transform .3s ease, box-shadow .3s ease;
 }
@@ -836,29 +834,24 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 .grid.sticky-grid .stat-card:nth-child(3){ transform:rotate(-1.5deg); }
 .grid.sticky-grid .stat-card:nth-child(4){ transform:rotate(2.5deg); }
 
-.stat-top{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:14px;
-}
-.stat-top svg{ width:24px; height:24px; color:var(--accent2); flex-shrink:0; }
-
 .stat-num{
+    display:block;
     font-family:var(--hand);
-    font-size:2.3rem;
+    font-size:2.2rem;
     color:var(--accent2);
     line-height:1;
+    margin-bottom:8px;
 }
 
 .stat-label{
+    display:block;
     font-family:var(--mono);
-    font-size:.76rem;
+    font-size:.78rem;
     font-weight:700;
     color:#5a4d33;
     line-height:1.5;
     text-transform:uppercase;
-    margin-bottom:16px;
+    margin-bottom:14px;
 }
 
 .stat-card .eco-link{
