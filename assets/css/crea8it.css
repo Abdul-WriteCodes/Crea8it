@@ -806,9 +806,9 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 }
 .ecosystem-card:hover .eco-link{ transform:translateX(4px); }
 
-/* ── homepage stat cards ("The Numbers So Far") ── */
+/* ── homepage stat cards ("The Numbers So Far") — matches the cred-item look, scaled up ── */
 
-.grid.sticky-grid{ grid-template-columns:1fr; gap:28px; }
+.grid.sticky-grid{ grid-template-columns:1fr; gap:20px; }
 @media(min-width:620px){
     .grid.sticky-grid{ grid-template-columns:repeat(2,1fr); }
 }
@@ -818,61 +818,57 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 
 .stat-card{
     display:block;
-    position:relative;
     text-decoration:none;
-    color:#20180c;
     background:var(--paper);
-    border-radius:14px;
-    padding:28px 24px 24px;
-    box-shadow:0 16px 32px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,0,0,.04);
+    color:var(--ink-dark);
+    border-radius:6px;
+    padding:26px 22px 22px;
+    box-shadow:0 10px 22px rgba(0,0,0,.4);
     transition:transform .3s ease, box-shadow .3s ease;
 }
 .stat-card:hover{
-    transform:rotate(0deg) translateY(-6px);
-    box-shadow:0 22px 40px rgba(0,0,0,.5), inset 0 0 0 1px rgba(0,0,0,.04);
+    transform:rotate(0deg) translateY(-5px);
+    box-shadow:0 16px 30px rgba(0,0,0,.48);
 }
 
-.stat-icon{
-    width:42px; height:42px;
-    border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    margin-bottom:18px;
+.grid.sticky-grid .stat-card:nth-child(1){ transform:rotate(-3deg); }
+.grid.sticky-grid .stat-card:nth-child(2){ transform:rotate(2deg); }
+.grid.sticky-grid .stat-card:nth-child(3){ transform:rotate(-1.5deg); }
+.grid.sticky-grid .stat-card:nth-child(4){ transform:rotate(2.5deg); }
+
+.stat-top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
 }
-.stat-icon svg{ width:20px; height:20px; }
+.stat-top svg{ width:24px; height:24px; color:var(--accent2); flex-shrink:0; }
 
-.stat-card.tone-a .stat-icon{ background:rgba(255,183,3,.16); color:var(--accent); }
-.stat-card.tone-b .stat-icon{ background:rgba(226,87,43,.14); color:var(--accent2); }
-.stat-card.tone-c .stat-icon{ background:rgba(63,122,104,.15); color:var(--accent3); }
-.stat-card.tone-d .stat-icon{ background:rgba(255,183,3,.16); color:var(--accent); }
-
-.stat-card .stat-num{
-    display:block;
+.stat-num{
     font-family:var(--hand);
-    font-size:2.8rem;
+    font-size:2.3rem;
+    color:var(--accent2);
     line-height:1;
-    margin-bottom:12px;
 }
-.stat-card.tone-a .stat-num{ color:var(--accent); }
-.stat-card.tone-b .stat-num{ color:var(--accent2); }
-.stat-card.tone-c .stat-num{ color:var(--accent3); }
-.stat-card.tone-d .stat-num{ color:var(--accent); }
 
-.stat-card .stat-label{
-    display:block;
+.stat-label{
     font-family:var(--mono);
-    font-size:.86rem;
+    font-size:.76rem;
     font-weight:700;
-    line-height:1.45;
-    color:#4a3f2b;
+    color:#5a4d33;
+    line-height:1.5;
+    text-transform:uppercase;
     margin-bottom:16px;
 }
+
 .stat-card .eco-link{
     display:inline-block;
     font-family:var(--mono);
-    font-size:.72rem;
+    font-size:.7rem;
     font-weight:700;
     letter-spacing:.4px;
-    color:#7a6d52;
+    text-transform:none;
+    color:#8a7a58;
     transition:transform .2s ease, color .2s ease;
 }
-.stat-card:hover .eco-link{ transform:translateX(4px); color:#20180c; }
+.stat-card:hover .eco-link{ transform:translateX(4px); color:var(--accent2); }
