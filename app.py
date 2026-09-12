@@ -7,6 +7,7 @@ st.set_page_config(
     page_title="Crea8it Labs",
     page_icon="🧩",
     layout="centered",
+    initial_sidebar_state="expanded",
 )
 
 from utils.theme import apply_css
