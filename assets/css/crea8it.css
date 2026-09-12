@@ -721,8 +721,8 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     .projects-grid .card-body p,
     .programs-full-grid .card-body p{ font-size:.85rem; margin-bottom:10px; line-height:1.45; }
 
-    .projects-grid .stamp{ padding:4px 8px; gap:4px; margin-bottom:8px; }
-    .projects-grid .stamp .icon-lead{ margin-right:4px; }
+    .projects-grid .stamp{ padding:4px 6px; gap:2px; letter-spacing:0; margin-bottom:8px; }
+    .projects-grid .stamp .icon-lead{ margin-right:2px; }
 
     .projects-grid .card-tag,
     .programs-full-grid .card-tag{ font-size:.62rem; padding:3px 7px; margin-bottom:8px; }
