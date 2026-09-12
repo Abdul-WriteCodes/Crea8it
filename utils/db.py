@@ -124,11 +124,23 @@ def logout():
 
 
 def logout_and_redirect(url: str = "https://www.crea8it.com"):
-    """Sign out, then offer a one-tap link back to the marketing site.
+    """Sign out, then flag the app to show a clean, full-page
+    logged-out screen on the next run.
 
-    A true zero-click, same-tab redirect off crea8it.streamlit.app is
-    not achievable through Streamlit's public APIs — this is a
-    deliberate Streamlit guardrail, hit from three angles:
+    This is called from inside sidebar_account()'s `with st.sidebar:`
+    block (theme.py), so anything drawn here directly — as the first
+    version of this function did — renders INSIDE the sidebar panel,
+    not the main page. That's the cramped, bled-together look you
+    saw: the account info, "Log out" button, and our message all
+    stacked in the same narrow sidebar column.
+
+    Setting a flag and rerunning lets app.py check it at the very
+    top of the NEXT run, before any sidebar or page content is
+    built, so the logged-out screen gets the whole page to itself.
+
+    A true zero-click, same-tab redirect off crea8it.streamlit.app
+    still isn't achievable through Streamlit's public APIs — that's
+    a deliberate Streamlit guardrail, hit from three angles:
       - components.html() renders in an iframe sandboxed WITHOUT
         allow-top-navigation, so it can't navigate window.top.
       - st.markdown()/st.html() run everything through DOMPurify,
@@ -137,13 +149,12 @@ def logout_and_redirect(url: str = "https://www.crea8it.com"):
       - Even a plain st.markdown link or st.link_button always
         renders with target="_blank" — Streamlit never lets a link
         replace its own tab.
-    So instead of fighting the sandbox further, show a clear
-    logged-out state with a single real link back to the site.
+    So this still shows a one-tap link back to the site rather than
+    an automatic redirect — just now on a clean page of its own.
     """
     sign_out()
-    st.success("You've been logged out.")
-    st.link_button(f"Return to {url.replace('https://', '')}", url, type="primary")
-    st.stop()
+    st.session_state["logged_out_redirect_url"] = url
+    st.rerun()
 
 
 def get_current_participant() -> dict | None:
