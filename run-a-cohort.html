@@ -25,7 +25,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/css/crea8it.css?v=3">
+<link rel="stylesheet" href="assets/css/crea8it.css?v=4">
 </head>
 <body>
 
@@ -107,6 +107,19 @@
 <p class="lede">
 Crea8Lab is the platform behind Crea8it's own AI cohorts — weekly reflections, task tracking, participant dashboards, admin tools, all of it. If you run a bootcamp, a course, or a community challenge, you can run it on the same rails in your own private workspace, without building any of this yourself.
 </p>
+</div>
+
+<div class="hero-photo-wrap">
+    <div class="hero-sticky hand">Cohorts,<br>Your Way 🚀</div>
+    <div class="polaroid rot--1 flip-polaroid" style="width:380px;" id="cohortPolaroid">
+        <div class="tape tc"></div>
+        <div class="pin"></div>
+        <div class="flip-inner" style="aspect-ratio:3/2;">
+            <img src="images/cohort-poster-1.jpg" alt="Crea8it Cohort Program — Build, Launch, Win" class="flip-img active">
+            <img src="images/cohort-poster-2.jpg" alt="Crea8it — Ideas, Skills, Opportunity" class="flip-img">
+        </div>
+        <figcaption id="cohortCaption">Skills. Projects. Mentorship.</figcaption>
+    </div>
 </div>
 
 </div>
@@ -234,6 +247,11 @@ Tell me about your program and I'll get back to you personally to help set up yo
 
 </div>
 </footer>
+
+<script src="assets/js/render.js"></script>
+<script>
+    initFlipPolaroid('cohortPolaroid', 'cohortCaption', ['Skills. Projects. Mentorship.', 'Ideas. Skills. Opportunity.']);
+</script>
 
 </body>
 </html>
