@@ -694,3 +694,31 @@ def resource_card(resource: dict):
   </div>
   {tags_line}
 </div>""")
+
+
+def feedback_doc_card(sub: dict):
+    """Render a reviewed-task document an org_admin sent back. There's
+    no separate title field — the file's own name (feedback_file_name)
+    IS the label the participant picks it out by, so this reuses the
+    resource-card look rather than inventing a new one. Doesn't render
+    the Download button — same calling convention as resource_card:
+    call inside st.container(border=True), button right after."""
+    title = _html.escape(sub.get("feedback_file_name") or "Feedback document")
+    status_text = {"approved": "Approved", "needs_revision": "Needs revision"}.get(
+        sub.get("status", ""), sub.get("status", "").replace("_", " ").title()
+    )
+    meta = f"Week {sub.get('week')} · Task {(sub.get('task_index') or 0) + 1}"
+    note = sub.get("reviewer_feedback") or ""
+    note_line = f'<div class="resource-desc">{_html.escape(note)}</div>' if note else ""
+    _html_block(f"""
+<div class="resource-card">
+  <div class="resource-header">
+    <div class="resource-icon">📄</div>
+    <div>
+      <div class="resource-title">{title}</div>
+      <div class="resource-desc">{meta}</div>
+      {note_line}
+    </div>
+  </div>
+  <div class="resource-tags"><span class="resource-tag">{status_text}</span></div>
+</div>""")

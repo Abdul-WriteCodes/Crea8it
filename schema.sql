@@ -129,6 +129,12 @@ create table task_submissions (
   file_name text not null,
   status text not null default 'pending' check (status in ('pending', 'approved', 'needs_revision')),
   reviewer_feedback text default '',
+  -- Optional doc the org_admin sends back alongside reviewer_feedback
+  -- (e.g. an annotated version of what the participant submitted).
+  -- Lives in the separate task-feedback bucket, not task-submissions —
+  -- see the storage policies below for why.
+  feedback_file_path text,
+  feedback_file_name text,
   submitted_at timestamptz not null default now(),
   reviewed_at timestamptz,
   unique (participant_id, program_id, week, task_index)
@@ -292,6 +298,41 @@ create policy "org_admin reads org storage folder" on storage.objects
     bucket_id = 'task-submissions'
     and (storage.foldername(name))[1] = auth_org_id()::text
     and auth_role() = 'org_admin'
+  );
+
+-- ── storage: task-feedback bucket ───────────────────────────
+-- Create the bucket itself via the Supabase dashboard/CLI (private,
+-- not public), same as task-submissions. Path convention:
+-- "{org_id}/{participant_id}/{program_id}_{week}_{task_index}_{filename}"
+-- — mirrors task-submissions but with read/write flipped: the org_admin
+-- writes into any participant's folder within their own org, and each
+-- participant can only read their own folder. Kept as a SEPARATE bucket
+-- from task-submissions (rather than the admin writing into the same
+-- folder the participant uploads into) so neither side's policy has to
+-- special-case "whose file is this" within one shared folder, and a
+-- participant's re-upload can never collide with/overwrite an admin's
+-- feedback file.
+create policy "org_admin manages org feedback folder" on storage.objects
+  for all using (
+    bucket_id = 'task-feedback'
+    and (storage.foldername(name))[1] = auth_org_id()::text
+    and auth_role() = 'org_admin'
+  )
+  with check (
+    bucket_id = 'task-feedback'
+    and (storage.foldername(name))[1] = auth_org_id()::text
+    and auth_role() = 'org_admin'
+  );
+
+-- This is the policy that actually guarantees participant A can never
+-- read participant B's feedback doc: it's enforced by Postgres itself
+-- on every request, not by a query filter in app code, so an app-level
+-- bug can't leak another participant's file.
+create policy "participant reads own feedback folder" on storage.objects
+  for select using (
+    bucket_id = 'task-feedback'
+    and (storage.foldername(name))[1] = auth_org_id()::text
+    and (storage.foldername(name))[2] = auth.uid()::text
   );
 
 -- ── resources ────────────────────────────────────────────────
