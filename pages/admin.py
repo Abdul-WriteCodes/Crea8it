@@ -420,10 +420,21 @@ def show():
 
                     fb_key = f"sub_fb_{s['id']}"
                     feedback_val = st.text_area("Feedback (shown to the participant)", key=fb_key)
+                    feedback_doc = st.file_uploader(
+                        "Optional: send back a document (annotated file, written report, etc.)",
+                        key=f"sub_file_{s['id']}",
+                        help="This file's name is shown to the participant as-is in their "
+                             "'My Feedback' list — name it clearly, e.g. "
+                             "'Week 1 - Landing page critique.pdf', before uploading.",
+                    )
                     col_a, col_b = st.columns(2)
                     with col_a:
                         if st.button("✅ Approve", key=f"approve_{s['id']}", type="primary"):
-                            review_submission(s, "approved", feedback_val)
+                            feedback_file = (
+                                (feedback_doc.getvalue(), feedback_doc.name, feedback_doc.type)
+                                if feedback_doc is not None else None
+                            )
+                            review_submission(s, "approved", feedback_val, feedback_file=feedback_file)
                             st.success("Approved — this task now counts toward their progress.")
                             st.rerun()
                     with col_b:
@@ -431,7 +442,11 @@ def show():
                             if not feedback_val.strip():
                                 st.warning("Add a note explaining what needs fixing before sending back.")
                             else:
-                                review_submission(s, "needs_revision", feedback_val)
+                                feedback_file = (
+                                    (feedback_doc.getvalue(), feedback_doc.name, feedback_doc.type)
+                                    if feedback_doc is not None else None
+                                )
+                                review_submission(s, "needs_revision", feedback_val, feedback_file=feedback_file)
                                 st.success("Sent back — the participant can re-upload.")
                                 st.rerun()
 
