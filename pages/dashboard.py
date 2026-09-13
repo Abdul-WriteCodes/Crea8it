@@ -5,11 +5,12 @@ from utils.db import (
     submit_reflection, get_prompt, touch_last_active, get_week_completion_stats,
     get_task_submissions, submit_task_file,
     get_library_resources, get_resource_download_url,
+    get_my_feedback_docs, get_feedback_file_url,
 )
 from utils.theme import (
     apply_css, page_header, section_label, week_badge,
     task_card, upload_task_card, material_card, reflection_box, feedback_box, kpi_card,
-    resource_card, sidebar_account,
+    resource_card, feedback_doc_card, sidebar_account,
 )
 import time
 
@@ -63,10 +64,13 @@ def show():
     # ── Header ────────────────────────────────────────────────
     page_header(f"Welcome back, {first_name}", profile.get("email", ""))
 
-    top_program, top_library = st.tabs(["🗓 My Program", "📚 Library"])
+    top_program, top_library, top_feedback = st.tabs(["🗓 My Program", "📚 Library", "📋 My Feedback"])
 
     with top_library:
         show_library(org_id)
+
+    with top_feedback:
+        show_feedback_docs(active_program, participant_id)
 
     with top_program:
         if not active_program:
@@ -274,6 +278,42 @@ def show_program(profile, active_program, org_id, participant_id, first_name, un
             st.session_state.pop("profile", None)  # forces profile re-fetch
             get_active_program.clear()  # forces active_program re-fetch too
             st.rerun()
+
+
+def show_feedback_docs(active_program: dict | None, participant_id: str):
+    """Every document an org_admin has sent back on a reviewed task
+    submission — flat list, no week grouping, newest review first. The
+    file's own name (set by whoever reviewed it) is the label a
+    participant picks it out by, same as a resource in the Library tab
+    is found by its title. Scoped to the currently active program, same
+    as the rest of this dashboard.
+
+    Isolation: this only ever queries by this participant's own id, and
+    the underlying RLS policies (on task_submissions and on the
+    task-feedback storage bucket) enforce the same restriction at the
+    database level — so this can't surface another participant's row or
+    file even if called incorrectly."""
+    section_label("Documents your reviewer sent back", color="var(--teal)")
+
+    if not active_program:
+        st.info("No active program yet.")
+        return
+
+    docs = get_my_feedback_docs(participant_id, active_program["id"])
+    if not docs:
+        st.info("No feedback documents yet — these show up here once a reviewer "
+                 "sends one back on a submitted task.")
+        return
+
+    for d in docs:
+        with st.container(border=True):
+            feedback_doc_card(d)
+            try:
+                url = get_feedback_file_url(d["feedback_file_path"], file_name=d["feedback_file_name"])
+                if url:
+                    st.link_button("⬇ Download", url)
+            except Exception as e:
+                st.warning(f"Couldn't generate a download link: {e}")
 
 
 def show_library(org_id: str):
