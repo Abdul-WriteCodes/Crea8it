@@ -534,9 +534,14 @@ def submit_task_file(org_id: str, participant_id: str, program_id: str,
         "week": week, "task_index": task_index,
         "file_path": file_path, "file_name": file_name,
         "status": "pending", "reviewer_feedback": "", "reviewed_at": None,
+        # A resubmission supersedes the last review round entirely, so
+        # any doc sent back on the previous round is cleared here too —
+        # same treatment as reviewer_feedback above, for the same reason.
+        "feedback_file_path": None, "feedback_file_name": None,
     }, on_conflict="participant_id,program_id,week,task_index").execute()
     get_task_submissions.clear()
     get_pending_submissions.clear()
+    get_my_feedback_docs.clear()
 
 
 def get_submission_download_url(file_path: str, expires_in: int = 3600, file_name: str = None) -> str:
@@ -558,10 +563,20 @@ def get_pending_submissions(org_id: str, program_id: str) -> list[dict]:
     return res.data
 
 
-def review_submission(submission: dict, status: str, feedback: str = ""):
+def review_submission(submission: dict, status: str, feedback: str = "",
+                       feedback_file: tuple | None = None):
     """status: 'approved' or 'needs_revision'. `submission` is a row as
     returned by get_pending_submissions() — needs org_id/participant_id/
     program_id/week/task_index/id.
+
+    feedback_file, when given, is (file_bytes, file_name, content_type) —
+    e.g. straight from a Streamlit UploadedFile via
+    (uploaded.getvalue(), uploaded.name, uploaded.type). It's a doc the
+    reviewer wants to hand back alongside the text note (an annotated
+    copy, a written report, etc). Uploaded to the org_admin-writable
+    task-feedback bucket — see schema.sql for why that's a separate
+    bucket from task-submissions — then recorded on this same row so it
+    shows up wherever this submission is already being read from.
 
     Approval goes through the approve_task_submission RPC (see
     rpc_functions.sql) rather than a direct client update: writing to
@@ -572,25 +587,97 @@ def review_submission(submission: dict, status: str, feedback: str = ""):
     what makes an upload task count toward week completion / unlocking
     the next week, and keeps every existing stats function
     (get_week_completion_stats, get_program_engagement, ...) working
-    without having to special-case task_submissions everywhere.
+    without having to special-case task_submissions everywhere. The RPC
+    doesn't know about the feedback-file columns, so on approval they're
+    set with a small follow-up update under the existing
+    "org_admin reviews org submissions" policy.
 
     needs_revision doesn't touch `progress`, so it stays a plain client
-    update under the existing "org_admin reviews org submissions" policy."""
+    update under that same policy, feedback-file columns included."""
     client = get_client()
+
+    file_fields = {}
+    if feedback_file is not None:
+        file_bytes, file_name, content_type = feedback_file
+        file_path = upload_review_feedback_file(
+            submission["org_id"], submission["participant_id"], submission["program_id"],
+            submission["week"], submission["task_index"],
+            file_bytes, file_name, content_type or "application/octet-stream",
+        )
+        file_fields = {"feedback_file_path": file_path, "feedback_file_name": file_name}
+
     if status == "approved":
         client.rpc("approve_task_submission", {
             "p_submission_id": submission["id"], "p_feedback": feedback,
         }).execute()
+        if file_fields:
+            client.table("task_submissions").update(file_fields).eq("id", submission["id"]).execute()
         get_progress.clear()
         get_week_completion_stats.clear()
         get_program_engagement.clear()
     else:
         client.table("task_submissions").update({
             "status": status, "reviewer_feedback": feedback,
-            "reviewed_at": "now()",
+            "reviewed_at": "now()", **file_fields,
         }).eq("id", submission["id"]).execute()
     get_task_submissions.clear()
     get_pending_submissions.clear()
+    get_my_feedback_docs.clear()
+
+
+# ═══════════════════════════════════════════════════════════════
+# Task feedback documents (org_admin → participant, per submission)
+# ═══════════════════════════════════════════════════════════════
+
+_FEEDBACK_BUCKET = "task-feedback"
+
+
+def upload_review_feedback_file(org_id: str, participant_id: str, program_id: str,
+                                 week: int, task_index: int, file_bytes: bytes,
+                                 file_name: str, content_type: str = "application/octet-stream") -> str:
+    """Uploads an org_admin-issued feedback doc into the participant's
+    private feedback folder. Internal helper for review_submission() —
+    not meant to be called on its own since it doesn't touch
+    task_submissions. Returns the stored object path."""
+    client = get_client()
+    safe_name = _re.sub(r"[^A-Za-z0-9._-]", "_", file_name)
+    file_path = f"{org_id}/{participant_id}/{program_id}_{week}_{task_index}_{safe_name}"
+    client.storage.from_(_FEEDBACK_BUCKET).upload(
+        file_path, file_bytes,
+        {"content-type": content_type, "upsert": "true"},
+    )
+    return file_path
+
+
+def get_feedback_file_url(file_path: str, expires_in: int = 3600, file_name: str = None) -> str:
+    """Same Content-Disposition trick as get_submission_download_url —
+    `file_name` forces a save-as download instead of an inline open."""
+    client = get_client()
+    options = {"download": file_name} if file_name else {}
+    res = client.storage.from_(_FEEDBACK_BUCKET).create_signed_url(file_path, expires_in, options)
+    return res.get("signedURL") or res.get("signed_url") or ""
+
+
+@st.cache_data(ttl=20)
+def get_my_feedback_docs(participant_id: str, program_id: str) -> list[dict]:
+    """Every submission for this participant/program that has a feedback
+    doc attached, newest review first. Deliberately NOT grouped or
+    filtered by week — the file's own name is how the participant finds
+    the one they want (see pages/dashboard.py), so week/task here is
+    just supporting context on the card, not a navigation key.
+
+    Isolation note: this filters by participant_id, but the real
+    guarantee is the RLS policy "participant manages own submissions"
+    (participant_id = auth.uid()) on task_submissions itself, plus the
+    "participant reads own feedback folder" storage policy on the
+    signed-URL side — so even a bug here couldn't surface another
+    participant's row or file."""
+    client = get_client()
+    res = (client.table("task_submissions").select("*")
+           .eq("participant_id", participant_id).eq("program_id", program_id)
+           .not_.is_("feedback_file_path", "null")
+           .order("reviewed_at", desc=True).execute())
+    return res.data
 
 
 # ═══════════════════════════════════════════════════════════════
