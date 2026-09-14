@@ -140,8 +140,8 @@ const TESTIMONIALS = [
     {
         id: "testx2",
         type: "photo",
-        img: "assets/T2X.jpg",
+        img: "assets/Tx1.jpg",
         alt: "Reader testimonial 1",
-        caption: "reader love 💚"
+        caption: "🧩Builder love🙌🏽"
     }
 ];
