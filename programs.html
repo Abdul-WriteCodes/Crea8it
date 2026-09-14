@@ -112,6 +112,19 @@ Every program here is run the same way I build products — real execution, real
 </p>
 </div>
 
+<div class="hero-photo-wrap">
+    <div class="hero-sticky hand">Build.<br>Learn. Ship.🚀</div>
+    <div class="polaroid rot--1 flip-polaroid" style="width:260px;" id="programsPolaroid">
+        <div class="tape tc"></div>
+        <div class="pin"></div>
+        <div class="flip-inner">
+            <img src="images/programs-poster-1.jpg" alt="Crea8it — Ideas, Products, Impact" class="flip-img active">
+            <img src="images/programs-poster-2.jpg" alt="Crea8it — Build, Learn, Grow, Win" class="flip-img">
+        </div>
+        <figcaption id="programsCaption">tech. builder. creator. change maker.</figcaption>
+    </div>
+</div>
+
 </div>
 </section>
 
@@ -183,6 +196,7 @@ Every program here is run the same way I build products — real execution, real
 <script src="assets/js/render.js?v=2"></script>
 <script>
     renderPrograms('programs-full');
+    initFlipPolaroid('programsPolaroid', 'programsCaption', ['tech. builder. creator. change maker.', 'better tools, bigger dreams.']);
 </script>
 
 </body>
