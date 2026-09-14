@@ -829,9 +829,9 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     display:block;
     margin-bottom:6px;
 }
-.quote-card p.quote-text{ font-size:1rem; color:var(--ink); margin-bottom:16px; }
+.quote-card p.quote-text{ font-size:1rem; color:#4a3f2b; margin-bottom:16px; }
 .quote-card .quote-who{ font-family:var(--mono); font-size:.78rem; color:var(--muted); }
-.quote-card .quote-who strong{ color:var(--ink); font-style:normal; }
+.quote-card .quote-who strong{ color:var(--ink-dark); font-style:normal; }
 
 /* ── homepage ecosystem directory (4 link-cards to the dedicated pages) ── */
 
