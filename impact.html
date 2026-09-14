@@ -112,6 +112,19 @@ Shout-outs, screenshots, and words from builders who came through Crea8it — ev
 </p>
 </div>
 
+<div class="hero-photo-wrap">
+    <div class="hero-sticky hand">Real wins,<br>on record🏆</div>
+    <div class="polaroid rot--1 flip-polaroid" style="width:260px;" id="impactPolaroid">
+        <div class="tape tc"></div>
+        <div class="pin"></div>
+        <div class="flip-inner">
+            <img src="images/impact-poster-1.jpg" alt="Crea8it — Launched, Hired, Shipped" class="flip-img active">
+            <img src="images/impact-poster-2.jpg" alt="Crea8it — Growth, Real Results, Proof" class="flip-img">
+        </div>
+        <figcaption id="impactCaption">launched. hired. shipped.</figcaption>
+    </div>
+</div>
+
 </div>
 </section>
 
@@ -211,7 +224,8 @@ Shout-outs, screenshots, and words from builders who came through Crea8it — ev
 <script>
     renderPhotoCarousel('.testimonial-wrap');
     renderQuoteTestimonials('impact-full', null, 'impact-quotes');
+    initFlipPolaroid('impactPolaroid', 'impactCaption', ['launched. hired. shipped.', 'growth. real results. proof.']);
 </script>
 
 </body>
-</html>
+    </html>
