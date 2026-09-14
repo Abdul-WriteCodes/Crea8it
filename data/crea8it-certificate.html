@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crea8it Labs — Certificate of Completion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Space+Grotesk:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161B22;
+    --paper:#F8F4EC;
+    --paper-shadow:#E8E1D1;
+    --brass:#A67C3D;
+    --sage:#5C6B57;
+    --muted:#6b6455;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#3a3530;
+    font-family:'Space Grotesk',sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:32px 16px;
+  }
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    width:100%;
+  }
+  .toolbar{
+    color:#c9c2b4;
+    font-size:12px;
+    letter-spacing:.02em;
+    max-width:1122px;
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .toolbar button{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    background:transparent;
+    border:1px solid #6b6355;
+    color:#e7e1d3;
+    padding:6px 12px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .toolbar button:hover{ background:#4a453d; }
+
+  .cert{
+    position:relative;
+    width:1122px;
+    max-width:100%;
+    aspect-ratio:1122/793;
+    background:var(--paper);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.5);
+    color:var(--ink);
+    padding:44px;
+  }
+  .frame{
+    position:relative;
+    width:100%;
+    height:100%;
+    border:2px solid var(--ink);
+    padding:34px 64px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border:1px solid var(--brass);
+    pointer-events:none;
+  }
+
+  .mark{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:6px;
+  }
+  .mark-glyph{
+    width:30px;height:30px;
+    border:1.5px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Newsreader',serif;
+    font-size:17px;
+    font-weight:600;
+    transform:rotate(45deg);
+  }
+  .mark-glyph span{ transform:rotate(-45deg); }
+  .mark-word{
+    font-size:14px;
+    letter-spacing:.14em;
+    font-weight:500;
+  }
+  .mark-sub{
+    font-size:10.5px;
+    color:var(--muted);
+    letter-spacing:.1em;
+    margin-top:2px;
+  }
+
+  .kicker{
+    margin-top:30px;
+    font-size:12.5px;
+    letter-spacing:.16em;
+    color:var(--sage);
+    font-weight:500;
+  }
+
+  h1.cert-title{
+    font-family:'Newsreader',serif;
+    font-weight:500;
+    font-style:italic;
+    font-size:30px;
+    margin:6px 0 0 0;
+    text-align:center;
+  }
+
+  .lede{
+    margin-top:26px;
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .name{
+    font-family:'Newsreader',serif;
+    font-size:52px;
+    font-weight:600;
+    margin:10px 0 4px 0;
+    text-align:center;
+    border-bottom:1px solid var(--ink);
+    padding:0 30px 10px 30px;
+    min-width:60%;
+    outline:none;
+  }
+
+  .body-copy{
+    max-width:620px;
+    text-align:center;
+    font-size:14.5px;
+    line-height:1.65;
+    color:#3a362e;
+    margin-top:22px;
+  }
+  .program-name{
+    font-weight:600;
+    color:var(--ink);
+  }
+
+  .meta-row{
+    display:flex;
+    gap:56px;
+    margin-top:30px;
+  }
+  .meta-item{
+    text-align:center;
+  }
+  .meta-label{
+    font-size:10px;
+    letter-spacing:.12em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  .meta-value{
+    font-family:'Newsreader',serif;
+    font-size:15px;
+    font-weight:500;
+    margin-top:3px;
+    outline:none;
+  }
+
+  .footer{
+    margin-top:auto;
+    width:100%;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    padding-top:36px;
+  }
+  .sig{
+    text-align:center;
+    width:230px;
+  }
+  .sig-line{
+    font-family:'Newsreader',serif;
+    font-style:italic;
+    font-size:22px;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:6px;
+    outline:none;
+  }
+  .sig-role{
+    font-size:10.5px;
+    letter-spacing:.08em;
+    color:var(--muted);
+    margin-top:6px;
+    text-transform:uppercase;
+  }
+
+  .seal{
+    width:78px;height:78px;
+    border-radius:50%;
+    border:1.5px solid var(--brass);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    flex-shrink:0;
+  }
+  .seal::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px dashed var(--brass);
+    border-radius:50%;
+  }
+  .seal-text{
+    font-family:'Newsreader',serif;
+    font-style:italic;
+    font-size:11px;
+    color:var(--brass);
+    text-align:center;
+    line-height:1.2;
+  }
+
+  .idbar{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    display:flex;
+    justify-content:center;
+    padding-bottom:14px;
+  }
+  .idbar-inner{
+    font-family:'Space Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.05em;
+    color:var(--muted);
+    background:var(--paper);
+    padding:0 14px;
+    outline:none;
+  }
+
+  @media print{
+    body{ background:#fff; padding:0; }
+    .toolbar{ display:none; }
+    .cert{ box-shadow:none; width:100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="toolbar">
+      <span>Editable mockup — click any text field to customize, then use Print / Save as PDF.</span>
+      <button onclick="window.print()">Print / Save as PDF</button>
+    </div>
+
+    <div class="cert" id="cert">
+      <div class="frame">
+
+        <div class="mark">
+          <div class="mark-glyph"><span>C</span></div>
+          <div>
+            <div class="mark-word">CREA8IT LABS</div>
+            <div class="mark-sub">COHORT-BASED AI PROGRAMS</div>
+          </div>
+        </div>
+
+        <div class="kicker">CERTIFICATE OF COMPLETION</div>
+        <h1 class="cert-title" contenteditable="true">is hereby awarded to</h1>
+
+        <div class="name" contenteditable="true">Atanda Satoshi Bashir</div>
+
+        <div class="body-copy" contenteditable="true">
+          for successfully completing all required weeks, tasks, and the capstone
+          project of the <span class="program-name">Pocket AI: Zero to Fluent in 4 Weeks</span> program,
+          demonstrating practical, applied skill in using AI tools for real work.
+        </div>
+
+        <div class="meta-row">
+          <div class="meta-item">
+            <div class="meta-label">Cohort</div>
+            <div class="meta-value" contenteditable="true">2026 — C3</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Date Issued</div>
+            <div class="meta-value" contenteditable="true">13 September 2026</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Duration</div>
+            <div class="meta-value" contenteditable="true">4 Weeks</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="sig">
+            <div class="sig-line" contenteditable="true">Anafi Abdul-Azeez Olohunjuwon</div>
+            <div class="sig-role">Founder, Crea8it Labs</div>
+          </div>
+
+          <div class="seal">
+            <div class="seal-text">CREA8IT<br>VERIFIED</div>
+          </div>
+
+          <div class="sig" style="width:230px;">
+            <div class="sig-line" contenteditable="true">&nbsp;</div>
+            <div class="sig-role">Program Lead</div>
+          </div>
+        </div>
+
+        <div class="idbar">
+          <div class="idbar-inner" contenteditable="true">CERT-ID: C8L-2026-0347 · verify at crea8it.com/verify</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
