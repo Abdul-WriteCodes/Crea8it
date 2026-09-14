@@ -112,6 +112,19 @@ Free and paid resources documenting exactly how I build, launch, and grow — no
 </p>
 </div>
 
+<div class="hero-photo-wrap">
+    <div class="hero-sticky hand">Grab the<br>guides📚</div>
+    <div class="polaroid rot--1 flip-polaroid" style="width:260px;" id="resourcesPolaroid">
+        <div class="tape tc"></div>
+        <div class="pin"></div>
+        <div class="flip-inner">
+            <img src="images/resources-poster-1.jpg" alt="Crea8it — Books, Templates, Resources" class="flip-img active">
+            <img src="images/resources-poster-2.jpg" alt="Crea8it — Guides, Playbooks, Resources" class="flip-img">
+        </div>
+        <figcaption id="resourcesCaption">books. templates. field notes.</figcaption>
+    </div>
+</div>
+
 </div>
 </section>
 
@@ -183,6 +196,7 @@ Free and paid resources documenting exactly how I build, launch, and grow — no
 <script src="assets/js/render.js"></script>
 <script>
     renderResources('resources-full');
+    initFlipPolaroid('resourcesPolaroid', 'resourcesCaption', ['books. templates. field notes.', 'guides. playbooks. resources.']);
 </script>
 
 </body>
