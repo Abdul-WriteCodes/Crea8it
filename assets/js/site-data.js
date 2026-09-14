@@ -137,4 +137,11 @@ const TESTIMONIALS = [
         alt: "Reader testimonial 1",
         caption: "reader love 💚"
     }
+    {
+       id: "testx2",
+       type: "quote",
+       quote: "Crea8it took me from 'I have an idea' to a shipped product in 3 weeks.",
+       name: "Jane Doe",
+       role: "Founder, XYZ"
+    }
 ];
