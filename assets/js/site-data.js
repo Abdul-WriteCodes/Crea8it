@@ -136,5 +136,12 @@ const TESTIMONIALS = [
         img: "assets/Testx1.png",
         alt: "Reader testimonial 1",
         caption: "reader love 💚"
+    },
+    {
+        id: "testx2",
+        type: "photo",
+        img: "assets/T2X.jpg",
+        alt: "Reader testimonial 1",
+        caption: "reader love 💚"
     }
 ];
