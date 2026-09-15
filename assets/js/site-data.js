@@ -25,11 +25,11 @@ const PROGRAMS = [
     },
         {
         id: "data-analysis",
-        title: "Data Analysis",
+        title: "Quantitative + Qualitative Analysis",
         icon: "icon-toolbox",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr4.jpg",
+        img: "assets/Q&Q.jpeg",
         rot: "rot--4",
         description: "A hands-on program for turning raw, messy data into insights that actually inform decisions — cleaning, running the right statistical tests, and presenting findings that hold up.",
         priceLabel: "--", // TODO: add price
@@ -42,7 +42,7 @@ const PROGRAMS = [
         icon: "icon-flask",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr5.jpg",
+        img: "assets/R&D.jpeg",
         rot: "rot--5",
         description: "A hands-on program covering the full research pipeline — from framing the right question and designing the study, to collecting, cleaning, and analyzing the data that answers it.",
         priceLabel: "--", // TODO: add price
@@ -55,7 +55,7 @@ const PROGRAMS = [
         icon: "icon-book",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr6.jpg",
+        img: "assets/R&T.jpeg",
         rot: "rot--6",
         description: "A hands-on program for developing and monetizing academic research writing and technical/business writing — real skills, real paid output.",
         priceLabel: "--", // TODO: add price
