@@ -865,7 +865,7 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 }
 .ecosystem-card:hover .eco-link{ transform:translateX(4px); }
 
-/* ── homepage stat cards ("The Numbers So Far") — pinned cred-item-style scrap cards, 2 columns ── */
+/* ── homepage stat cards ("The Numbers So Far") — pinned cred-item-style scrap cards, 2 columns on mobile, 4 in a row from 1100px ── */
 
 .grid.sticky-grid{
     display:grid;
@@ -874,6 +874,9 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 }
 @media(min-width:560px){
     .grid.sticky-grid{ gap:20px; }
+}
+@media(min-width:1100px){
+    .grid.sticky-grid{ grid-template-columns:repeat(4,1fr); gap:22px; }
 }
 
 .stat-card{
