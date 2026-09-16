@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://crea8it.com/sitemap.xml
