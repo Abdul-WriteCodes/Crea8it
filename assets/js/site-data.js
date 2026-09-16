@@ -12,24 +12,24 @@
 const PROGRAMS = [
     {
         id: "career-acceleration",
-        title: "Career Acceleration",
+        title: "Tech Career Acceleration",
         icon: "icon-mic",
         tag: "Active",
         tagClass: "open",
         img: "assets/Scr1.jpg",
         rot: "rot--1",
-        description: "A career launch program for ambitious builders ready to gain valuable AI-era skills and real opportunities.",
-        priceLabel: "--",
+        description: "A career launch program for ambitious tech career aspirants ready to break into tech, learn valuable AI-era skills and access real opportunities.",
+        priceLabel: "Free",
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
         {
         id: "data-analysis",
-        title: "Data Analysis",
+        title: "Quantitative + Qualitative Analysis",
         icon: "icon-toolbox",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr4.jpg",
+        img: "assets/Q&Q.jpeg",
         rot: "rot--4",
         description: "A hands-on program for turning raw, messy data into insights that actually inform decisions — cleaning, running the right statistical tests, and presenting findings that hold up.",
         priceLabel: "--", // TODO: add price
@@ -42,7 +42,7 @@ const PROGRAMS = [
         icon: "icon-flask",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr5.jpg",
+        img: "assets/R&D.jpeg",
         rot: "rot--5",
         description: "A hands-on program covering the full research pipeline — from framing the right question and designing the study, to collecting, cleaning, and analyzing the data that answers it.",
         priceLabel: "--", // TODO: add price
@@ -55,7 +55,7 @@ const PROGRAMS = [
         icon: "icon-book",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr6.jpg",
+        img: "assets/R&T.jpeg",
         rot: "rot--6",
         description: "A hands-on program for developing and monetizing academic research writing and technical/business writing — real skills, real paid output.",
         priceLabel: "--", // TODO: add price
@@ -136,12 +136,5 @@ const TESTIMONIALS = [
         img: "assets/Testx1.png",
         alt: "Reader testimonial 1",
         caption: "reader love 💚"
-    },
-    {
-        id: "testx2",
-        type: "photo",
-        img: "assets/Tx1.jpg",
-        alt: "Reader testimonial 1",
-        caption: "🧩Builder love🙌🏽"
     }
 ];
