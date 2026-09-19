@@ -73,7 +73,7 @@
             '<p class="footer-tagline">BUILD<svg class="icon icon-trail"><use href="#icon-gear"/></svg> ° LAUNCH<svg class="icon icon-trail"><use href="#icon-rocket"/></svg> ° LEARN<svg class="icon icon-trail"><use href="#icon-adapt"/></svg> ° WIN<svg class="icon icon-trail"><use href="#icon-trophy"/></svg></p>' +
             '<div class="footer-columns">' + cols + '</div>' +
             SOCIALS +
-            '<p class="footer-copy">© ' + new Date().getFullYear() + ' Crea8it Studio— Built for builders.</p>' +
+            '<p class="footer-copy">© ' + new Date().getFullYear() + ' Crea8it Studio — Built for builders.</p>' +
             '</div></footer>';
     }
 
@@ -338,4 +338,4 @@ function initFlipPolaroid(wrapId, captionId, captions) {
         imgs[current].classList.add("active");
         if (captionEl && captions[current]) captionEl.textContent = captions[current];
     }, 4000);
-}
+            }
