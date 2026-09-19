@@ -69,7 +69,7 @@
     width:100%;
     height:100%;
     border:2px solid var(--ink);
-    padding:34px 64px;
+    padding:26px 64px 48px 64px;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -135,13 +135,15 @@
 
   .name{
     font-family:'Newsreader',serif;
-    font-size:52px;
+    font-size:48px;
     font-weight:600;
     margin:10px 0 4px 0;
     text-align:center;
     border-bottom:1px solid var(--ink);
     padding:0 30px 10px 30px;
     min-width:60%;
+    max-width:100%;
+    white-space:nowrap;
     outline:none;
   }
 
@@ -185,12 +187,13 @@
     width:100%;
     display:flex;
     align-items:flex-end;
-    justify-content:space-between;
+    justify-content:center;
+    gap:56px;
     padding-top:36px;
   }
   .sig{
     text-align:center;
-    width:230px;
+    width:340px;
   }
   .sig-line{
     font-family:'Newsreader',serif;
@@ -251,10 +254,20 @@
     outline:none;
   }
 
+  @page{ size:297mm 210mm; margin:0; }
   @media print{
-    body{ background:#fff; padding:0; }
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    html,body{
+      width:297mm; height:209mm; margin:0; padding:0;
+      background:#fff; display:block; min-height:0; overflow:hidden;
+    }
+    .stage{ display:block; gap:0; width:297mm; }
     .toolbar{ display:none; }
-    .cert{ box-shadow:none; width:100%; }
+    .cert{
+      width:297mm; height:209mm; max-width:none;
+      aspect-ratio:auto; box-shadow:none; margin:0;
+      break-inside:avoid; page-break-after:avoid; page-break-inside:avoid;
+    }
   }
 </style>
 </head>
@@ -305,17 +318,13 @@
         <div class="footer">
           <div class="sig">
             <div class="sig-line" contenteditable="true">Anafi Abdul-Azeez Olohunjuwon</div>
-            <div class="sig-role">Founder, Crea8it Labs</div>
+            <div class="sig-role">Founder &amp; Program Lead, Crea8it Labs</div>
           </div>
 
           <div class="seal">
             <div class="seal-text">CREA8IT<br>VERIFIED</div>
           </div>
 
-          <div class="sig" style="width:230px;">
-            <div class="sig-line" contenteditable="true">&nbsp;</div>
-            <div class="sig-role">Program Lead</div>
-          </div>
         </div>
 
         <div class="idbar">
@@ -325,5 +334,19 @@
       </div>
     </div>
   </div>
+<script>
+  function fitName(){
+    var el=document.querySelector('.name');
+    if(!el) return;
+    var size=48;
+    el.style.fontSize=size+'px';
+    var max=el.parentElement.clientWidth;
+    while(el.scrollWidth>max && size>22){ size-=1; el.style.fontSize=size+'px'; }
+  }
+  window.addEventListener('load',fitName);
+  window.addEventListener('beforeprint',fitName);
+  document.querySelector('.name').addEventListener('input',fitName);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitName);
+</script>
 </body>
 </html>
