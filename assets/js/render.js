@@ -1,4 +1,115 @@
 /*
+  Crea8it — shared site shell (nav + footer)
+  ------------------------------------------
+  Every page holds <div id="site-nav"></div> and <div id="site-footer"></div>.
+  This block builds them, so a nav/footer change is made ONCE, here.
+*/
+(function () {
+    "use strict";
+
+    var LAB_URL   = "https://crea8it.streamlit.app/";
+    var COMMUNITY = "https://chat.whatsapp.com/Gbm13AqaNSt24MAxszzkcB";
+
+    // [href, label, icon]  — items with a #hash are never marked "active"
+    var NAV = [
+        ["programs.html",            "Programs",       "icon-rocket"],
+        ["resources.html",           "Resources",      "icon-book-open"],
+        ["projects.html",            "Products",       "icon-toolbox"],
+        ["impact.html",              "Impact",         "icon-trophy"],
+        ["index.html#submit-request","Submit Request", "icon-send"]
+    ];
+
+    // [heading, [[href, label, opensNewTab]]]
+    var FOOTER = [
+        ["Useful Links",      [["resources.html","Resources"],["programs.html","Programs"],["projects.html","Products"],["impact.html","Impacts"]]],
+        ["For Organizations", [["run-a-cohort.html","Run Your Own Cohort"],["organisation-terms.html","Organisation Terms"]]],
+        ["Community",         [[COMMUNITY,"Join on WhatsApp",true]]],
+        ["The Lab",           [[LAB_URL,"Enter Lab"]]],
+        ["Legal & Help",      [["faqs.html","FAQs"],["terms.html","Terms of Service"],["privacy.html","Privacy & Cookies"]]]
+    ];
+
+    var SOCIALS = `<div class="footer-socials"><!-- Twitter / X --><a href="https://twitter.com/abdul_git07" target="_blank" rel="noopener" aria-label="Twitter / X"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.262 5.636 5.901-5.636Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a><!-- LinkedIn --><a href="https://linkedin.com/in/anafiabdul" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a><!-- Blogger --><a href="https://abdulbuilds.blogspot.com" target="_blank" rel="noopener" aria-label="Blog"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.976 24H2.026C.9 24 0 23.1 0 21.976V2.026C0 .9.9 0 2.026 0h19.95C23.1 0 24 .9 24 2.026v19.95C24 23.1 23.1 24 21.976 24zm-3.953-8.353c0-1.18-.966-2.135-2.15-2.135h-.592c-.363 0-.66-.295-.66-.655v-1.714c0-1.18-.966-2.136-2.15-2.136H8.13c-1.184 0-2.15.956-2.15 2.136v5.358c0 1.18.966 2.136 2.15 2.136h9.743c1.184 0 2.15-.956 2.15-2.136v-.854zm0-7.177c0-1.18-.966-2.136-2.15-2.136H8.13c-1.184 0-2.15.956-2.15 2.136v.427c0 1.18.966 2.136 2.15 2.136h7.743c1.184 0 2.15-.956 2.15-2.136v-.427zm-3.103 7.603H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284zm0-2.991H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284zm0-4.275H9.08a.642.642 0 0 1 0-1.284h5.84a.642.642 0 0 1 0 1.284z"/></svg></a></div>`;
+
+    function pageKey() {
+        var p = location.pathname.split("/").pop() || "index";
+        return p.replace(/\.html$/, "");
+    }
+    function hrefKey(h) { return h.split("#")[0].replace(/\.html$/, ""); }
+    function isActive(h) {
+        return h.indexOf("#") === -1 && h.indexOf("http") !== 0 && hrefKey(h) === pageKey();
+    }
+
+    function navHTML() {
+        var links = NAV.map(function (n) {
+            var cls = isActive(n[0]) ? ' class="active" aria-current="page"' : "";
+            return '<a href="' + n[0] + '"' + cls + '>' + n[1] +
+                   '<svg class="icon icon-trail"><use href="#' + n[2] + '"/></svg></a>';
+        }).join("");
+        return '<nav aria-label="Main">' +
+            '<div class="container nav-wrapper">' +
+              '<a href="index.html" class="logo-block" style="text-decoration:none;cursor:pointer;">' +
+                '<div class="logo">Crea8it Studio</div><div class="logo-sub"></div></a>' +
+              '<button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">' +
+                '<span></span><span></span><span></span></button>' +
+              '<div class="nav-links" id="nav-links">' + links +
+                '<a href="' + LAB_URL + '" class="nav-lab">Enter Lab' +
+                '<svg class="icon icon-trail"><use href="#icon-terminal"/></svg></a>' +
+              '</div>' +
+            '</div></nav>';
+    }
+
+    function footerHTML() {
+        var cols = FOOTER.map(function (c) {
+            var items = c[1].map(function (l) {
+                var cls = isActive(l[0]) ? ' class="active"' : "";
+                var ext = l[2] ? ' target="_blank" rel="noopener"' : "";
+                return '<a href="' + l[0] + '"' + cls + ext + '>' + l[1] + '</a>';
+            }).join("");
+            return '<div class="footer-links-col"><div class="footer-links-heading">' + c[0] +
+                   '</div><nav class="footer-links">' + items + '</nav></div>';
+        }).join("");
+        return '<footer><div class="container footer-inner">' +
+            '<div class="footer-logo">Crea8it Studio</div>' +
+            '<p class="footer-tagline">BUILD<svg class="icon icon-trail"><use href="#icon-gear"/></svg> ° LAUNCH<svg class="icon icon-trail"><use href="#icon-rocket"/></svg> ° LEARN<svg class="icon icon-trail"><use href="#icon-adapt"/></svg> ° WIN<svg class="icon icon-trail"><use href="#icon-trophy"/></svg></p>' +
+            '<div class="footer-columns">' + cols + '</div>' +
+            SOCIALS +
+            '<p class="footer-copy">© ' + new Date().getFullYear() + ' Crea8it Studio— Built for builders.</p>' +
+            '</div></footer>';
+    }
+
+    function wireToggle() {
+        var nav = document.querySelector("nav[aria-label='Main']");
+        if (!nav) return;
+        var btn = nav.querySelector(".nav-toggle");
+        var panel = nav.querySelector(".nav-links");
+        function setOpen(open) {
+            panel.classList.toggle("open", open);
+            btn.setAttribute("aria-expanded", open ? "true" : "false");
+            btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        }
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            setOpen(!panel.classList.contains("open"));
+        });
+        panel.addEventListener("click", function (e) { if (e.target.closest("a")) setOpen(false); });
+        document.addEventListener("click", function (e) { if (!nav.contains(e.target)) setOpen(false); });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape") setOpen(false); });
+        window.addEventListener("resize", function () { if (window.innerWidth > 768) setOpen(false); });
+    }
+
+    function mount() {
+        var n = document.getElementById("site-nav");
+        var f = document.getElementById("site-footer");
+        if (n) n.outerHTML = navHTML();      // outerHTML (not innerHTML) keeps nav a direct child,
+        if (f) f.outerHTML = footerHTML();   // so position:sticky still works
+        wireToggle();
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount);
+    else mount();
+})();
+
+/*
   Crea8it — shared render functions
   ----------------------------------
   Reads from assets/js/site-data.js and paints cards into whichever
@@ -218,4 +329,4 @@ function initFlipPolaroid(wrapId, captionId, captions) {
         imgs[current].classList.add("active");
         if (captionEl && captions[current]) captionEl.textContent = captions[current];
     }, 4000);
-          }
+}
