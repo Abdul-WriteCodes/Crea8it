@@ -125,6 +125,21 @@
   container is on the current page. Load site-data.js BEFORE this file.
 */
 
+function programDetailsHTML(p) {
+    if (!p.covers || !p.covers.length) return "";
+    const who = p.audience ? `<p class="cd-label">Who it's for</p><p>${p.audience}</p>` : "";
+    const items = p.covers.map(c => `<li>${c}</li>`).join("");
+    return `
+        <details class="card-details">
+            <summary>What's inside</summary>
+            <div class="card-details-body">
+                ${who}
+                <p class="cd-label">What it covers</p>
+                <ul>${items}</ul>
+            </div>
+        </details>`;
+}
+
 function programCardHTML(p) {
     const iconSpan = p.icon ? `<svg class="icon icon-lead"><use href="#${p.icon}"/></svg>` : "";
     const priceInner = p.priceLabel || "Coming Soon";
@@ -138,6 +153,7 @@ function programCardHTML(p) {
         <span class="card-tag ${p.tagClass}">${iconSpan}${p.tag}</span>
         <h3>${p.title}</h3>
         <p>${p.description}</p>
+        ${programDetailsHTML(p)}
         <div class="card-footer">
             <div class="price program-price">${priceInner}</div>
             <a href="${p.ctaLink}" class="btn-buy" target="_blank" rel="noopener">${p.ctaText}</a>
@@ -338,4 +354,4 @@ function initFlipPolaroid(wrapId, captionId, captions) {
         imgs[current].classList.add("active");
         if (captionEl && captions[current]) captionEl.textContent = captions[current];
     }, 4000);
-            }
+          }

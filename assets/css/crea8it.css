@@ -991,3 +991,22 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 .faq summary::after{ content:"+"; color:var(--accent); font-family:var(--mono); }
 .faq details[open] summary::after{ content:"–"; }
 .faq details p{ margin:10px 0 0; }
+
+
+/* ── expandable "What's inside" on program cards ── */
+
+.card-details{ margin:0 0 14px; border-top:1px dashed rgba(0,0,0,.18); padding-top:6px; }
+.card-details summary{
+    cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; font-family:var(--mono); font-size:.78rem; font-weight:700; color:#b8431f;
+}
+.card-details summary::-webkit-details-marker{ display:none; }
+.card-details summary::after{ content:"+"; font-size:1.1rem; line-height:1; }
+.card-details[open] summary::after{ content:"–"; }
+.card-details-body .cd-label{
+    font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:1px;
+    color:#6b5f48; margin:8px 0 4px;
+}
+.card-details-body p{ font-size:.86rem; margin-bottom:6px; }
+.card-details-body ul{ margin:0 0 4px 18px; }
+.card-details-body li{ font-size:.86rem; color:#4a3f2b; margin-bottom:4px; }
