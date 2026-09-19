@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crea8it — Certificate Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Space+Grotesk:wght@400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161B22;
+    --paper:#F8F4EC;
+    --accent:#A67C3D;
+    --sage:#5C6B57;
+    --muted:#6b6455;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#3a3530;
+    font-family:'Space Grotesk',sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:32px 16px;
+  }
+  .stage{ display:flex; flex-direction:column; align-items:center; gap:18px; width:100%; }
+
+  .toolbar{
+    color:#c9c2b4; font-size:12px; letter-spacing:.02em;
+    max-width:1122px; width:100%;
+    display:flex; flex-wrap:wrap; gap:12px;
+    justify-content:space-between; align-items:center;
+  }
+  .toolbar-actions{ display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+  .toolbar label{ display:flex; align-items:center; gap:6px; cursor:pointer; color:#e7e1d3; }
+  .toolbar select,.toolbar button{
+    font-family:'Space Grotesk',sans-serif; font-size:12px;
+    background:#3a3530; border:1px solid #6b6355; color:#e7e1d3;
+    padding:6px 10px; border-radius:3px; cursor:pointer;
+  }
+  .toolbar button:hover{ background:#4a453d; }
+  .toolbar input[type=checkbox]{ accent-color:#A67C3D; }
+
+  .cert{
+    position:relative; width:1122px; max-width:100%;
+    aspect-ratio:1122/793; background:var(--paper);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.5);
+    color:var(--ink); padding:44px;
+  }
+  .frame{
+    position:relative; width:100%; height:100%;
+    border:2px solid var(--ink); padding:26px 64px 48px 64px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .frame::before{
+    content:""; position:absolute; inset:8px;
+    border:1px solid var(--accent); pointer-events:none;
+  }
+
+  .mark{ display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; }
+  .mark-logo{ width:58px; height:58px; flex-shrink:0; }
+  .logo-ring-outer{ fill:var(--paper); stroke:var(--ink); stroke-width:1.6; }
+  .logo-ring-inner{ fill:none; stroke:var(--accent); stroke-width:.8; }
+  .logo-piece{ fill:var(--ink); stroke:var(--ink); stroke-width:1.2; stroke-linejoin:round; }
+  .logo-dot{ fill:var(--accent); }
+  .mark-img{ height:58px; max-width:160px; object-fit:contain; }
+  .mark-badge{
+    width:58px; height:58px; border-radius:50%;
+    border:1.6px solid var(--ink); background:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; font-family:'Newsreader',serif; font-size:20px; font-weight:600;
+  }
+  .mark-badge::before{
+    content:""; position:absolute; inset:4px;
+    border:.8px solid var(--accent); border-radius:50%;
+  }
+  .mark-word{ font-size:14px; letter-spacing:.14em; font-weight:500; outline:none; }
+  .mark-sub{ font-size:10.5px; color:var(--muted); letter-spacing:.1em; margin-top:2px; outline:none; }
+
+  .kicker{ margin-top:22px; font-size:12.5px; letter-spacing:.16em; color:var(--sage); font-weight:500; }
+  h1.cert-title{
+    font-family:'Newsreader',serif; font-weight:500; font-style:italic;
+    font-size:30px; margin:6px 0 0 0; text-align:center;
+  }
+  .name{
+    font-family:'Newsreader',serif; font-size:48px; font-weight:600;
+    margin:10px 0 4px 0; text-align:center;
+    border-bottom:1px solid var(--ink); padding:0 30px 10px 30px;
+    min-width:60%; max-width:100%; white-space:nowrap; outline:none;
+  }
+  .body-copy{
+    max-width:620px; text-align:center; font-size:14.5px;
+    line-height:1.65; color:#3a362e; margin-top:22px;
+  }
+  .program-name{ font-weight:600; color:var(--ink); }
+
+  .meta-row{ display:flex; gap:56px; margin-top:30px; }
+  .meta-item{ text-align:center; }
+  .meta-label{ font-size:10px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; }
+  .meta-value{ font-family:'Newsreader',serif; font-size:15px; font-weight:500; margin-top:3px; outline:none; }
+
+  .footer{
+    margin-top:auto; width:100%;
+    display:flex; align-items:flex-end; justify-content:center;
+    gap:56px; padding-top:36px;
+  }
+  .has-two .footer{ justify-content:space-between; gap:0; }
+  .sig{ text-align:center; width:340px; }
+  .sig-two{ display:none; }
+  .has-two .sig-two{ display:block; }
+  .sig-line{
+    font-family:'Newsreader',serif; font-style:italic; font-size:22px;
+    border-bottom:1px solid var(--ink); padding-bottom:6px; outline:none;
+  }
+  .sig-role{
+    font-size:10.5px; letter-spacing:.08em; color:var(--muted);
+    margin-top:6px; text-transform:uppercase; outline:none;
+  }
+
+  .seal{
+    width:78px; height:78px; border-radius:50%;
+    border:1.5px solid var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; flex-shrink:0;
+  }
+  .seal::before{
+    content:""; position:absolute; inset:6px;
+    border:1px dashed var(--accent); border-radius:50%;
+  }
+  .seal-text{
+    font-family:'Newsreader',serif; font-style:italic; font-size:11px;
+    color:var(--accent); text-align:center; line-height:1.2;
+  }
+
+  .idbar{
+    position:absolute; left:0; right:0; bottom:0;
+    display:flex; justify-content:center; padding-bottom:14px;
+  }
+  .idbar-inner{
+    font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.05em;
+    color:var(--muted); background:var(--paper); padding:0 14px; outline:none;
+    display:flex; align-items:center; gap:6px;
+  }
+  .mini-logo{ width:12px; height:12px; }
+  .mini-logo path{ fill:var(--muted); }
+
+  @page{ size:297mm 210mm; margin:0; }
+  @media print{
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    html,body{
+      width:297mm; height:209mm; margin:0; padding:0;
+      background:#fff; display:block; min-height:0; overflow:hidden;
+    }
+    .stage{ display:block; gap:0; width:297mm; }
+    .toolbar{ display:none; }
+    .cert{
+      width:297mm; height:209mm; max-width:none; aspect-ratio:auto;
+      box-shadow:none; margin:0;
+      break-inside:avoid; page-break-after:avoid; page-break-inside:avoid;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="toolbar">
+      <span>Editable template — click any text to customise. Changing the preset resets the fields.</span>
+      <div class="toolbar-actions">
+        <select id="presetSel" onchange="onPreset(this.value)">
+          <option value="crea8it">Crea8it Labs (own program)</option>
+          <option value="partner">Partner organisation (sample)</option>
+        </select>
+        <select id="accentSel" onchange="onAccent(this.value)">
+          <option value="#A67C3D">Brass</option>
+          <option value="#1F5F6B">Teal</option>
+          <option value="#7A2E3A">Burgundy</option>
+          <option value="#23406B">Navy</option>
+        </select>
+        <label><input type="checkbox" id="secondToggle" onchange="onSecond(this.checked)"> Second signatory</label>
+        <button onclick="window.print()">Print / Save as PDF</button>
+      </div>
+    </div>
+
+    <div class="cert" id="cert">
+      <div class="frame">
+
+        <div class="mark">
+          <div id="logoSlot"></div>
+          <div>
+            <div class="mark-word" id="issuerName" contenteditable="true"></div>
+            <div class="mark-sub" id="issuerTag" contenteditable="true"></div>
+          </div>
+        </div>
+
+        <div class="kicker">CERTIFICATE OF COMPLETION</div>
+        <h1 class="cert-title" contenteditable="true">is hereby awarded to</h1>
+
+        <div class="name" id="participant" contenteditable="true"></div>
+
+        <div class="body-copy" contenteditable="true">
+          for successfully completing all required weeks, tasks, and the capstone
+          project of the <span class="program-name" id="programName"></span> program,
+          demonstrating practical, applied skill in using AI tools for real work.
+        </div>
+
+        <div class="meta-row">
+          <div class="meta-item">
+            <div class="meta-label">Cohort</div>
+            <div class="meta-value" id="cohort" contenteditable="true"></div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Date Issued</div>
+            <div class="meta-value" id="dateIssued" contenteditable="true"></div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Duration</div>
+            <div class="meta-value" id="duration" contenteditable="true"></div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="sig">
+            <div class="sig-line" id="sig1Name" contenteditable="true"></div>
+            <div class="sig-role" id="sig1Role" contenteditable="true"></div>
+          </div>
+          <div class="seal"><div class="seal-text" id="sealText"></div></div>
+          <div class="sig sig-two">
+            <div class="sig-line" id="sig2Name" contenteditable="true"></div>
+            <div class="sig-role" id="sig2Role" contenteditable="true"></div>
+          </div>
+        </div>
+
+        <div class="idbar"><div class="idbar-inner" id="idBar" contenteditable="true"></div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ============================================================
+   CONFIG — add a new organisation by adding one entry here.
+   Fixed for every issuer (do not change per org):
+     verifyUrl  → always your own domain
+     seal       → partners use "ISSUED VIA / CREA8IT"
+     endorse    → partners use "Powered by Crea8it Labs"
+   logo: 'crea8it' | null (monogram from issuer name) |
+         an image as a data: URI (recommended, prints reliably)
+   ============================================================ */
+const PRESETS = {
+  crea8it: {
+    issuerName: 'CREA8IT LABS',
+    tagline: 'COHORT-BASED AI PROGRAMS',
+    logo: 'crea8it',
+    accent: '#A67C3D',
+    participant: 'Atanda Satoshi Bashir',
+    program: 'Pocket AI: Zero to Fluent in 4 Weeks',
+    cohort: '2026 — C3',
+    date: '13 September 2026',
+    duration: '4 Weeks',
+    signatories: [
+      { name: 'Anafi Abdul-Azeez Olohunjuwon',
+        role: 'Founder & Program Lead, Crea8it Labs',
+        rolePair: 'Founder, Crea8it Labs' }
+    ],
+    seal: ['CREA8IT', 'VERIFIED'],
+    endorse: 'A Crea8it Studio program',
+    endorseLogo: false,
+    certId: 'C8L-2026-0347',
+    verifyUrl: 'crea8it.com/verify'
+  },
+  partner: {
+    issuerName: 'ACME ACADEMY',
+    tagline: 'PROFESSIONAL TRAINING',
+    logo: null,
+    accent: '#1F5F6B',
+    participant: 'Sample Participant Name',
+    program: 'Data Skills Bootcamp',
+    cohort: '2026 — Cohort 1',
+    date: '20 September 2026',
+    duration: '6 Weeks',
+    signatories: [
+      { name: 'Jane Doe', role: 'Director, Acme Academy' },
+      { name: 'John Smith', role: 'Program Lead' }
+    ],
+    seal: ['ISSUED VIA', 'CREA8IT'],
+    endorse: 'Powered by Crea8it Labs',
+    endorseLogo: true,
+    certId: 'C8L-ACME-2026-0001',
+    verifyUrl: 'crea8it.com/verify'
+  }
+};
+
+const PUZZLE = "M10 10 L20 10 A5 5 0 1 1 28 10 L38 10 L38 20 A5 5 0 1 1 38 28 L38 38 L28 38 A5 5 0 1 0 20 38 L10 38 L10 28 A5 5 0 1 0 10 20 Z";
+const $ = id => document.getElementById(id);
+let current = 'crea8it';
+let second = false;
+
+function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+function initials(n){ return n.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+function logoHTML(c){
+  if (c.logo === 'crea8it'){
+    return '<svg class="mark-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="Crea8it logo">' +
+      '<circle class="logo-ring-outer" cx="32" cy="32" r="30"/><circle class="logo-ring-inner" cx="32" cy="32" r="26.5"/>' +
+      '<g transform="translate(32 32) scale(0.9) translate(-28 -20)"><path class="logo-piece" d="'+PUZZLE+'"/>' +
+      '<circle class="logo-dot" cx="24" cy="24" r="3.6"/></g></svg>';
+  }
+  if (c.logo && /^(data:|https?:)/.test(c.logo)){
+    return '<img class="mark-img" src="'+c.logo+'" alt="Issuer logo">';
+  }
+  return '<div class="mark-badge"><span>'+esc(initials(c.issuerName))+'</span></div>';
+}
+
+function renderSigs(){
+  const c = PRESETS[current];
+  const s1 = c.signatories[0];
+  const s2 = c.signatories[1] || { name: 'Name of Program Lead', role: 'Program Lead' };
+  $('sig1Name').textContent = s1.name;
+  $('sig1Role').textContent = second ? (s1.rolePair || s1.role) : s1.role;
+  $('sig2Name').textContent = s2.name;
+  $('sig2Role').textContent = s2.role;
+  $('cert').classList.toggle('has-two', second);
+  $('secondToggle').checked = second;
+}
+
+function render(){
+  const c = PRESETS[current];
+  $('logoSlot').innerHTML = logoHTML(c);
+  $('issuerName').textContent = c.issuerName;
+  $('issuerTag').textContent = c.tagline;
+  $('participant').textContent = c.participant;
+  $('programName').textContent = c.program;
+  $('cohort').textContent = c.cohort;
+  $('dateIssued').textContent = c.date;
+  $('duration').textContent = c.duration;
+  $('sealText').innerHTML = c.seal.map(esc).join('<br>');
+  const mini = c.endorseLogo
+    ? '<svg class="mini-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="'+PUZZLE+'"/></svg>' : '';
+  $('idBar').innerHTML = mini + '<span>' + esc(c.endorse) + ' · CERT-ID: ' + esc(c.certId) +
+    ' · verify at ' + esc(c.verifyUrl) + '</span>';
+  renderSigs();
+  fitName();
+}
+
+function onPreset(k){
+  current = k;
+  const c = PRESETS[k];
+  second = c.signatories.length > 1;
+  $('accentSel').value = c.accent;
+  document.documentElement.style.setProperty('--accent', c.accent);
+  render();
+}
+function onAccent(v){ document.documentElement.style.setProperty('--accent', v); }
+function onSecond(on){ second = on; renderSigs(); }
+
+function fitName(){
+  const el = $('participant');
+  let size = 48;
+  el.style.fontSize = size + 'px';
+  const max = el.parentElement.clientWidth;
+  while (el.scrollWidth > max && size > 22){ size -= 1; el.style.fontSize = size + 'px'; }
+}
+window.addEventListener('load', fitName);
+window.addEventListener('beforeprint', fitName);
+$('participant').addEventListener('input', fitName);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitName);
+
+onPreset('crea8it');
+</script>
+</body>
+</html>
