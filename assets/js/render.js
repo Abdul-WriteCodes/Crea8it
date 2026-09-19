@@ -12,6 +12,7 @@
 
     // [href, label, icon]  — items with a #hash are never marked "active"
     var NAV = [
+        ["index.html",               "Home",           "icon-home"],
         ["programs.html",            "Programs",       "icon-rocket"],
         ["resources.html",           "Resources",      "icon-book-open"],
         ["projects.html",            "Products",       "icon-toolbox"],
@@ -21,7 +22,7 @@
 
     // [heading, [[href, label, opensNewTab]]]
     var FOOTER = [
-        ["Useful Links",      [["resources.html","Resources"],["programs.html","Programs"],["projects.html","Products"],["impact.html","Impacts"]]],
+        ["Useful Links",      [["index.html","Home"],["resources.html","Resources"],["programs.html","Programs"],["projects.html","Products"],["impact.html","Impacts"]]],
         ["For Organizations", [["run-a-cohort.html","Run Your Own Cohort"],["organisation-terms.html","Organisation Terms"]]],
         ["Community",         [[COMMUNITY,"Join on WhatsApp",true]]],
         ["The Lab",           [[LAB_URL,"Enter Lab"]]],
@@ -97,7 +98,16 @@
         window.addEventListener("resize", function () { if (window.innerWidth > 768) setOpen(false); });
     }
 
+    // "Home" icon isn't in the per-page sprite, so add it once here
+    function addHomeIcon() {
+        if (document.getElementById("icon-home")) return;
+        var s = document.createElement("div");
+        s.innerHTML = '<svg style="display:none" aria-hidden="true"><symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol></svg>';
+        document.body.insertBefore(s.firstChild, document.body.firstChild);
+    }
+
     function mount() {
+        addHomeIcon();
         var n = document.getElementById("site-nav");
         var f = document.getElementById("site-footer");
         if (n) n.outerHTML = navHTML();      // outerHTML (not innerHTML) keeps nav a direct child,
