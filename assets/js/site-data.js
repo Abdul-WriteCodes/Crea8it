@@ -19,6 +19,8 @@ const PROGRAMS = [
         img: "assets/Scr1.jpg",
         rot: "rot--1",
         description: "A career launch program for ambitious tech career aspirants ready to break into tech, learn valuable AI-era skills and access real opportunities.",
+        audience: "Ambitious tech career aspirants ready to break into tech.", // DRAFT: edit to match the real program
+        covers: ["Breaking into tech as a career aspirant", "Learning valuable AI-era skills", "Accessing real opportunities"],
         priceLabel: "Free",
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
@@ -32,6 +34,8 @@ const PROGRAMS = [
         img: "assets/Q&Q.jpeg",
         rot: "rot--4",
         description: "A hands-on program for turning raw, messy data into insights that actually inform decisions — cleaning, running the right statistical tests, and presenting findings that hold up.",
+        audience: "Anyone working with raw, messy data who needs findings that inform decisions.", // DRAFT: edit to match the real program
+        covers: ["Cleaning raw, messy data", "Running the right statistical tests", "Working with both quantitative and qualitative data", "Presenting findings that hold up"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
@@ -45,6 +49,8 @@ const PROGRAMS = [
         img: "assets/R&D.jpeg",
         rot: "rot--5",
         description: "A hands-on program covering the full research pipeline — from framing the right question and designing the study, to collecting, cleaning, and analyzing the data that answers it.",
+        audience: "Anyone who needs to carry a research project from question to results.", // DRAFT: edit to match the real program
+        covers: ["Framing the right research question", "Designing the study", "Collecting and cleaning the data", "Analyzing the data that answers the question"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
@@ -58,6 +64,8 @@ const PROGRAMS = [
         img: "assets/R&T.jpeg",
         rot: "rot--6",
         description: "A hands-on program for developing and monetizing academic research writing and technical/business writing — real skills, real paid output.",
+        audience: "People who want to earn from their writing skills.", // DRAFT: edit to match the real program
+        covers: ["Developing academic research writing", "Technical and business writing", "Turning writing skills into paid output"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Technical%20Writing%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
@@ -71,6 +79,8 @@ const PROGRAMS = [
         img: "assets/Scr2.jpg",
         rot: "rot--2",
         description: "A hands-on execution program that encourages builders to stop overthinking and start shipping.",
+        audience: "Builders who overthink and want to start shipping.", // DRAFT: edit to match the real program
+        covers: ["Moving from overthinking to shipping", "Hands-on execution, not theory"],
         priceLabel: "--",
         ctaText: "Join Challenge →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it."
@@ -84,6 +94,8 @@ const PROGRAMS = [
         img: "assets/Scr3.jpg",
         rot: "rot--3",
         description: "An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.",
+        audience: "Founders and indie hackers building real businesses from scratch.", // DRAFT: edit to match the real program
+        covers: ["Validating your idea", "Launching your startup", "Executing: you don't just learn, you do the work"],
         priceLabel: "--",
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."
