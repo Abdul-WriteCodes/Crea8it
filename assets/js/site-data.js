@@ -27,7 +27,7 @@ const PROGRAMS = [
     },
         {
         id: "data-analysis",
-        title: "Quantitative + Qualitative Analysis",
+        title: "Quant + Qual Analysis",
         icon: "icon-toolbox",
         tag: "Active",
         tagClass: "open",
