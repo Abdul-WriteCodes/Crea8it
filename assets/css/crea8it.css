@@ -542,6 +542,12 @@ nav{
     gap:40px;
     align-items:stretch;
 }
+.why-title{
+    text-align:center;
+    font-size:2.8rem;
+    margin-bottom:48px;
+}
+.why .section-title{ font-size:1.9rem; }
 .why > div{ display:flex; flex-direction:column; }
 .why .notebook{ margin-top:24px; flex:1; }
 
