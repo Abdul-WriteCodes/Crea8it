@@ -670,9 +670,9 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 .footer-links-col{ display:flex; flex-direction:column; align-items:flex-start; text-align:left; }
 
 .footer-links-heading{
-    font-family:var(--mono); font-size:.72rem; font-weight:700;
-    letter-spacing:2px; text-transform:uppercase; color:var(--ink);
-    margin-bottom:12px;
+    font-family:var(--hand); font-size:1.1rem; font-weight:400;
+    letter-spacing:0; text-transform:none; color:var(--ink);
+    margin-bottom:10px;
 }
 
 .footer-links{
@@ -746,7 +746,7 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     footer{ padding:36px 0 26px; }
     .footer-inner{ gap:14px; }
     .footer-columns{ display:grid; grid-template-columns:1fr 1fr; gap:24px 16px; width:100%; }
-    .footer-links-heading{ font-size:.66rem; letter-spacing:1.5px; margin-bottom:8px; color:var(--muted); }
+    .footer-links-heading{ font-size:1.05rem; margin-bottom:8px; }
     .footer-links{ gap:7px; font-size:.86rem; }
     .section{ padding:70px 0; }
     .postcard{ padding:40px 22px; }
