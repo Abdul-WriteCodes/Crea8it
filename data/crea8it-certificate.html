@@ -84,9 +84,11 @@
 
   .mark{
     display:flex;
+    flex-direction:column;
     align-items:center;
-    gap:10px;
-    margin-top:6px;
+    gap:8px;
+    margin-top:0;
+    text-align:center;
   }
   .mark-glyph{
     width:30px;height:30px;
@@ -98,6 +100,11 @@
     transform:rotate(45deg);
   }
   .mark-glyph span{ transform:rotate(-45deg); }
+  .mark-logo{ width:58px; height:58px; flex-shrink:0; }
+  .logo-ring-outer{ fill:var(--paper); stroke:var(--ink); stroke-width:1.6; }
+  .logo-ring-inner{ fill:none; stroke:var(--brass); stroke-width:.8; }
+  .logo-piece{ fill:var(--ink); stroke:var(--ink); stroke-width:1.2; stroke-linejoin:round; }
+  .logo-dot{ fill:var(--brass); }
   .mark-word{
     font-size:14px;
     letter-spacing:.14em;
@@ -111,7 +118,7 @@
   }
 
   .kicker{
-    margin-top:30px;
+    margin-top:22px;
     font-size:12.5px;
     letter-spacing:.16em;
     color:var(--sage);
@@ -282,7 +289,14 @@
       <div class="frame">
 
         <div class="mark">
-          <div class="mark-glyph"><span>C</span></div>
+          <svg class="mark-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="Crea8it logo">
+          <circle class="logo-ring-outer" cx="32" cy="32" r="30"/>
+          <circle class="logo-ring-inner" cx="32" cy="32" r="26.5"/>
+          <g transform="translate(32 32) scale(0.9) translate(-28 -20)">
+            <path class="logo-piece" d="M10 10 L20 10 A5 5 0 1 1 28 10 L38 10 L38 20 A5 5 0 1 1 38 28 L38 38 L28 38 A5 5 0 1 0 20 38 L10 38 L10 28 A5 5 0 1 0 10 20 Z"/>
+            <circle class="logo-dot" cx="24" cy="24" r="3.6"/>
+          </g>
+        </svg>
           <div>
             <div class="mark-word">CREA8IT LABS</div>
             <div class="mark-sub">COHORT-BASED AI PROGRAMS</div>
