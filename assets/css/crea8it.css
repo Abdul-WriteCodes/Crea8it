@@ -675,7 +675,11 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     margin-bottom:12px;
 }
 
-.footer-links{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; font-size:.85rem; }
+.footer-links{
+    display:flex; flex-direction:column; align-items:flex-start; gap:10px; font-size:.85rem;
+    /* undo the site-wide nav{} rule, which otherwise adds padding, a dashed border and sticky positioning here */
+    padding:0; border:0; position:static; background:none; backdrop-filter:none; z-index:auto;
+}
 .footer-links a{ text-decoration:none; color:var(--ink); }
 .footer-links a:hover{ color:var(--accent); }
 
@@ -739,7 +743,11 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
         padding:15px 4px; font-size:1rem; border-bottom:1px dashed var(--border);
     }
     .nav-links a.nav-lab{ display:flex; border-bottom:none; color:var(--accent); font-family:var(--mono); font-size:.9rem; }
-    .footer-columns{ flex-direction:column; gap:26px; }
+    footer{ padding:36px 0 26px; }
+    .footer-inner{ gap:14px; }
+    .footer-columns{ display:grid; grid-template-columns:1fr 1fr; gap:24px 16px; width:100%; }
+    .footer-links-heading{ font-size:.66rem; letter-spacing:1.5px; margin-bottom:8px; color:var(--muted); }
+    .footer-links{ gap:7px; font-size:.86rem; }
     .section{ padding:70px 0; }
     .postcard{ padding:40px 22px; }
     .postmark{ position:static; margin:0 auto 18px; }
