@@ -538,10 +538,12 @@ nav{
 
 .why{
     display:grid;
-    grid-template-columns:1.1fr .9fr;
-    gap:60px;
-    align-items:center;
+    grid-template-columns:1fr 1fr;
+    gap:40px;
+    align-items:stretch;
 }
+.why > div{ display:flex; flex-direction:column; }
+.why .notebook{ margin-top:24px; flex:1; }
 
 .notebook{
     background:
