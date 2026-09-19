@@ -170,6 +170,12 @@ nav{
     position:relative;
 }
 .nav-links a:hover{ color:var(--accent); }
+.nav-links a.active, .footer-links a.active{ color:var(--accent); }
+
+/* mobile menu button + Enter Lab link are hidden on desktop (see @media below) */
+.nav-toggle{ display:none; }
+.nav-links a.nav-lab{ display:none; }
+#site-nav{ min-height:89px; }
 
 .btn{
     display:inline-block;
@@ -711,7 +717,28 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 }
 
 @media(max-width:768px){
-    .nav-links{ display:none; }
+    nav{ padding:14px 0; }
+    #site-nav{ min-height:73px; }
+    .nav-toggle{
+        display:flex; flex-direction:column; justify-content:center; gap:5px;
+        width:44px; height:44px; padding:0 11px; cursor:pointer;
+        background:none; border:1px solid var(--border); border-radius:4px;
+    }
+    .nav-toggle span{ display:block; height:2px; background:var(--ink); border-radius:2px; transition:transform .2s, opacity .2s; }
+    .nav-toggle[aria-expanded="true"] span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .nav-toggle[aria-expanded="true"] span:nth-child(2){ opacity:0; }
+    .nav-toggle[aria-expanded="true"] span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+    .nav-links{
+        display:none; position:absolute; top:100%; left:0; right:0;
+        flex-direction:column; gap:0; padding:6px 4% 10px;
+        background:var(--board); border-bottom:1px dashed var(--border);
+    }
+    .nav-links.open{ display:flex; }
+    .nav-links a{
+        display:flex; justify-content:space-between; align-items:center;
+        padding:15px 4px; font-size:1rem; border-bottom:1px dashed var(--border);
+    }
+    .nav-links a.nav-lab{ display:flex; border-bottom:none; color:var(--accent); font-family:var(--mono); font-size:.9rem; }
     .footer-columns{ flex-direction:column; gap:26px; }
     .section{ padding:70px 0; }
     .postcard{ padding:40px 22px; }
@@ -931,3 +958,28 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
     transition:transform .2s ease, color .2s ease;
 }
 .stat-card:hover .eco-link{ transform:translateX(4px); color:var(--accent2); }
+
+
+/* ── legal & FAQ pages ── */
+
+.legal{ padding:70px 0 90px; }
+.legal-inner{ max-width:780px; }
+.legal h1{ font-family:var(--hand); font-size:clamp(2rem,5vw,2.8rem); color:var(--accent); margin-bottom:6px; }
+.legal .legal-meta{ font-family:var(--mono); font-size:.75rem; color:var(--muted); margin-bottom:34px; }
+.legal h2{ font-size:1.15rem; margin:34px 0 10px; color:var(--ink); }
+.legal p, .legal li{ color:#d9d0bd; font-size:.96rem; }
+.legal p{ margin-bottom:12px; }
+.legal ul{ margin:0 0 12px 20px; }
+.legal li{ margin-bottom:6px; }
+.legal a{ color:var(--accent); }
+.legal-note{
+    border:1px dashed var(--accent2); background:rgba(226,87,43,.08);
+    padding:14px 16px; border-radius:4px; font-size:.9rem; margin-bottom:28px;
+}
+.legal-note p{ margin:0; color:var(--ink); }
+.faq details{ border-bottom:1px dashed var(--border); padding:16px 0; }
+.faq summary{ cursor:pointer; font-weight:600; list-style:none; display:flex; justify-content:space-between; gap:14px; }
+.faq summary::-webkit-details-marker{ display:none; }
+.faq summary::after{ content:"+"; color:var(--accent); font-family:var(--mono); }
+.faq details[open] summary::after{ content:"–"; }
+.faq details p{ margin:10px 0 0; }
