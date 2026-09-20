@@ -12,30 +12,30 @@
 const PROGRAMS = [
     {
         id: "career-acceleration",
-        title: "Tech Career Acceleration",
+        title: "Break into Tech",
         icon: "icon-mic",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr1.jpg",
+        img: "assets/Brk2tech.jpeg",
         rot: "rot--1",
         description: "A career launch program for ambitious tech career aspirants ready to break into tech, learn valuable AI-era skills and access real opportunities.",
-        audience: "Ambitious tech career aspirants ready to break into tech.", // DRAFT: edit to match the real program
-        covers: ["Breaking into tech as a career aspirant", "Learning valuable AI-era skills", "Accessing real opportunities"],
+        audience: "Three(3) weeks, 9 Live Sessions, and 3 Task Assessments.", // DRAFT: edit to match the real program
+        covers: ["Tech Ecosystem Breakdown", "Tech Career Direction & Specialisation Discovery", "Digital, AI & Professional Skills Development", "Personalised Tech Entry Roadmap & Positioning Strategy"],
         priceLabel: "Free",
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
         {
         id: "data-analysis",
-        title: "Quantitative + Qualitative Analysis",
+        title: "Quant + Qual Analysis",
         icon: "icon-toolbox",
         tag: "Active",
         tagClass: "open",
         img: "assets/Q&Q.jpeg",
         rot: "rot--4",
         description: "A hands-on program for turning raw, messy data into insights that actually inform decisions — cleaning, running the right statistical tests, and presenting findings that hold up.",
-        audience: "Anyone working with raw, messy data who needs findings that inform decisions.", // DRAFT: edit to match the real program
-        covers: ["Cleaning raw, messy data", "Running the right statistical tests", "Working with both quantitative and qualitative data", "Presenting findings that hold up"],
+        audience: "Six(6) Weeks, 18 Live Sessions, 6 Tasks Assessments + 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Quantitative Data Analysis Mastery", "Qualitative Data Analysis Mastery", "Research Data Management", "Skill Monetisation & Distribution"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
@@ -49,38 +49,38 @@ const PROGRAMS = [
         img: "assets/R&D.jpeg",
         rot: "rot--5",
         description: "A hands-on program covering the full research pipeline — from framing the right question and designing the study, to collecting, cleaning, and analyzing the data that answers it.",
-        audience: "Anyone who needs to carry a research project from question to results.", // DRAFT: edit to match the real program
-        covers: ["Framing the right research question", "Designing the study", "Collecting and cleaning the data", "Analyzing the data that answers the question"],
+        audience: "Six(6) Weeks, 18 Live Sessions, 6 Tasks Assessmemts and 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Level 7 Writing Skill for Research & Custom Essay", "Advanced Data Analysis with Statistical Software", "End-to-End Research Methodology", "Research Skill Monetisation & Distribution"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
     {
         id: "research-technical-writing",
-        title: "Research and Technical Writing",
+        title: "Technical Writing",
         icon: "icon-book",
         tag: "Active",
         tagClass: "open",
-        img: "assets/R&T.jpeg",
+        img: "assets/Techwrite.jpeg",
         rot: "rot--6",
-        description: "A hands-on program for developing and monetizing academic research writing and technical/business writing — real skills, real paid output.",
-        audience: "People who want to earn from their writing skills.", // DRAFT: edit to match the real program
-        covers: ["Developing academic research writing", "Technical and business writing", "Turning writing skills into paid output"],
+        description: "A hands-on program for developing and monetizing Technical and business writing skills.",
+        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Technical & Business Writing Foundations", "Information Architecture & Documentation", "Information Mapping & Source Evaluation", "Technical Writing Portfolio Development & Monetization"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Technical%20Writing%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
     {
         id: "build-in-public",
-        title: "Build in Public Challenge",
+        title: "Applied AI and Productivity",
         icon: null,
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr2.jpg",
+        img: "assets/AppliedAI.jpeg",
         rot: "rot--2",
-        description: "A hands-on execution program that encourages builders to stop overthinking and start shipping.",
-        audience: "Builders who overthink and want to start shipping.", // DRAFT: edit to match the real program
-        covers: ["Moving from overthinking to shipping", "Hands-on execution, not theory"],
+        description: "A hands-on programme for learning how to use AI tools, build AI-powered workflows, automate tasks and apply AI to real-world professional and business problems..",
+        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks and 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["AI Foundation & Prompt Mastery", "AI Tools Mastery & Application", "AI Workflow & Integration", "AI Skills Monetisation & Distribution"],
         priceLabel: "--",
         ctaText: "Join Challenge →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it."
@@ -91,11 +91,11 @@ const PROGRAMS = [
         icon: "icon-flask",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr3.jpg",
+        img: "assets/Zerops.jpeg",
         rot: "rot--3",
         description: "An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.",
-        audience: "Founders and indie hackers building real businesses from scratch.", // DRAFT: edit to match the real program
-        covers: ["Validating your idea", "Launching your startup", "Executing: you don't just learn, you do the work"],
+        audience: "8 Weeks, 16 Live Sessions, 4 Tasks & 1 Product.", // DRAFT: edit to match the real program
+        covers: ["Idea Validation", "Business Model Development & Market Discovery", "MVP Design & Building", "Launch, Distribution & Monetization"],
         priceLabel: "--",
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."

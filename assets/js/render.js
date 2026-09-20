@@ -127,14 +127,14 @@
 
 function programDetailsHTML(p) {
     if (!p.covers || !p.covers.length) return "";
-    const who = p.audience ? `<p class="cd-label">Who it's for</p><p>${p.audience}</p>` : "";
+    const who = p.audience ? `<p class="cd-label">Program Structure</p><p>${p.audience}</p>` : "";
     const items = p.covers.map(c => `<li>${c}</li>`).join("");
     return `
         <details class="card-details">
             <summary>What's inside</summary>
             <div class="card-details-body">
                 ${who}
-                <p class="cd-label">What it covers</p>
+                <p class="cd-label">What it Covers</p>
                 <ul>${items}</ul>
             </div>
         </details>`;

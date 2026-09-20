@@ -333,7 +333,7 @@ nav{
 
 /* ── section shell ── */
 
-.section{ padding:100px 0; position:relative; }
+.section{ padding:70px 0; position:relative; }
 
 .section-head{ margin-bottom:56px; max-width:640px; }
 
@@ -538,10 +538,18 @@ nav{
 
 .why{
     display:grid;
-    grid-template-columns:1.1fr .9fr;
-    gap:60px;
-    align-items:center;
+    grid-template-columns:1fr 1fr;
+    gap:40px;
+    align-items:stretch;
 }
+.why-title{
+    text-align:center;
+    font-size:2.8rem;
+    margin-bottom:48px;
+}
+.why .section-title{ font-size:1.9rem; }
+.why > div{ display:flex; flex-direction:column; }
+.why .notebook{ margin-top:24px; flex:1; }
 
 .notebook{
     background:
@@ -904,14 +912,18 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 
 .grid.sticky-grid{
     display:grid;
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(2,1fr);   /* always 2x2, on every screen size */
     gap:14px;
+    max-width:900px;                        /* stops the notes stretching into flat strips on wide screens */
 }
 @media(min-width:560px){
-    .grid.sticky-grid{ gap:20px; }
+    .grid.sticky-grid{ gap:22px; }
 }
-@media(min-width:1100px){
-    .grid.sticky-grid{ grid-template-columns:repeat(4,1fr); gap:22px; }
+@media(min-width:700px){
+    .stat-card{ padding:28px 26px 22px; }
+    .stat-num{ font-size:3rem; margin-bottom:12px; }
+    .stat-label{ font-size:1rem; margin-bottom:18px; }
+    .stat-card .eco-link{ font-size:.85rem; }
 }
 
 .stat-card{
