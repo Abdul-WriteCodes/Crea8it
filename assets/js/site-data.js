@@ -57,15 +57,15 @@ const PROGRAMS = [
     },
     {
         id: "research-technical-writing",
-        title: "Research and Technical Writing",
+        title: "Technical Writing",
         icon: "icon-book",
         tag: "Active",
         tagClass: "open",
-        img: "assets/R&T.jpeg",
+        img: "assets/Techwrite.jpeg",
         rot: "rot--6",
         description: "A hands-on program for developing and monetizing academic research writing and technical/business writing — real skills, real paid output.",
-        audience: "People who want to earn from their writing skills.", // DRAFT: edit to match the real program
-        covers: ["Developing academic research writing", "Technical and business writing", "Turning writing skills into paid output"],
+        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Technical & Business Writing Foundations", "Information Architecture & Documentation", "Information Mapping & Source Evaluation", "Technical Writing Portfolio Development & Monetization"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Technical%20Writing%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
