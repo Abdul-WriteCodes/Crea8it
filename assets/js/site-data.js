@@ -72,15 +72,15 @@ const PROGRAMS = [
     },
     {
         id: "build-in-public",
-        title: "Build in Public Challenge",
+        title: "Applied AI and Productivity",
         icon: null,
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr2.jpg",
+        img: "assets/AppliedAI.jpeg",
         rot: "rot--2",
-        description: "A hands-on execution program that encourages builders to stop overthinking and start shipping.",
-        audience: "Builders who overthink and want to start shipping.", // DRAFT: edit to match the real program
-        covers: ["Moving from overthinking to shipping", "Hands-on execution, not theory"],
+        description: "A hands-on programme for learning how to use AI tools, build AI-powered workflows, automate tasks and apply AI to real-world professional and business problems..",
+        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks and 1 Capstone Projects.", // DRAFT: edit to match the real program
+        covers: ["AI Foundation & Prompt Mastery", "AI Tools Mastery & Application", "AI Workflow & Integration", "AI Skills Monetisation & Distribution"],
         priceLabel: "--",
         ctaText: "Join Challenge →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it."
