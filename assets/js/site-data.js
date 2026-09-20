@@ -49,8 +49,8 @@ const PROGRAMS = [
         img: "assets/R&D.jpeg",
         rot: "rot--5",
         description: "A hands-on program covering the full research pipeline — from framing the right question and designing the study, to collecting, cleaning, and analyzing the data that answers it.",
-        audience: "Anyone who needs to carry a research project from question to results.", // DRAFT: edit to match the real program
-        covers: ["Framing the right research question", "Designing the study", "Collecting and cleaning the data", "Analyzing the data that answers the question"],
+        audience: "Six(6) Weeks, 18 Live Sessions, 6 Tasks Assessmemts and 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Level 7 Writing Skill for Research & Custom Essay", "Advanced Data Analysis with Statistical Software", "End-to-End Research Methodology", "Research Skill Monetisation & Distribution"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
