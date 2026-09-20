@@ -134,7 +134,7 @@ function programDetailsHTML(p) {
             <summary>What's inside</summary>
             <div class="card-details-body">
                 ${who}
-                <p class="cd-label">What it covers</p>
+                <p class="cd-label">Program Structure</p>
                 <ul>${items}</ul>
             </div>
         </details>`;
