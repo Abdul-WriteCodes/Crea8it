@@ -12,15 +12,15 @@
 const PROGRAMS = [
     {
         id: "career-acceleration",
-        title: "Tech Career Acceleration",
+        title: "Break into Tech",
         icon: "icon-mic",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr1.jpg",
+        img: "assets/Brk2tech.jpeg",
         rot: "rot--1",
         description: "A career launch program for ambitious tech career aspirants ready to break into tech, learn valuable AI-era skills and access real opportunities.",
-        audience: "Ambitious tech career aspirants ready to break into tech.", // DRAFT: edit to match the real program
-        covers: ["Breaking into tech as a career aspirant", "Learning valuable AI-era skills", "Accessing real opportunities"],
+        audience: "Three(3) weeks, 9 Live Sessions, and 3 Task Assessments.", // DRAFT: edit to match the real program
+        covers: ["Tech Ecosystem Breakdown", "Tech Career Direction & Specialisation Discovery", "Digital, AI & Professional Skills Development", "Personalised Tech Entry Roadmap & Positioning Strategy"],
         priceLabel: "Free",
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
