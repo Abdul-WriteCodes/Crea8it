@@ -34,8 +34,8 @@ const PROGRAMS = [
         img: "assets/Q&Q.jpeg",
         rot: "rot--4",
         description: "A hands-on program for turning raw, messy data into insights that actually inform decisions — cleaning, running the right statistical tests, and presenting findings that hold up.",
-        audience: "Anyone working with raw, messy data who needs findings that inform decisions.", // DRAFT: edit to match the real program
-        covers: ["Cleaning raw, messy data", "Running the right statistical tests", "Working with both quantitative and qualitative data", "Presenting findings that hold up"],
+        audience: "Six(6) Weeks, 18 Live Sessions, 6 Tasks Assessments + 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Quantitative Data Analysis Mastery", "Qualitative Data Analysis Mastery", "Research Data Management", "Skill Monetisation & Distribution"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
