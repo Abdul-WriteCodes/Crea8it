@@ -12,17 +12,17 @@
 
     // [href, label, icon]  — items with a #hash are never marked "active"
     var NAV = [
-        ["index.html",               "Home",           "icon-home"],
+        ["/",                        "Home",           "icon-home"],
         ["programs.html",            "Programs",       "icon-rocket"],
         ["resources.html",           "Resources",      "icon-book-open"],
         ["projects.html",            "Products",       "icon-toolbox"],
         ["impact.html",              "Impact",         "icon-trophy"],
-        ["index.html#submit-request","Submit Request", "icon-send"]
+        ["/#submit-request",         "Submit Request", "icon-send"]
     ];
 
     // [heading, [[href, label, opensNewTab]]]
     var FOOTER = [
-        ["Explore",       [["index.html","Home"],["programs.html","Programs"],["resources.html","Resources"],["projects.html","Products"],["impact.html","Impacts"]]],
+        ["Explore",       [["/","Home"],["programs.html","Programs"],["resources.html","Resources"],["projects.html","Products"],["impact.html","Impacts"]]],
         ["Organizations", [["run-a-cohort.html","Run a Cohort"],["organisation-terms.html","Organisation Terms"]]],
         ["Connect",       [[LAB_URL,"Enter Lab"],[COMMUNITY,"Join on WhatsApp",true]]],
         ["Legal & Help",  [["faqs.html","FAQs"],["terms.html","Terms of Service"],["privacy.html","Privacy & Cookies"]]]
@@ -34,7 +34,7 @@
         var p = location.pathname.split("/").pop() || "index";
         return p.replace(/\.html$/, "");
     }
-    function hrefKey(h) { return h.split("#")[0].replace(/\.html$/, ""); }
+    function hrefKey(h) { return h.split("#")[0].replace(/^\//, "").replace(/\.html$/, "") || "index"; }
     function isActive(h) {
         return h.indexOf("#") === -1 && h.indexOf("http") !== 0 && hrefKey(h) === pageKey();
     }
@@ -47,7 +47,7 @@
         }).join("");
         return '<nav aria-label="Main">' +
             '<div class="container nav-wrapper">' +
-              '<a href="index.html" class="logo-block" style="text-decoration:none;cursor:pointer;">' +
+              '<a href="/" class="logo-block" style="text-decoration:none;cursor:pointer;">' +
                 '<div class="logo">Crea8it Studio</div><div class="logo-sub"></div></a>' +
               '<button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">' +
                 '<span></span><span></span><span></span></button>' +
@@ -354,4 +354,4 @@ function initFlipPolaroid(wrapId, captionId, captions) {
         imgs[current].classList.add("active");
         if (captionEl && captions[current]) captionEl.textContent = captions[current];
     }, 4000);
-          }
+  }
