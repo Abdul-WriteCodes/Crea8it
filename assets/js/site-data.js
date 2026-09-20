@@ -79,7 +79,7 @@ const PROGRAMS = [
         img: "assets/AppliedAI.jpeg",
         rot: "rot--2",
         description: "A hands-on programme for learning how to use AI tools, build AI-powered workflows, automate tasks and apply AI to real-world professional and business problems..",
-        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks and 1 Capstone Projects.", // DRAFT: edit to match the real program
+        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks and 1 Capstone Project.", // DRAFT: edit to match the real program
         covers: ["AI Foundation & Prompt Mastery", "AI Tools Mastery & Application", "AI Workflow & Integration", "AI Skills Monetisation & Distribution"],
         priceLabel: "--",
         ctaText: "Join Challenge →",
@@ -91,11 +91,11 @@ const PROGRAMS = [
         icon: "icon-flask",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Scr3.jpg",
+        img: "assets/Zerops.jpeg",
         rot: "rot--3",
         description: "An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.",
-        audience: "Founders and indie hackers building real businesses from scratch.", // DRAFT: edit to match the real program
-        covers: ["Validating your idea", "Launching your startup", "Executing: you don't just learn, you do the work"],
+        audience: "8 Weeks, 16 Live Sessions, 4 Tasks & 1 Product.", // DRAFT: edit to match the real program
+        covers: ["Idea Validation", "Business Model Development & Market Discovery", "MVP Design & Building", "Launch, Distribution & Monetization"],
         priceLabel: "--",
         ctaText: "Register →",
         ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."
