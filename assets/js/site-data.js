@@ -63,7 +63,7 @@ const PROGRAMS = [
         tagClass: "open",
         img: "assets/Techwrite.jpeg",
         rot: "rot--6",
-        description: "A hands-on program for developing and monetizing academic research writing and technical/business writing — real skills, real paid output.",
+        description: "A hands-on program for developing and monetizing Technical and business writing skills.",
         audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
         covers: ["Technical & Business Writing Foundations", "Information Architecture & Documentation", "Information Mapping & Source Evaluation", "Technical Writing Portfolio Development & Monetization"],
         priceLabel: "--", // TODO: add price
