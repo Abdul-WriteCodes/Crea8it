@@ -91,7 +91,7 @@ const PROGRAMS = [
         icon: "icon-flask",
         tag: "Active",
         tagClass: "open",
-        img: "assets/Zerops.jpeg",
+        img: "assets/zerops.jpeg",
         rot: "rot--3",
         description: "An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.",
         audience: "8 Weeks, 16 Live Sessions, 4 Tasks & 1 Product.", // DRAFT: edit to match the real program
