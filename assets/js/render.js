@@ -7,7 +7,7 @@
 (function () {
     "use strict";
 
-    var LAB_URL   = "https://crea8it.streamlit.app/";
+    var LAB_URL   = "https://lab.crea8it.com/";
     var COMMUNITY = "https://chat.whatsapp.com/Gbm13AqaNSt24MAxszzkcB";
 
     // [href, label, icon]  — items with a #hash are never marked "active"
