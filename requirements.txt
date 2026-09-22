@@ -1,2 +1,0 @@
-streamlit>=1.37
-supabase>=2.4
