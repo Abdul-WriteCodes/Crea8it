@@ -9,6 +9,7 @@
   assets/js/render.js in each page.
 */
 
+// ctaLink opens register.html (form). whatsappLink is shown AFTER someone registers.
 const PROGRAMS = [
     {
         id: "career-acceleration",
@@ -23,7 +24,8 @@ const PROGRAMS = [
         covers: ["Tech Ecosystem Breakdown", "Tech Career Direction & Specialisation Discovery", "Digital, AI & Professional Skills Development", "Personalised Tech Entry Roadmap & Positioning Strategy"],
         priceLabel: "Free",
         ctaText: "Register →",
-        ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+        ctaLink: "register.html?program=career-acceleration",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20AI%20Career%20Acceleration%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
         {
         id: "data-analysis",
@@ -38,7 +40,8 @@ const PROGRAMS = [
         covers: ["Quantitative Data Analysis Mastery", "Qualitative Data Analysis Mastery", "Research Data Management", "Skill Monetisation & Distribution"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
-        ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+        ctaLink: "register.html?program=data-analysis",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
     {
         id: "research-data-analysis",
@@ -53,7 +56,8 @@ const PROGRAMS = [
         covers: ["Level 7 Writing Skill for Research & Custom Essay", "Advanced Data Analysis with Statistical Software", "End-to-End Research Methodology", "Research Skill Monetisation & Distribution"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
-        ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+        ctaLink: "register.html?program=research-data-analysis",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Data%20Analysis%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
     {
         id: "research-technical-writing",
@@ -68,7 +72,8 @@ const PROGRAMS = [
         covers: ["Technical & Business Writing Foundations", "Information Architecture & Documentation", "Information Mapping & Source Evaluation", "Technical Writing Portfolio Development & Monetization"],
         priceLabel: "--", // TODO: add price
         ctaText: "Register →",
-        ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Technical%20Writing%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+        ctaLink: "register.html?program=research-technical-writing",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Technical%20Writing%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
     {
         id: "build-in-public",
@@ -83,7 +88,8 @@ const PROGRAMS = [
         covers: ["AI Foundation & Prompt Mastery", "AI Tools Mastery & Application", "AI Workflow & Integration", "AI Skills Monetisation & Distribution"],
         priceLabel: "--",
         ctaText: "Join Challenge →",
-        ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it."
+        ctaLink: "register.html?program=build-in-public",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it."
     },
     {
         id: "zero-to-one",
@@ -98,7 +104,8 @@ const PROGRAMS = [
         covers: ["Idea Validation", "Business Model Development & Market Discovery", "MVP Design & Building", "Launch, Distribution & Monetization"],
         priceLabel: "--",
         ctaText: "Register →",
-        ctaLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."
+        ctaLink: "register.html?program=zero-to-one",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."
     }
 ];
 
