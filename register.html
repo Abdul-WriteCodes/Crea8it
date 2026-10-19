@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="favicon-192.png">
+
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://crea8it.com/register.html">
+<meta property="og:url" content="https://crea8it.com/register.html">
+<meta property="og:title" content="Register — Crea8it — Skills That Ship">
+<meta property="og:description" content="Save your seat in a Crea8it program. Fill the short form and we'll continue on WhatsApp.">
+<meta property="og:image" content="https://crea8it.com/assets/images/og-banner.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Register — Crea8it — Skills That Ship">
+<meta name="twitter:description" content="Save your seat in a Crea8it program. Fill the short form and we'll continue on WhatsApp.">
+<meta name="twitter:image" content="https://crea8it.com/assets/images/og-banner.png">
+
+<title>Register — Crea8it — Skills That Ship</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/crea8it.css?v=4">
+
+<style>
+/* Registration form — page-specific styles (kept here so crea8it.css stays untouched) */
+.reg-wrap{ max-width:640px; margin:0 auto; }
+.reg-card{
+    position:relative;
+    background:var(--paper);
+    color:var(--ink-dark);
+    border-radius:6px;
+    padding:34px 32px 30px;
+    box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+.reg-card h2{ font-family:var(--hand); font-size:1.6rem; font-weight:400; margin-bottom:4px; }
+.reg-sub{ color:#6b5d44; font-size:.95rem; margin-bottom:22px; }
+
+.reg-field{ margin-bottom:18px; }
+.reg-field label{ display:block; font-weight:700; font-size:.88rem; margin-bottom:6px; }
+.reg-field input[type="text"],
+.reg-field input[type="email"],
+.reg-field input[type="tel"],
+.reg-field select{
+    width:100%;
+    padding:12px 14px;
+    font:inherit;
+    font-size:1rem;
+    color:var(--ink-dark);
+    background:#fffaf0;
+    border:2px solid #d9c9a3;
+    border-radius:6px;
+    transition:border-color .2s, box-shadow .2s;
+}
+.reg-field input:focus,
+.reg-field select:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(255,183,3,.3);
+}
+.reg-field input.invalid,
+.reg-field select.invalid{ border-color:var(--accent2); }
+.reg-hint{ font-size:.8rem; color:#7a6b50; margin-top:5px; }
+.reg-error{ font-size:.82rem; color:var(--accent2); font-weight:600; margin-top:5px; display:none; }
+.reg-error.show{ display:block; }
+
+.reg-prog-info{
+    display:none;
+    margin-top:10px;
+    padding:12px 14px;
+    background:rgba(63,122,104,.12);
+    border-left:4px solid var(--accent3);
+    border-radius:4px;
+    font-size:.88rem;
+    color:#3b3220;
+}
+.reg-prog-info.show{ display:block; }
+.reg-prog-info strong{ display:block; margin-bottom:2px; }
+
+.reg-consent{ display:flex; gap:10px; align-items:flex-start; font-size:.85rem; color:#4a3f2a; }
+.reg-consent input{ margin-top:4px; width:18px; height:18px; accent-color:var(--accent3); flex-shrink:0; }
+.reg-consent a{ color:var(--accent2); font-weight:700; }
+
+.reg-hp{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; opacity:0; }
+
+.reg-submit{ width:100%; margin-top:8px; font:inherit; font-weight:700; font-size:1rem; cursor:pointer; }
+.reg-submit[disabled]{ opacity:.6; cursor:not-allowed; transform:none; }
+.reg-form-error{
+    display:none; margin-top:14px; padding:12px 14px; border-radius:6px;
+    background:rgba(226,87,43,.12); color:#8c2d10; font-size:.9rem; font-weight:600;
+}
+.reg-form-error.show{ display:block; }
+
+.reg-success{ display:none; text-align:center; padding:10px 0 4px; }
+.reg-success.show{ display:block; }
+.reg-success .reg-check{
+    width:64px; height:64px; margin:0 auto 14px; border-radius:50%;
+    background:var(--accent3); color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:2rem; font-weight:800;
+}
+.reg-success h2{ margin-bottom:8px; }
+.reg-success p{ color:#4a3f2a; margin-bottom:20px; }
+.reg-wa{ background:#25D366; color:#073b1d; box-shadow:0 6px 0 #17a14c; }
+.reg-wa:hover{ transform:translateY(2px); box-shadow:0 4px 0 #17a14c; }
+
+@media (max-width:520px){
+    .reg-card{ padding:26px 20px 24px; }
+}
+</style>
+</head>
+<body>
+
+<svg style="display:none" aria-hidden="true">
+<svg style="display:none" aria-hidden="true">
+<symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2c3 2 4 6 4 10 0 2-1 4-4 6-3-2-4-4-4-6 0-4 1-8 4-10z"/>
+    <circle cx="12" cy="9" r="1.6"/>
+    <path d="M8 15l-2 5 4-2"/>
+    <path d="M16 15l2 5-4-2"/>
+</symbol>
+<symbol id="icon-book-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 6c-1.5-1.2-3.6-2-6-2v13c2.4 0 4.5.8 6 2 1.5-1.2 3.6-2 6-2V4c-2.4 0-4.5.8-6 2z"/>
+    <path d="M12 6v13"/>
+</symbol>
+<symbol id="icon-toolbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="9" width="18" height="10" rx="1.5"/>
+    <path d="M8 9V6a4 4 0 0 1 8 0v3"/>
+    <path d="M3 13h18"/>
+</symbol>
+<symbol id="icon-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 4h12v3a6 6 0 0 1-12 0V4z"/>
+    <path d="M12 13v4"/>
+    <path d="M8 20h8"/>
+</symbol>
+<symbol id="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11l18-8-8 18-2-8-8-2z"/>
+</symbol>
+<symbol id="icon-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <path d="M7 9l3 3-3 3"/>
+    <path d="M13 15h4"/>
+</symbol>
+<symbol id="icon-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>
+</symbol>
+<symbol id="icon-adapt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 4v5h5"/>
+    <path d="M20 20v-5h-5"/>
+    <path d="M5 15a7 7 0 0 0 12 3l3-3"/>
+    <path d="M19 9a7 7 0 0 0-12-3L4 9"/>
+</symbol>
+<symbol id="icon-dot" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+    <circle cx="12" cy="12" r="7"/>
+</symbol>
+</svg>
+</svg>
+
+<div id="site-nav"></div>
+
+<section class="shelf-hero">
+<div class="container hero-grid">
+
+<div class="hero-content">
+<span class="badge"><svg class="icon icon-lead"><use href="#icon-rocket"/></svg>Registration</span>
+
+<h1>Save<br><span>Your Seat.</span></h1>
+
+<p class="lede">
+Fill the short form below and your details come straight to me. Right after, you'll get a button to continue on WhatsApp, where I share the full details of the program, including price.
+</p>
+</div>
+
+<div class="hero-photo-wrap">
+    <div class="hero-sticky hand">Build.<br>Learn. Ship.🚀</div>
+    <div class="polaroid rot--1" style="width:260px;">
+        <div class="tape tc"></div>
+        <div class="pin"></div>
+        <img src="images/programs-poster-1.jpg" alt="Crea8it — Ideas, Products, Impact" style="width:100%;display:block;">
+        <figcaption>🧩 Start now. Not Later</figcaption>
+    </div>
+</div>
+
+</div>
+</section>
+
+<section class="section" style="padding-top:40px;">
+<div class="container">
+<div class="reg-wrap">
+<div class="reg-card">
+<div class="pin"></div>
+
+<!-- FORM -->
+<div id="regFormView">
+    <h2>Program Registration</h2>
+    <p class="reg-sub">Takes about a minute. All fields are required.</p>
+
+    <form id="regForm" novalidate autocomplete="on">
+
+        <div class="reg-field">
+            <label for="regProgram">Program</label>
+            <select id="regProgram" name="program" required></select>
+            <div class="reg-prog-info" id="regProgInfo"></div>
+            <div class="reg-error" id="err-program">Please choose a program.</div>
+        </div>
+
+        <div class="reg-field">
+            <label for="regName">Full name</label>
+            <input type="text" id="regName" name="name" autocomplete="name" required>
+            <div class="reg-error" id="err-name">Please enter your full name.</div>
+        </div>
+
+        <div class="reg-field">
+            <label for="regEmail">Email address</label>
+            <input type="email" id="regEmail" name="email" autocomplete="email" required>
+            <div class="reg-error" id="err-email">Please enter a valid email address.</div>
+        </div>
+
+        <div class="reg-field">
+            <label for="regPhone">WhatsApp number</label>
+            <input type="tel" id="regPhone" name="phone" autocomplete="tel" placeholder="+234 801 234 5678" required>
+            <div class="reg-hint">Include your country code, e.g. +234.</div>
+            <div class="reg-error" id="err-phone">Please enter a valid phone number with country code.</div>
+        </div>
+
+        <!-- spam trap: real people never see or fill this -->
+        <div class="reg-hp" aria-hidden="true">
+            <label for="regWebsite">Leave this field empty</label>
+            <input type="text" id="regWebsite" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="reg-field">
+            <label class="reg-consent" for="regConsent">
+                <input type="checkbox" id="regConsent" name="consent">
+                <span>I agree to be contacted about this program and I accept the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+            </label>
+            <div class="reg-error" id="err-consent">Please tick this box to continue.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary reg-submit" id="regSubmit">Register →</button>
+        <div class="reg-form-error" id="regFormError"></div>
+    </form>
+</div>
+
+<!-- SUCCESS -->
+<div class="reg-success" id="regSuccessView">
+    <div class="reg-check">✓</div>
+    <h2>You're registered!</h2>
+    <p>Thanks, <strong id="regSuccessName"></strong>. Price and full details are shared on WhatsApp. Tap the button below to continue the conversation.</p>
+    <a href="#" class="btn btn-primary reg-wa" id="regWhatsapp" target="_blank" rel="noopener">Continue on WhatsApp →</a>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/site-data.js?v=3"></script>
+<script src="assets/js/render.js?v=4"></script>
+<script>
+(function () {
+    // ───────────────────────────────────────────────────────────
+    // PASTE your Google Apps Script "Web app" URL between the quotes.
+    // (See google-apps-script-setup.md for how to get it.)
+    // ───────────────────────────────────────────────────────────
+    var SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+
+    var form       = document.getElementById("regForm");
+    var selProgram = document.getElementById("regProgram");
+    var progInfo   = document.getElementById("regProgInfo");
+    var btn        = document.getElementById("regSubmit");
+    var formErr    = document.getElementById("regFormError");
+
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    // 1. Fill the dropdown from PROGRAMS (add a program in site-data.js and it appears here)
+    var opts = '<option value="">Select a program…</option>';
+    PROGRAMS.forEach(function (p) {
+        opts += '<option value="' + esc(p.id) + '">' + esc(p.title) + '</option>';
+    });
+    selProgram.innerHTML = opts;
+
+    // 2. Pre-select from ?program=... in the URL
+    var wanted = new URLSearchParams(window.location.search).get("program");
+    if (wanted && PROGRAMS.some(function (p) { return p.id === wanted; })) {
+        selProgram.value = wanted;
+    }
+
+    function getProgram(id) {
+        return PROGRAMS.filter(function (p) { return p.id === id; })[0] || null;
+    }
+
+    // 3. Show a short summary of the chosen program
+    function showProgramInfo() {
+        var p = getProgram(selProgram.value);
+        if (!p) { progInfo.className = "reg-prog-info"; progInfo.innerHTML = ""; return; }
+        progInfo.innerHTML = "<strong>" + esc(p.title) + "</strong>" + (p.audience ? esc(p.audience) : "");
+        progInfo.className = "reg-prog-info show";
+    }
+    selProgram.addEventListener("change", showProgramInfo);
+    showProgramInfo();
+
+    // 4. Validation
+    function setErr(id, inputEl, bad) {
+        document.getElementById("err-" + id).classList.toggle("show", bad);
+        if (inputEl && inputEl.classList) inputEl.classList.toggle("invalid", bad);
+        return bad;
+    }
+
+    function validate() {
+        var name  = document.getElementById("regName");
+        var email = document.getElementById("regEmail");
+        var phone = document.getElementById("regPhone");
+        var cons  = document.getElementById("regConsent");
+        var digits = phone.value.replace(/\D/g, "");
+
+        var bad = false;
+        bad = setErr("program", selProgram, !selProgram.value) || bad;
+        bad = setErr("name",    name,  name.value.trim().length < 2) || bad;
+        bad = setErr("email",   email, !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.value.trim())) || bad;
+        bad = setErr("phone",   phone, digits.length < 10 || digits.length > 15) || bad;
+        bad = setErr("consent", null,  !cons.checked) || bad;
+        return !bad;
+    }
+
+    // 5. Submit
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        formErr.classList.remove("show");
+
+        if (!validate()) return;
+
+        if (SCRIPT_URL.indexOf("PASTE_YOUR") === 0) {
+            formErr.textContent = "Registration isn't connected yet. Please message me on WhatsApp instead.";
+            formErr.classList.add("show");
+            return;
+        }
+
+        var p = getProgram(selProgram.value);
+        var payload = {
+            name:      document.getElementById("regName").value.trim(),
+            email:     document.getElementById("regEmail").value.trim(),
+            phone:     document.getElementById("regPhone").value.trim(),
+            programId: p.id,
+            program:   p.title,
+            website:   document.getElementById("regWebsite").value,   // honeypot
+            page:      window.location.href
+        };
+
+        btn.disabled = true;
+        btn.textContent = "Registering…";
+
+        // text/plain avoids a browser "preflight" request, which Apps Script doesn't answer.
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+        }).then(function () {
+            document.getElementById("regSuccessName").textContent = payload.name.split(" ")[0];
+            var wa = document.getElementById("regWhatsapp");
+            wa.href = p.whatsappLink || "https://wa.me/2348096506034";
+            document.getElementById("regFormView").style.display = "none";
+            document.getElementById("regSuccessView").classList.add("show");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }).catch(function () {
+            btn.disabled = false;
+            btn.textContent = "Register →";
+            formErr.textContent = "Something went wrong sending your details. Check your connection and try again.";
+            formErr.classList.add("show");
+        });
+    });
+})();
+</script>
+
+</body>
+</html>
