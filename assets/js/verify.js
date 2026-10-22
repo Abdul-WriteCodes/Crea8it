@@ -12,8 +12,8 @@
 (function () {
     "use strict";
 
-    var SUPABASE_URL      = "PASTE_SUPABASE_PROJECT_URL";   // e.g. https://abcdxyz.supabase.co
-    var SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY";
+    var SUPABASE_URL      = "https://taaselqbqzhzimfosezv.supabase.co";   // e.g. https://abcdxyz.supabase.co
+    var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhYXNlbHFicXpoemltZm9zZXp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MzI5ODIsImV4cCI6MjA5OTIwODk4Mn0.ThDu9dgrOLAWAWpwWUAEzv6YVI8DHAk6gbQCvDD5fMg";
 
     var form   = document.getElementById("verify-form");
     var input  = document.getElementById("cert-id");
