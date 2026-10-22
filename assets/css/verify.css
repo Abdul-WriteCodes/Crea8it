@@ -1,0 +1,37 @@
+/* Certificate verification page — scoped to .verify-* so it never touches site styles */
+.verify-form{ margin:26px 0 22px; }
+.verify-form label{ display:block; font-size:.82rem; color:var(--muted); margin-bottom:6px; }
+.verify-row{ display:flex; gap:12px; flex-wrap:wrap; }
+.verify-row input{
+    flex:1; min-width:240px; height:50px; padding:0 14px;
+    font-family:var(--mono); font-size:1rem; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--ink-dark); background:var(--paper); border:2px solid var(--border); border-radius:4px;
+}
+.verify-row input::placeholder{ color:#7a6f5a; text-transform:none; }
+.verify-row input:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+.verify-row .btn{ height:50px; cursor:pointer; }
+
+.verify-result{ margin:8px 0 26px; }
+.verify-card{
+    background:var(--paper); color:var(--ink-dark);
+    border-radius:4px; padding:26px 26px 22px;
+    box-shadow:0 10px 0 rgba(0,0,0,.28);
+    display:flex; flex-direction:column; gap:18px;
+}
+.verify-badge{
+    align-self:flex-start; display:inline-flex; align-items:center; gap:8px;
+    font-weight:700; font-size:.9rem; padding:7px 14px; border-radius:3px;
+}
+.verify-badge.ok{ background:#d9e8da; color:#1f4a35; }
+.verify-badge.bad{ background:#f3d9cf; color:#7d2a12; }
+.verify-badge.none{ background:#e7dfc9; color:#4a4030; }
+.verify-badge svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.verify-label{ font-size:.78rem; color:#5d5441; }
+.verify-name{ font-size:clamp(1.6rem,5vw,2.3rem); font-weight:800; line-height:1.15; overflow-wrap:anywhere; }
+.verify-prog{ font-size:1.02rem; margin-top:4px; }
+.verify-meta{ display:flex; flex-wrap:wrap; gap:16px 44px; border-top:1px solid #cfc3a6; padding-top:16px; }
+.verify-meta dt{ font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:#5d5441; }
+.verify-meta dd{ font-size:1.02rem; font-weight:600; margin-top:2px; }
+.verify-id{ font-family:var(--mono); font-size:.78rem; color:#5d5441; overflow-wrap:anywhere; }
+.verify-msg{ font-size:1.02rem; line-height:1.55; }
+.verify-note{ font-size:.84rem !important; color:var(--muted) !important; max-width:62ch; }
