@@ -1054,3 +1054,6 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 @media (max-width: 1080px) { .crea8it-footer .footer-top { grid-template-columns: 1fr; gap: 30px; } .crea8it-footer .footer-identity { max-width: 440px; } }
 @media (max-width: 640px) { .crea8it-footer { padding: 43px 0 23px; } .crea8it-footer .footer-columns { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 27px 14px; } .crea8it-footer .footer-bottom { margin-top: 30px; } }
 @media (max-width: 350px) { .crea8it-footer .footer-columns { grid-template-columns: 1fr; } }
+
+/* Preserve filled X and LinkedIn artwork within the redesigned footer. */
+.crea8it-footer .footer-socials a.footer-social-brand svg { fill: currentColor; stroke: none; }
