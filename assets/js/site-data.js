@@ -106,6 +106,70 @@ const PROGRAMS = [
         ctaText: "Register →",
         ctaLink: "register.html?program=zero-to-one",
         whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."
+    },
+    {
+        id: "natural-language-processing",
+        title: "Natural Language Processing",
+        icon: "icon-adapt",
+        tag: "Active",
+        tagClass: "open",
+        img: "assets/prog-nlp.jpg",
+        rot: "rot--1",
+        description: "A hands-on program for teaching machines to understand human language — from text preprocessing and classical techniques to transformers and building real LLM-powered applications.",
+        audience: "Eight(8) Weeks, 24 Live Sessions, 8 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Text & Language Fundamentals", "Classical NLP Techniques & Pipelines", "Transformers & LLM-Powered Applications", "NLP Portfolio Project & Skill Monetisation"],
+        priceLabel: "--", // TODO: add price
+        ctaText: "Register →",
+        ctaLink: "register.html?program=natural-language-processing",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Natural%20Language%20Processing%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+    },
+    {
+        id: "applied-machine-learning",
+        title: "Applied Machine Learning",
+        icon: "icon-gear",
+        tag: "Active",
+        tagClass: "open",
+        img: "assets/prog-aml.jpg",
+        rot: "rot--4",
+        description: "A practical program for building machine learning models that solve real problems — preparing data, training and evaluating models, and deploying them so they actually get used.",
+        audience: "Eight(8) Weeks, 24 Live Sessions, 8 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Core Machine Learning Algorithms", "Feature Engineering & Data Preparation", "Model Evaluation, Tuning & Interpretation", "Model Deployment & Skill Monetisation"],
+        priceLabel: "--", // TODO: add price
+        ctaText: "Register →",
+        ctaLink: "register.html?program=applied-machine-learning",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Applied%20Machine%20Learning%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+    },
+    {
+        id: "data-science",
+        title: "Data Science",
+        icon: "icon-toolbox",
+        tag: "Active",
+        tagClass: "open",
+        img: "assets/prog-ds.jpg",
+        rot: "rot--2",
+        description: "An end-to-end data science program — from wrangling and exploring data to statistical modelling, visualisation and communicating insights that drive decisions.",
+        audience: "Eight(8) Weeks, 24 Live Sessions, 8 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Python & SQL for Data Work", "Statistics, Modelling & Prediction", "Data Visualisation & Storytelling", "Data Science Portfolio & Skill Monetisation"],
+        priceLabel: "--", // TODO: add price
+        ctaText: "Register →",
+        ctaLink: "register.html?program=data-science",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Data%20Science%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+    },
+    {
+        id: "software-design-development",
+        title: "Software Design and Development",
+        icon: "icon-terminal",
+        tag: "Active",
+        tagClass: "open",
+        img: "assets/prog-sdd.jpg",
+        rot: "rot--5",
+        description: "A full program for learning how to design, build and ship real software — from programming foundations and architecture to full-stack development, deployment and maintenance.",
+        audience: "Twelve(12) Weeks, 36 Live Sessions, 12 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Programming Foundations & Problem Solving", "Software Architecture & System Design", "Full-Stack Application Development", "Deployment, Testing & Software Career Launch"],
+        priceLabel: "--", // TODO: add price
+        ctaText: "Register →",
+        ctaLink: "register.html?program=software-design-development",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Software%20Design%20and%20Development%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     }
 ];
 
