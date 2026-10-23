@@ -15,14 +15,14 @@
         ["/",                        "Home",           "icon-home"],
         ["programs.html",            "Programs",       "icon-rocket"],
         ["resources.html",           "Resources",      "icon-book-open"],
-        ["projects.html",            "Products",       "icon-toolbox"],
+        ["sponsors.html",            "Sponsors",       "icon-toolbox"],
         ["impact.html",              "Impact",         "icon-trophy"],
         ["/#submit-request",         "Submit Request", "icon-send"]
     ];
 
     // [heading, [[href, label, opensNewTab]]]
     var FOOTER = [
-        ["Explore",       [["/","Home"],["programs.html","Programs"],["resources.html","Resources"],["projects.html","Products"],["impact.html","Impacts"]]],
+        ["Explore",       [["/","Home"],["programs.html","Programs"],["resources.html","Resources"],["sponsors.html","Sponsors"],["impact.html","Impacts"]]],
         ["Organizations", [["run-a-cohort.html","Run a Cohort"],["organisation-terms.html","Organisation Terms"]]],
         ["Connect",       [[LAB_URL,"Enter Lab"],[COMMUNITY,"Join on WhatsApp",true]]],
         ["Legal & Help",  [["faqs.html","FAQs"],["terms.html","Terms of Service"],["privacy.html","Privacy & Cookies"]]]
