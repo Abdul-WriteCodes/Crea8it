@@ -463,6 +463,9 @@ nav{
 
 .tilt-card{ transition:transform .3s ease, box-shadow .3s ease; }
 .tilt-card:hover{ transform:rotate(0deg) translateY(-6px) scale(1.015); }
+/* Programs page: straight cards (homepage keeps the scrapbook tilt) */
+.programs-full-grid .card[class*="rot--"]{ transform:none; }
+.programs-full-grid .card[class*="rot--"]:hover{ transform:translateY(-6px) scale(1.015); }
 
 /* ── playbooks ── */
 
