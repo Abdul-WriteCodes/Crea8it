@@ -75,39 +75,7 @@ const PROGRAMS = [
         ctaLink: "register.html?program=research-technical-writing",
         whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Research%20and%20Technical%20Writing%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
-    {
-        id: "build-in-public",
-        title: "Applied AI and Productivity",
-        icon: null,
-        tag: "Active",
-        tagClass: "open",
-        img: "assets/AppliedAI.jpeg",
-        rot: "rot--2",
-        description: "A hands-on programme for learning how to use AI tools, build AI-powered workflows, automate tasks and apply AI to real-world professional and business problems..",
-        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks and 1 Capstone Project.", // DRAFT: edit to match the real program
-        covers: ["AI Foundation & Prompt Mastery", "AI Tools Mastery & Application", "AI Workflow & Integration", "AI Skills Monetisation & Distribution"],
-        priceLabel: "--",
-        ctaText: "Join Challenge →",
-        ctaLink: "register.html?program=build-in-public",
-        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it."
-    },
-    {
-        id: "zero-to-one",
-        title: "Zero to 1",
-        icon: "icon-flask",
-        tag: "Active",
-        tagClass: "open",
-        img: "assets/zerops.jpeg",
-        rot: "rot--3",
-        description: "An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.",
-        audience: "8 Weeks, 16 Live Sessions, 4 Tasks & 1 Product.", // DRAFT: edit to match the real program
-        covers: ["Idea Validation", "Business Model Development & Market Discovery", "MVP Design & Building", "Launch, Distribution & Monetization"],
-        priceLabel: "--",
-        ctaText: "Register →",
-        ctaLink: "register.html?program=zero-to-one",
-        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."
-    },
-    {
+     {
         id: "natural-language-processing",
         title: "Natural Language Processing",
         icon: "icon-adapt",
@@ -170,6 +138,38 @@ const PROGRAMS = [
         ctaText: "Register →",
         ctaLink: "register.html?program=software-design-development",
         whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Software%20Design%20and%20Development%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+    },
+    {
+        id: "build-in-public",
+        title: "Applied AI and Productivity",
+        icon: null,
+        tag: "Active",
+        tagClass: "open",
+        img: "assets/AppliedAI.jpeg",
+        rot: "rot--2",
+        description: "A hands-on programme for learning how to use AI tools, build AI-powered workflows, automate tasks and apply AI to real-world professional and business problems..",
+        audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks and 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["AI Foundation & Prompt Mastery", "AI Tools Mastery & Application", "AI Workflow & Integration", "AI Skills Monetisation & Distribution"],
+        priceLabel: "--",
+        ctaText: "Join Challenge →",
+        ctaLink: "register.html?program=build-in-public",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Build%20in%20Public%20Challenge%20-%20saw%20it%20on%20Crea8it."
+    },
+    {
+        id: "zero-to-one",
+        title: "Zero to 1",
+        icon: "icon-flask",
+        tag: "Active",
+        tagClass: "open",
+        img: "assets/zerops.jpeg",
+        rot: "rot--3",
+        description: "An idea validation and startup launch program for founders and indie hackers building real businesses from scratch. You don't just learn here — you EXECUTE.",
+        audience: "8 Weeks, 16 Live Sessions, 4 Tasks & 1 Product.", // DRAFT: edit to match the real program
+        covers: ["Idea Validation", "Business Model Development & Market Discovery", "MVP Design & Building", "Launch, Distribution & Monetization"],
+        priceLabel: "--",
+        ctaText: "Register →",
+        ctaLink: "register.html?program=zero-to-one",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27d%20like%20to%20join%20the%20Zero%20to%201%20lab%20program-%20saw%20it%20on%20Crea8it."
     }
 ];
 
