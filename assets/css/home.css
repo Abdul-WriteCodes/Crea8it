@@ -13,3 +13,6 @@
 @media(max-width:520px){.nh-course-copy>.nh-dur{display:inline-block;text-align:left;font-size:.58rem;padding:3px 7px}}
 /* --- philosophy section: reuse original notebook cards on the paper background --- */
 .nh-philosophy .eyebrow{color:#8a4a22}.nh-philosophy .why-title{margin-bottom:40px}
+/* --- founder section: full-width, reuses .about / .polaroid / .about-text --- */
+.nh-founder-section{background:#21160f;color:var(--paper)}.nh-founder-section .eyebrow{color:var(--accent)}.nh-founder-section .about-text .nh-hand{margin-bottom:22px}.about-text p.nh-creds{font:700 .74rem var(--mono);letter-spacing:.03em;color:var(--accent);margin:6px 0 4px}.nh-founder-section .nh-actions{margin-top:20px}
+@media(max-width:520px){.nh-founder-section .about-text .nh-hand{font-size:1.9rem}}
