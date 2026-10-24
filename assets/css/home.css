@@ -16,3 +16,7 @@
 /* --- founder section: full-width, reuses .about / .polaroid / .about-text --- */
 .nh-founder-section{background:#21160f;color:var(--paper)}.nh-founder-section .eyebrow{color:var(--accent)}.nh-founder-section .about-text .nh-hand{margin-bottom:22px}.about-text p.nh-creds{font:700 .74rem var(--mono);letter-spacing:.03em;color:var(--accent);margin:6px 0 4px}.nh-founder-section .nh-actions{margin-top:20px}
 @media(max-width:520px){.nh-founder-section .about-text .nh-hand{font-size:1.9rem}}
+/* --- hero flip: restores the original rotating photo inside the redesigned polaroid --- */
+.nh-photo .flip-inner{aspect-ratio:auto;height:390px}
+@media(max-width:1050px){.nh-photo .flip-inner{height:320px}}
+@media(max-width:760px){.nh-photo .flip-inner{height:250px}}
