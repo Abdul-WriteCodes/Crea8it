@@ -24,7 +24,7 @@
     // Switch to branded email/social accounts once they are operational.
     var SUPPORT_EMAIL = "Abdulwrite77@gmail.com";
     var FOOTER = [
-        ["Explore", [["programs.html","Programmes"],["resources.html","Resources"],["impact.html","Impact"],["sponsors.html","Sponsors & Partners"]]],
+        ["Explore", [["programs.html","Programs"],["resources.html","Resources"],["impact.html","Impact"],["sponsors.html","Sponsors & Partners"]]],
         ["Get Involved", [["run-a-cohort.html","Run a Cohort"],["sponsors.html#become-a-partner","Become a Sponsor"],["sponsors.html#become-a-partner","Partner With Us"]]],
         ["Community & Support", [[LAB_URL,"Crea8it Lab",true],[COMMUNITY,"Join Community",true],["mailto:"+SUPPORT_EMAIL+"?subject=Crea8it%20Support%20Enquiry","Contact Support"]]],
         ["Legal & Help", [["faqs.html","FAQs"],["terms.html","Terms of Service"],["privacy.html","Privacy & Cookies"],["organisation-terms.html","Organisation Terms"]]]

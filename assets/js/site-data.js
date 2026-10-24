@@ -147,7 +147,7 @@ const PROGRAMS = [
         tagClass: "open",
         img: "assets/AppliedAI.jpeg",
         rot: "rot--2",
-        description: "A hands-on programme for learning how to use AI tools, build AI-powered workflows, automate tasks and apply AI to real-world professional and business problems..",
+        description: "A hands-on program for learning how to use AI tools, build AI-powered workflows, automate tasks and apply AI to real-world professional and business problems..",
         audience: "Four(4) Weeks, 12 Live Sessions, 4 Tasks and 1 Capstone Project.", // DRAFT: edit to match the real program
         covers: ["AI Foundation & Prompt Mastery", "AI Tools Mastery & Application", "AI Workflow & Integration", "AI Skills Monetisation & Distribution"],
         priceLabel: "--",
