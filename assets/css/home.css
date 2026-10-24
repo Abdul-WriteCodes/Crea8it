@@ -11,3 +11,5 @@
 .nh-course-copy>.nh-dur{position:static;display:inline-block;text-align:left;font:700 .64rem var(--mono);letter-spacing:.04em;color:#8a4a22;background:#f3e3c3;border-radius:20px;padding:4px 9px;margin-bottom:10px}
 .nh-founder p.nh-creds{font:700 .72rem var(--mono);letter-spacing:.03em;color:#8a4a22;margin:0 0 22px}
 @media(max-width:520px){.nh-course-copy>.nh-dur{display:inline-block;text-align:left;font-size:.58rem;padding:3px 7px}}
+/* --- philosophy section: reuse original notebook cards on the paper background --- */
+.nh-philosophy .eyebrow{color:#8a4a22}.nh-philosophy .why-title{margin-bottom:40px}
