@@ -129,7 +129,7 @@ const PROGRAMS = [
         icon: "icon-toolbox",
         tag: "Active",
         tagClass: "open",
-        img: "assets/prog-bi.jpg",
+        img: "assets/prog-bi.jpeg",
         rot: "rot--3",
         description: "A hands-on program for turning business data into dashboards, KPIs and reports that leaders actually use — from defining the right metrics to building decision-ready BI solutions.",
         audience: "Six(6) Weeks, 18 Live Sessions, 6 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
