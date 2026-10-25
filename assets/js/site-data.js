@@ -124,6 +124,22 @@ const PROGRAMS = [
         whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Data%20Science%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
     },
     {
+        id: "business-intelligence",
+        title: "Business Intelligence",
+        icon: "icon-toolbox",
+        tag: "Active",
+        tagClass: "open",
+        img: "assets/prog-bi.jpg",
+        rot: "rot--3",
+        description: "A hands-on program for turning business data into dashboards, KPIs and reports that leaders actually use — from defining the right metrics to building decision-ready BI solutions.",
+        audience: "Six(6) Weeks, 18 Live Sessions, 6 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
+        covers: ["Business Data Foundations & KPI Design", "Data Modelling, SQL & Spreadsheet Analytics", "Dashboard Design & Data Visualisation", "BI Portfolio & Skill Monetisation"],
+        priceLabel: "--", // TODO: add price
+        ctaText: "Register →",
+        ctaLink: "register.html?program=business-intelligence",
+        whatsappLink: "https://wa.me/2348096506034?text=Hi%20Abdul%2C%20I%27m%20interested%20in%20the%20Business%20Intelligence%20program%20-%20saw%20it%20on%20Crea8it.%20Can%20you%20tell%20me%20more%3F"
+    },
+    {
         id: "software-design-development",
         title: "Software Design and Development",
         icon: "icon-terminal",
