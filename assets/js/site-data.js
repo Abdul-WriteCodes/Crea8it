@@ -113,7 +113,7 @@ const PROGRAMS = [
         icon: "icon-toolbox",
         tag: "Active",
         tagClass: "open",
-        img: "assets/prog-ds.jpg",
+        img: "assets/prog-ds.jpeg",
         rot: "rot--2",
         description: "An end-to-end data science program — from wrangling and exploring data to statistical modelling, visualisation and communicating insights that drive decisions.",
         audience: "Eight(8) Weeks, 24 Live Sessions, 8 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
