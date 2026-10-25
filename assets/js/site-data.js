@@ -81,7 +81,7 @@ const PROGRAMS = [
         icon: "icon-adapt",
         tag: "Active",
         tagClass: "open",
-        img: "assets/prog-nlp.jpg",
+        img: "assets/prog-nlp.jpeg",
         rot: "rot--1",
         description: "A hands-on program for teaching machines to understand human language — from text preprocessing and classical techniques to transformers and building real LLM-powered applications.",
         audience: "Eight(8) Weeks, 24 Live Sessions, 8 Tasks & 1 Capstone Project.", // DRAFT: edit to match the real program
