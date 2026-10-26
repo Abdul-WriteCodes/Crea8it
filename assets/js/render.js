@@ -22,7 +22,7 @@
 
     // Shared footer: only published routes and active contact channels are linked.
     // Switch to branded email/social accounts once they are operational.
-    var SUPPORT_EMAIL = "Abdulwrite77@gmail.com";
+    var SUPPORT_EMAIL = "Crea8it@gmail.com";
     var FOOTER = [
         ["Explore", [["programs.html","Programs"],["resources.html","Resources"],["impact.html","Impact"],["sponsors.html","Sponsors & Partners"]]],
         ["Get Involved", [["run-a-cohort.html","Run a Cohort"],["sponsors.html#become-a-partner","Become a Sponsor"],["sponsors.html#become-a-partner","Partner With Us"]]],
