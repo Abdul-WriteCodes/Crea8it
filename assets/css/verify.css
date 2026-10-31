@@ -52,9 +52,16 @@
 .vc-frame::before{ content:""; position:absolute; inset:5px; border:1px solid var(--vc-gold); pointer-events:none; }
 .vc-frame > *{ position:relative; }
 
-.vc-brand{ display:flex; align-items:center; justify-content:center; gap:10px; }
-.vc-mark svg{ display:block; width:38px; height:38px; }
-.vc-word{ font-size:.8rem; letter-spacing:.16em; font-weight:600; }
+.vc-brand{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }
+/* ring + logo: same proportions as the printed certificate (ring 88 : logo 64 : brass line inset 5) */
+.vc-emblem{
+    position:relative; flex:0 0 auto; width:88px; height:88px; box-sizing:border-box;
+    border:1.4px solid var(--vc-ink); border-radius:50%; background:#FCFAF5;
+    display:flex; align-items:center; justify-content:center;
+}
+.vc-emblem::before{ content:""; position:absolute; inset:5px; border:.7px solid var(--vc-gold); border-radius:50%; pointer-events:none; }
+.vc-logo{ display:block; width:64px; height:auto; }
+.vc-word{ font-family:'Newsreader',Georgia,serif; font-size:clamp(1rem,4.8vw,1.3rem); letter-spacing:.16em; font-weight:600; line-height:1.1; }
 
 .vc-status{
     margin-top:14px; display:flex; align-items:center; gap:12px; text-align:left;
