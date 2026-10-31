@@ -20,3 +20,28 @@
 .nh-photo .flip-inner{aspect-ratio:auto;height:390px}
 @media(max-width:1050px){.nh-photo .flip-inner{height:320px}}
 @media(max-width:760px){.nh-photo .flip-inner{height:250px}}
+
+/* --- mobile hero: keep the desktop composition (headline left, tilted polaroid right) ---
+   Root cause of the old behaviour: at <=760px .nh-hero-grid collapsed to one column, so the
+   polaroid (.nh-hero-art) landed after the checklist, below the fold.
+   Fix: dissolve .nh-hero-copy with display:contents so its children join the hero grid, then
+   place the headline and the polaroid side by side in the same row. No HTML changes needed. */
+@media(max-width:760px){
+  .nh-hero-grid{grid-template-columns:auto minmax(0,1fr);column-gap:4%;row-gap:0;align-items:start}
+  .nh-hero-copy{display:contents}
+  .nh-hero-copy>*{grid-column:1/-1}
+  .nh-kicker{grid-row:1;justify-self:start}
+  .nh-hero h1{grid-column:1;grid-row:2;align-self:center;margin-bottom:26px;font-size:clamp(3rem,13.5vw,6rem)}
+  .nh-hero-art{grid-column:2;grid-row:2;align-self:center;min-height:0;margin:0 0 22px;display:block;max-width:230px;justify-self:center;width:100%}
+  .nh-hero-copy>p:not(.nh-wa){grid-row:3}
+  .nh-actions{grid-row:4}
+  .nh-hero-copy>p.nh-wa{grid-row:5}
+  .nh-checks{grid-row:6}
+
+  .nh-photo{width:100%;border-width:7px;padding-bottom:24px;transform:rotate(4deg);box-shadow:6px 8px 0 #100c08}
+  .nh-photo .flip-inner{height:auto;aspect-ratio:4/5}
+  .nh-photo span{display:none} /* caption is unreadable at this size and sits under the yellow note */
+  .nh-tape{top:-14px;left:28%;width:58px;height:20px}
+  .nh-note{left:-24%;bottom:-16px;font-size:clamp(.52rem,2.6vw,.85rem);padding:8px 10px;box-shadow:3px 3px 0 #291309}
+  .nh-star{top:-14px;right:-2px;font-size:2.2rem}
+}
