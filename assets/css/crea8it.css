@@ -1057,3 +1057,30 @@ footer{ padding:60px 0 40px; border-top:1px dashed var(--border); }
 
 /* Preserve filled X and LinkedIn artwork within the redesigned footer. */
 .crea8it-footer .footer-socials a.footer-social-brand svg { fill: currentColor; stroke: none; }
+
+/* ── mobile sub-page hero: same composition as the home hero (headline left, tilted polaroid right) ──
+   Applies to every page using .shelf-hero: programs, resources, impact, register, run-a-cohort.
+   Root cause of the old behaviour: the shared <=900px rule above collapsed .hero-grid to one column and set
+   .hero-photo-wrap{order:-1}, so a 260px polaroid sat ABOVE the headline and pushed the copy below the fold.
+   Fix: dissolve .hero-content with display:contents so badge / h1 / lede join the hero grid, then put the h1 and the
+   polaroid in the same row. No HTML changes; the polaroids' inline width:260px/380px needs !important to override. */
+@media(max-width:900px){
+    .shelf-hero{ padding:44px 0 12px; }
+    .shelf-hero .hero-grid{ grid-template-columns:auto minmax(96px,1fr); column-gap:4%; row-gap:0; align-items:start; }
+    .shelf-hero .hero-content{ display:contents; }
+    .shelf-hero .hero-content>*{ grid-column:1/-1; }
+    .shelf-hero .hero-content>.badge{ grid-row:1; justify-self:start; }
+    .shelf-hero .hero-content>h1{ grid-column:1; grid-row:2; align-self:center; margin:6px 0 24px; font-size:clamp(1.5rem,7.6vw,3.4rem); }
+    .shelf-hero .hero-photo-wrap{ grid-column:2; grid-row:2; order:0; max-width:none; margin:6px 0 24px; align-self:center; }
+    .shelf-hero .hero-photo-wrap .polaroid{ width:100% !important; max-width:260px; padding:8px 8px 30px; box-shadow:6px 8px 0 rgba(0,0,0,.45); }
+    .shelf-hero .polaroid figcaption{ bottom:6px; font-size:.72rem; }
+    .shelf-hero .polaroid .tape{ width:50px; height:18px; top:-9px; }
+    .shelf-hero .polaroid .pin{ width:12px; height:12px; top:-7px; }
+    .shelf-hero .hero-sticky{ width:clamp(72px,22vw,112px); font-size:clamp(.46rem,1.9vw,.7rem); padding:6px 7px; top:-14px; right:-8px; box-shadow:3px 4px 0 rgba(0,0,0,.35); }
+}
+@media(max-width:520px){
+    .shelf-hero .hero-photo-wrap .polaroid{ padding:6px 6px 16px; max-width:150px; margin-left:auto; }
+    .shelf-hero .polaroid figcaption{ display:none; }   /* unreadable at this size */
+    .shelf-hero p.lede{ font-size:.94rem; }
+    .shelf-hero .badge{ font-size:.7rem; padding:7px 12px; margin-bottom:12px; }
+}
