@@ -99,7 +99,7 @@
     }
 
     function checkedAt() {
-        return new Date().toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        return new Date().toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
     }
 
     function render(code, c) {
@@ -107,12 +107,11 @@
         var card = el("div", "verify-cert " + (valid ? "is-valid" : "is-revoked"));
         var frame = el("div", "vc-frame");
 
-        // Brand header
+        // Brand header (one compact row)
         var brand = el("div", "vc-brand");
         var mark = el("div", "vc-mark"); mark.innerHTML = MARK_SVG;   // static constant, no db data
         brand.appendChild(mark);
         brand.appendChild(el("div", "vc-word", "CREA8IT STUDIO"));
-        brand.appendChild(el("div", "vc-sub", "COHORT-BASED AI PROGRAMS"));
         frame.appendChild(brand);
 
         // Status
@@ -122,8 +121,8 @@
         var st = el("div", "vc-status-text");
         st.appendChild(el("div", "vc-status-title", valid ? "Verified certificate" : "Certificate revoked"));
         st.appendChild(el("div", "vc-status-sub", valid
-            ? "This certificate is genuine and was issued by Crea8it Studio."
-            : "This certificate has been revoked and is no longer valid."));
+            ? "Issued by Crea8it Studio."
+            : "No longer valid."));
         status.appendChild(st);
         frame.appendChild(status);
 
@@ -133,33 +132,33 @@
         var prog = el("div", "vc-prog"); prog.appendChild(document.createTextNode("for completing "));
         prog.appendChild(el("strong", null, c.program_name)); frame.appendChild(prog);
 
-        // Details
+        // Details ("Issued by" is already in the header and status, so it is not repeated)
         var grid = el("div", "vc-grid");
-        cell(grid, "Issued by", "Crea8it Studio");
-        var org = (c.org_name || "").trim();
-        if (org && OWN_ORGS.indexOf(org.toLowerCase()) === -1) cell(grid, "Delivered by", org);
-        if (c.cohort_label) cell(grid, "Cohort", c.cohort_label);
         cell(grid, "Date issued", fmtDate(c.issued_at));
         if (c.duration_weeks) cell(grid, "Duration", c.duration_weeks + " weeks");
+        if (c.cohort_label) cell(grid, "Cohort", c.cohort_label);
+        var org = (c.org_name || "").trim();
+        if (org && OWN_ORGS.indexOf(org.toLowerCase()) === -1) cell(grid, "Delivered by", org);
         frame.appendChild(grid);
 
-        // ID + actions
-        var idrow = el("div", "vc-idrow");
-        idrow.appendChild(el("span", "vc-idlabel", "Certificate ID"));
-        idrow.appendChild(el("code", "vc-id", code));
-        frame.appendChild(idrow);
+        // ID (tap to copy) + actions
+        var idb = el("button", "vc-id"); idb.type = "button";
+        idb.setAttribute("aria-label", "Copy certificate ID " + code);
+        idb.appendChild(el("span", "vc-idlabel", "ID"));
+        idb.appendChild(el("span", "vc-idcode", code));
+        var idcopy = el("span", "vc-idcopy", "Copy"); idb.appendChild(idcopy);
+        idb.addEventListener("click", function () { copyText(code, idcopy, "Copied"); });
+        frame.appendChild(idb);
 
         var actions = el("div", "vc-actions");
-        var b1 = el("button", "vc-btn", "Copy verification link"); b1.type = "button";
+        var b1 = el("button", "vc-btn", "Copy link"); b1.type = "button";
         b1.addEventListener("click", function () { copyText(VERIFY_BASE + encodeURIComponent(code), b1, "Link copied"); });
-        var b2 = el("button", "vc-btn", "Copy ID"); b2.type = "button";
-        b2.addEventListener("click", function () { copyText(code, b2, "ID copied"); });
         var rep = el("a", "vc-btn vc-btn-quiet", "Report a problem");
         rep.href = "mailto:" + REPORT_EMAIL + "?subject=" + encodeURIComponent("Certificate verification issue: " + code);
-        actions.appendChild(b1); actions.appendChild(b2); actions.appendChild(rep);
+        actions.appendChild(b1); actions.appendChild(rep);
         frame.appendChild(actions);
 
-        frame.appendChild(el("div", "vc-checked", "Checked against Crea8it\u2019s records on " + checkedAt()));
+        frame.appendChild(el("div", "vc-checked", "Checked " + checkedAt()));
         card.appendChild(frame);
         show(card);
     }
