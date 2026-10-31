@@ -45,14 +45,19 @@
     // Crea8it's own cohorts: Crea8it Studio is already the issuer, so no separate "Delivered by" line.
     var OWN_ORGS = ["crea8it studio", "crea8it labs"];
 
-    // Static artwork (no database content), same puzzle-piece mark as the printed certificate.
-    var MARK_SVG =
-        '<svg viewBox="0 0 64 64" width="54" height="54" role="img" aria-label="Crea8it logo">' +
-        '<circle cx="32" cy="32" r="30" fill="#F8F4EC" stroke="#161B22" stroke-width="1.6"/>' +
-        '<circle cx="32" cy="32" r="26.5" fill="none" stroke="#A67C3D" stroke-width=".8"/>' +
-        '<g transform="translate(32 32) scale(0.9) translate(-28 -20)">' +
-        '<path d="M10 10 L20 10 A5 5 0 1 1 28 10 L38 10 L38 20 A5 5 0 1 1 38 28 L38 38 L28 38 A5 5 0 1 0 20 38 L10 38 L10 28 A5 5 0 1 0 10 20 Z" fill="#161B22"/>' +
-        '<circle cx="24" cy="24" r="3.6" fill="#A67C3D"/></g></svg>';
+    // Same mark as the printed certificate: the Crea8it Lab logo inside an ink + brass ring.
+    // The image is a static file (no database content). If it can't load, the ring is removed so a
+    // broken-image icon is never shown and the card still reads correctly with just the name.
+    var LOGO_SRC = "assets/images/crea8it-logo.png";
+    function emblem() {
+        var ring = el("div", "vc-emblem");
+        var img = document.createElement("img");
+        img.className = "vc-logo"; img.src = LOGO_SRC; img.alt = "Crea8it Lab logo";
+        img.width = 64; img.height = 55; img.decoding = "async";
+        img.addEventListener("error", function () { if (ring.parentNode) ring.parentNode.removeChild(ring); });
+        ring.appendChild(img);
+        return ring;
+    }
 
     function icon(path) {
         var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -107,10 +112,9 @@
         var card = el("div", "verify-cert " + (valid ? "is-valid" : "is-revoked"));
         var frame = el("div", "vc-frame");
 
-        // Brand header (one compact row)
+        // Brand header: ring emblem above the issuer name, as on the printed certificate
         var brand = el("div", "vc-brand");
-        var mark = el("div", "vc-mark"); mark.innerHTML = MARK_SVG;   // static constant, no db data
-        brand.appendChild(mark);
+        brand.appendChild(emblem());
         brand.appendChild(el("div", "vc-word", "CREA8IT STUDIO"));
         frame.appendChild(brand);
 
