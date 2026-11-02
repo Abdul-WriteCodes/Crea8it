@@ -29,7 +29,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/css/crea8it.css?v=6">
+<link rel="stylesheet" href="assets/css/crea8it.css?v=7">
 </head>
 <body>
 
@@ -110,37 +110,25 @@ Shout-outs, screenshots, and words from builders who came through Crea8it — ev
 </div>
 </section>
 
-<section id="impact-shelf" class="section" style="padding-top:20px;">
-<div class="container" style="text-align:center;">
-
-<div class="testimonial-wrap">
-<div class="carousel-wrapper">
-
-    <button class="carousel-arrow carousel-prev" aria-label="Previous">&#8592;</button>
-
-    <div class="carousel-track-container">
-        <div class="carousel-track"></div>
-    </div>
-
-    <button class="carousel-arrow carousel-next" aria-label="Next">&#8594;</button>
-
-    <div class="carousel-dots"></div>
-
-</div>
-</div>
-
-</div>
-</section>
-
-<section id="impact-quotes" class="section" style="padding-top:0;">
+<section id="impact-wall" class="section" style="padding-top:20px;">
 <div class="container">
 
 <div class="section-head">
-<div class="eyebrow">In Their Words</div>
-<h2 class="section-title">What Builders Say</h2>
+<div class="eyebrow">Wall of Impact</div>
+<h2 class="section-title">Builders who shipped</h2>
 </div>
 
-<div class="grid impact-full-grid" id="impact-full"></div>
+<div id="builder-wall"></div>
+
+<div class="wall-cta">
+<div>
+<h3>Your build could be pinned here.</h3>
+<p>Join a cohort, ship something, and opt in to be featured.</p>
+</div>
+<a href="programs.html" class="btn btn-primary">Explore programs</a>
+</div>
+
+<p class="wall-social">More shout-outs on <a href="https://x.com/abdul_git07" target="_blank" rel="noopener">X</a> and <a href="https://www.linkedin.com/in/anafiabdul" target="_blank" rel="noopener">LinkedIn</a></p>
 
 </div>
 </section>
@@ -148,10 +136,9 @@ Shout-outs, screenshots, and words from builders who came through Crea8it — ev
 <div id="site-footer"></div>
 
 <script src="assets/js/site-data.js"></script>
-<script src="assets/js/render.js?v=4"></script>
+<script src="assets/js/render.js?v=5"></script>
 <script>
-    renderPhotoCarousel('.testimonial-wrap');
-    renderQuoteTestimonials('impact-full', null, 'impact-quotes');
+    renderBuilderWall('builder-wall');
     initFlipPolaroid('impactPolaroid', 'impactCaption', ['launched. hired. shipped.', 'growth. real results. proof.']);
 </script>
 
