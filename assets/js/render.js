@@ -364,3 +364,111 @@ function initFlipPolaroid(wrapId, captionId, captions) {
         if (captionEl && captions[current]) captionEl.textContent = captions[current];
     }, 4000);
   }
+
+
+/* ── Wall of Impact (impact.html) ──────────────────────────────── */
+
+function wallEsc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+}
+
+function wallSafeUrl(u) {
+    return /^https?:\/\//i.test(u || "") ? u : "";
+}
+
+function wallInitials(name) {
+    return String(name || "?").trim().split(/\s+/).slice(0, 2)
+        .map(function (w) { return w.charAt(0).toUpperCase(); }).join("");
+}
+
+function builderCardHTML(b, size) {
+    const photo = b.photo
+        ? `<img src="${wallEsc(b.photo)}" alt="${wallEsc(b.name)}" loading="lazy">`
+        : `<span class="wall-initials" aria-hidden="true">${wallEsc(wallInitials(b.name))}</span>`;
+    const meta = [b.program, b.cohort].filter(Boolean).map(wallEsc).join(" · ");
+    const quote = size === "spot" && b.quote ? `<p class="wall-quote">&ldquo;${wallEsc(b.quote)}&rdquo;</p>` : "";
+    const link = wallSafeUrl(b.link);
+    const links = [
+        link ? `<a href="${wallEsc(link)}" target="_blank" rel="noopener">View project</a>` : "",
+        b.certId ? `<a href="verify.html?id=${encodeURIComponent(b.certId)}">Verified certificate</a>` : ""
+    ].join("");
+    return `
+<article class="wall-card wall-card--${size}">
+    <div class="pin"></div>
+    <div class="wall-photo">${photo}</div>
+    ${meta ? `<div class="wall-meta">${meta}</div>` : ""}
+    ${b.project ? `<h3 class="wall-project">${wallEsc(b.project)}</h3>` : ""}
+    <p class="wall-by">${size === "spot" ? "by " : ""}${wallEsc(b.name)}</p>
+    ${b.summary ? `<p class="wall-summary">${wallEsc(b.summary)}</p>` : ""}
+    ${quote}
+    ${links ? `<div class="wall-links">${links}</div>` : ""}
+</article>`;
+}
+
+function renderBuilderWall(containerId) {
+    const root = document.getElementById(containerId);
+    if (!root) return;
+
+    const all = (typeof BUILDERS !== "undefined" ? BUILDERS : [])
+        .filter(function (b) { return b && b.optIn === true && b.name; })
+        .map(function (b) {
+            const tier = b.tier || (b.project ? "build" : "completed");
+            return Object.assign({}, b, { tier: tier });
+        });
+
+    if (!all.length) {
+        root.innerHTML = `
+<div class="wall-empty">
+    <div class="pin"></div>
+    <p class="wall-empty-title">Cohort 1 builds are in progress.</p>
+    <p>The first builders will be pinned here as they ship.</p>
+</div>`;
+        return;
+    }
+
+    const uniq = function (key) {
+        return all.map(function (b) { return b[key]; })
+            .filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+    };
+    const filters = uniq("program").concat(uniq("cohort"))
+        .filter(function (v, i, a) { return a.indexOf(v) === i; });
+    let active = null;
+
+    function draw() {
+        const list = all.filter(function (b) {
+            return !active || b.program === active || b.cohort === active;
+        });
+        const tier = function (t) { return list.filter(function (b) { return b.tier === t; }); };
+        const spot = tier("spotlight"), builds = tier("build"), done = tier("completed");
+
+        const chips = filters.length > 1 ? `
+<div class="wall-filters" role="group" aria-label="Filter builders">
+    <button type="button" class="wall-chip" data-f="" aria-pressed="${!active}">All builders</button>
+    ${filters.map(function (f) {
+        return `<button type="button" class="wall-chip" data-f="${wallEsc(f)}" aria-pressed="${active === f}">${wallEsc(f)}</button>`;
+    }).join("")}
+</div>` : "";
+
+        const block = function (label, cls, cards) {
+            return cards ? `<div class="wall-block"><div class="eyebrow">${label}</div><div class="wall-grid ${cls}">${cards}</div></div>` : "";
+        };
+
+        root.innerHTML = chips
+            + block("Spotlight", "wall-grid--spot", spot.map(function (b) { return builderCardHTML(b, "spot"); }).join(""))
+            + block("More builds", "wall-grid--sm", builds.map(function (b) { return builderCardHTML(b, "sm"); }).join(""))
+            + (done.length ? `<div class="wall-block"><div class="eyebrow">Also completed</div><div class="wall-names">${
+                done.map(function (b) { return `<span class="wall-name">${wallEsc(b.name)}</span>`; }).join("")
+              }</div></div>` : "")
+            + (list.length ? "" : `<p class="wall-none">No builders match this filter yet.</p>`);
+
+        root.querySelectorAll(".wall-chip").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                active = btn.getAttribute("data-f") || null;
+                draw();
+            });
+        });
+    }
+    draw();
+}
