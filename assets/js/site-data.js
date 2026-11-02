@@ -268,4 +268,25 @@ const TESTIMONIALS = [
       optIn: true
   }
 */
-const BUILDERS = [];
+const BUILDERS = [
+    {
+      id: "b001",
+      name: "Amara Waller",
+      program: "Break into Tech",
+      cohort: "Cohort 1",
+      tier: "spotlight",
+      project: "What they built",
+      summary: "One line on what they shipped or achieved.",
+      link: "https://example.com",
+      certId: "C8L-2026-XXXXXXXX",
+      photo: "assets/builders/281.png",
+      quote: "Optional one-liner in their own words.",
+      optIn: true
+   }
+
+
+
+
+
+  
+];
