@@ -237,3 +237,35 @@ const TESTIMONIALS = [
         caption: "reader love 💚"
     }
 ];
+
+/*
+  BUILDERS powers the Wall of Impact on impact.html.
+  Add one block per builder after each cohort. Nothing shows unless optIn is true,
+  so a person is only ever listed with their consent.
+
+  tier (optional; defaults to "build" if there is a project, else "completed"):
+    "spotlight" → large card with photo, project, summary, optional quote
+    "build"     → smaller card with project and summary
+    "completed" → name only, in the "Also completed" strip
+
+  Fields (only name and optIn are required):
+    name, program, cohort, project, summary, link (https://…),
+    certId (links to verify.html?id=…), photo (image path), quote, optIn (true)
+
+  Example:
+  {
+      id: "b001",
+      name: "Full Name",
+      program: "Break into Tech",
+      cohort: "Cohort 1",
+      tier: "spotlight",
+      project: "What they built",
+      summary: "One line on what they shipped or achieved.",
+      link: "https://example.com",
+      certId: "C8L-2026-XXXXXXXX",
+      photo: "assets/builders/full-name.jpg",
+      quote: "Optional one-liner in their own words.",
+      optIn: true
+  }
+*/
+const BUILDERS = [];
