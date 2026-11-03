@@ -384,9 +384,9 @@ function wallInitials(name) {
 }
 
 function builderCardHTML(b, size) {
-    const photo = b.photo
+    const avatar = b.photo
         ? `<img src="${wallEsc(b.photo)}" alt="${wallEsc(b.name)}" loading="lazy">`
-        : `<span class="wall-initials" aria-hidden="true">${wallEsc(wallInitials(b.name))}</span>`;
+        : `<span aria-hidden="true">${wallEsc(wallInitials(b.name))}</span>`;
     const meta = [b.program, b.cohort].filter(Boolean).map(wallEsc).join(" · ");
     const quote = size === "spot" && b.quote ? `<p class="wall-quote">&ldquo;${wallEsc(b.quote)}&rdquo;</p>` : "";
     const link = wallSafeUrl(b.link);
@@ -397,10 +397,14 @@ function builderCardHTML(b, size) {
     return `
 <article class="wall-card wall-card--${size}">
     <div class="pin"></div>
-    <div class="wall-photo">${photo}</div>
-    ${meta ? `<div class="wall-meta">${meta}</div>` : ""}
+    <div class="wall-head">
+        <div class="wall-avatar">${avatar}</div>
+        <div class="wall-who">
+            <p class="wall-by">${wallEsc(b.name)}</p>
+            ${meta ? `<div class="wall-meta">${meta}</div>` : ""}
+        </div>
+    </div>
     ${b.project ? `<h3 class="wall-project">${wallEsc(b.project)}</h3>` : ""}
-    <p class="wall-by">${size === "spot" ? "by " : ""}${wallEsc(b.name)}</p>
     ${b.summary ? `<p class="wall-summary">${wallEsc(b.summary)}</p>` : ""}
     ${quote}
     ${links ? `<div class="wall-links">${links}</div>` : ""}
