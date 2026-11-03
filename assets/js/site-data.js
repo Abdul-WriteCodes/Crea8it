@@ -269,7 +269,7 @@ const TESTIMONIALS = [
   }
 */
 const BUILDERS = [
-  /*
+  
     {
       id: "b001",
       name: "Amara Waller",
@@ -284,8 +284,7 @@ const BUILDERS = [
       quote: "Optional one-liner in their own words.",
       optIn: true
    }
-   */
-
+   
 
 
 
